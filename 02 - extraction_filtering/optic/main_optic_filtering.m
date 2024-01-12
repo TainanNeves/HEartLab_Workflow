@@ -9,7 +9,7 @@ clear all; close all; clc;
 % Run the code with F9 part by part
 
 % Load data and region of interest (ROI)
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\Rec_15_23_24_Bin=8_Cam3.mat'); % Optical Data Binned
+load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\Rec_15_23_24_Bin=8_Cam3.mat'); % Optical Data Binned
 ROI_3 = roipoly(DATA(:,:,50)); % If you want to create a ROI / Double click in the center to finish
 
 % If you already have the ROIs
@@ -58,14 +58,15 @@ less = 500; % Samples eliminated at the beginning and final (1 second each)
 % Apply baseline filter to the data
 [DATA1] = -f_fil(R, Fpass, Fsampling, n, less);
 % Apply a Gaussian spatial and temporal filtering to the data
-% SpatTemp_Filtering (3D Data, S = Size Gaussian filter matrix (must be
-% odd), T = Temporal filter matrix size, mode = 'CPU' or 'GPU') 
-% Using multiple times the result becomes better
+%   SpatTemp_Filtering (3D Data, S = Size Gaussian filter matrix (must be
+%   odd), T = Temporal filter matrix size, mode = 'CPU' or 'GPU') 
+%   Using multiple times the result becomes Smooth, but You lose the
+%   electrode positions
 DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
-DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
-DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
-DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
-DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
+% DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
+% DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
+% DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
+% DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
 
 % Apply the mask to the filtered data
 ROI = ROI_3; % put the correct ROI

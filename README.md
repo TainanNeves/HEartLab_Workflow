@@ -100,3 +100,6 @@ There are three folders within this directory, two related to maps for electrica
 
 1. Add lines demarcating the faces of the tank in plots containing a tank.
 2. Change electrode indicators to black (currently in red).
+3. In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection.
+4. Simplify the Potential plot code. Use the modularization method
+5. In potential plot, add the layer with the vertices

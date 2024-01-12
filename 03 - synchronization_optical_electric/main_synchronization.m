@@ -9,8 +9,8 @@ clc;
 
 %% Loading variables
 
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\optic_data_E14_F3_R4_filtered.mat'); % Optical data Filtered
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\electric_data_E14_F3_R4_filtered.mat'); % Electric data filtered
+load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\optic_data_E14_F3_R4_filtered.mat'); % Optical data Filtered
+load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\electric_data_E14_F3_R4_filtered.mat'); % Electric data filtered
 
 %% Sample frequency from 500 to 4000 Hz
 

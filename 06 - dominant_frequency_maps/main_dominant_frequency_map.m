@@ -42,6 +42,7 @@ xlabel('Pixels');
 axis off;
 hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Dominant Frequency [Hz]', 'FontSize', 14);
+caxis([DOWN UP]);
 
 % Plot the spectrum of specific pixel locations
 % Select point
@@ -59,7 +60,7 @@ legend('Atrium', 'Ventricle', 'FontSize', 12);
 xlabel('Frequency [Hz]');
 title('Spectrum');
 set(gca, 'fontsize', 14);
-xlim([0 25]);
+xlim([DOWN UP]);
 
 
 %% Electric Dominant Frequency analysis
