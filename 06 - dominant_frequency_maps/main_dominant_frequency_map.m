@@ -4,7 +4,7 @@ clear; clc;
 
 %% Loading variables
 
-load("E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
+load("C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
 
 
 %% Optic Dominant Frequency Analysis
@@ -69,7 +69,7 @@ Data = D_SYNC.EL;
 Fsampling = 4000;
 
 % Dominant Frequency calculation
-freq_up = 100;
+freq_up = 50;
 freq_down = 0.5;
 in_sample = 1;
 end_sample = 4*4000;
