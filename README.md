@@ -99,10 +99,11 @@ There are three folders within this directory, two related to maps for electrica
 # To Do:
 
 1. Add lines demarcating the faces of the tank in plots containing a tank.
-2. Change electrode indicators to black (currently in red).
+2. DONE - Change electrode indicators to black (currently in red).
 3. In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection.
-4. Simplify the Potential plot code. Use the modularization method
-5. In potential plot, add the layer with the vertices
+4. DONE - Simplify the Potential plot code. Use the modularization method
+5. DONE - In potential plot, add the layer with the vertices
 6. Create a switch to select cameras for filtering instead of set it manually
 7. Verify why there is one more sample after syncronization and correct it
-8. Save the pixel position by clicking instead of insert it manually
+8. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
+teste

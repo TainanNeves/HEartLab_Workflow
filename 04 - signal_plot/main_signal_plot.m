@@ -6,7 +6,7 @@ clear; clc;
 %% Loading data
 
 % Loading variables
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
+load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
 
 
 %% Optical signals plot
