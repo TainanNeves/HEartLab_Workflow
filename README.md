@@ -106,4 +106,3 @@ There are three folders within this directory, two related to maps for electrica
 6. Create a switch to select cameras for filtering instead of set it manually
 7. Verify why there is one more sample after syncronization and correct it
 8. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
-teste
