@@ -30,6 +30,8 @@ set(gca, 'fontsize', 14);
 title('Cam');
 ylabel('Pixels');
 xlabel('Pixels');
+% Creating image to se electrodes
+
 
 %Run if you need it
 Background = squeeze(DATA(:,:,20));
@@ -80,6 +82,7 @@ DATA2 = BASE(DATA3);
 
 %% Put in a variable
 D_CAM3_filtered = DATA2; % Put the corect number for the camera
+D_CAM3_image(:,:,1) = J(:,:);
 
 clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
 clear i I J less n p p2 R row_pixel ROI ans Background;
@@ -89,8 +92,11 @@ identification = 'E14_F3_R4';
 fileName = ['optic_data_', identification, '_filtered.mat'];
 % Creating variables
 D_OP.D_CAM1_filtered = D_CAM1_filtered;
+D_OP.D_CAM1_rawimage = D_CAM1_image;
 D_OP.D_CAM2_filtered = D_CAM2_filtered;
+D_OP.D_CAM2_rawimage = D_CAM2_image;
 D_OP.D_CAM3_filtered = D_CAM3_filtered;
+D_OP.D_CAM3_rawimage = D_CAM3_image;
 D_OP.ROI.ROI_1 = ROI_1;
 D_OP.ROI.ROI_2 = ROI_2;
 D_OP.ROI.ROI_3 = ROI_3;
