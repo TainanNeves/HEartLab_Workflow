@@ -58,21 +58,12 @@ function [MFFTi,Sffti,fstep]=f_DF_electric(DATA,fs, freq_up, freq_down)
     H = hamming(sizefft/factor);
     [a, ~] = size(DATA);
     
-    % Define lowpass filter parameters
-    lowpass_freq = 20;
-    % Design a lowpass filter using fir1
-    nyquist = fs / 2;
-    cutoff = lowpass_freq / nyquist;
-    filter_order = 50; % Adjust as needed
-    b = fir1(filter_order, cutoff, 'low');
-    
     % FFT aplication
     for i = 1:a
         x = DATA(i,:)';
         xx = detrend(x);
-        % Apply lowpass filter
-        xx_filtered = filter(b, 1, xx);    
-        Sfft = abs(fft(xx_filtered .* H, sizefft)); % Zero Padding
+        
+        Sfft = abs(fft(xx .* H, sizefft)); % Zero Padding
         Sfft = Sfft .* Sfft / length(Sfft);  % for power 
         Sffti(i, :) = Sfft(1:floor(freq_up*(1/fstep)));     
         [~, F] = max(Sfft(floor(freq_down*(1/fstep)):floor(freq_up*(1/fstep))));  
