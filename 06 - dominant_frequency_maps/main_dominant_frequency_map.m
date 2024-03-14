@@ -119,3 +119,23 @@ plot_electric_DF(MFFTi, [freq_down freq_up], 2); % MEA 2
 plot_electric_DF(MFFTi, [freq_down freq_up], 3); % MEA 3
 plot_electric_DF(MFFTi, [freq_down freq_up], 4); % TANK
 
+
+%% Cicle Lenth - CL
+
+% Loadind data
+Data = D_SYNC.EL;
+Fsampling = 4000;
+in_sample = 8366;
+end_sample = 25464;
+
+% CL - Calculation
+Data_temp = Data(:, in_sample:end_sample);
+for i=1:size(Data_temp,1)
+    s=Data_temp(i,:);
+    [y,x]=findpeaks(s,'MinPeakHeight',0.005,'MinPeakDistance',1000);
+    if ~isempty(x)
+        cl=x(2)-x(1);
+        CL(i)=cl/4000*1000;
+    end
+end
+

@@ -70,6 +70,7 @@ for i = 1:size(DATA_2, 1)
     DATA_3(i, :) = filtfilt(sos, g, DATA_2(i, :)); % Apply the filter to each row
 end
 
+
 % FFT
 for i = 1:a
     x = DATA_3(i,:)';
