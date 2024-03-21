@@ -9,20 +9,46 @@ load("C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sy
 
 %% Optic Dominant Frequency Analysis
 
-Data = D_SYNC.CAM1;
+Data = D_SYNC.CAM3;
 Fsampling = 4000;
 
 % Set upper and lower frequency bounds for the Dominant Frequency calculation
-UP = 100;
+UP = 10;
 DOWN = 0.5;
 
 % Extract a subset of the optical data for analysis (adjust the sample range accordingly)
-in_sample = 1;
-end_sample = 16000;
+in_sample = 8366;
+end_sample = 25464;
 Data_temp = Data(:,:,in_sample:end_sample);
 
 % Perform Dominant Frequency analysis on the subset
 [DF_O, Sfft_O, fstep] = f_DF_optico(Data_temp, Fsampling, UP, DOWN);
+
+% Plot the spectrum of specific pixel locations
+% Select point
+Background = squeeze(Data(:,:,2000));
+pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
+                                        %Press space to stop
+% Plot
+pa = [51 142]; pv = [60 33];
+b = length(Sfft_O(1, 1, :));
+figure;
+plot((1:b) * fstep, squeeze(Sfft_O(pa(1), pa(2), :)), 'LineWidth', 2);  % Atrium
+hold on;
+plot((1:b) * fstep, squeeze(Sfft_O(pv(1), pv(2), :)), 'LineWidth', 2);   % Ventricle
+legend('Atrium', 'Ventricle', 'FontSize', 12);
+xlabel('Frequency [Hz]');
+title('Spectrum');
+set(gca, 'fontsize', 14);
+xlim([DOWN UP]);
+
+
+% Susbstitude values (If needed)
+find_value = 0.5; % Value to replace
+tolerancia = 1e-10;
+indices = find(abs(DF_O - find_value) < tolerancia);
+DF_O(indices) = 0; % Value to include
+
 
 % Display Dominant Frequency map
 C = jet(256);
@@ -44,23 +70,14 @@ hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Dominant Frequency [Hz]', 'FontSize', 14);
 caxis([DOWN UP]);
 
-% Plot the spectrum of specific pixel locations
-% Select point
-Background = squeeze(Data(:,:,2000));
-pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
-                                        %Press space to stop
-% Plot
-pa = [85 133]; pv = [90 54];
-b = length(Sfft_O(1, 1, :));
-figure;
-plot((1:b) * fstep, squeeze(Sfft_O(pa(1), pa(2), :)), 'LineWidth', 2);  % Atrium
-hold on;
-plot((1:b) * fstep, squeeze(Sfft_O(pv(1), pv(2), :)), 'LineWidth', 2);   % Ventricle
-legend('Atrium', 'Ventricle', 'FontSize', 12);
-xlabel('Frequency [Hz]');
-title('Spectrum');
-set(gca, 'fontsize', 14);
-xlim([DOWN UP]);
+% Metrics
+HDF = max(max(DF_O));
+disp(['Higher DF: ',num2str(HDF)]);
+avg = mean(mean(DF_O));
+disp(['Average DF: ',num2str(avg)]);
+mod = mode(mode(DF_O));
+disp(['Mode DF: ',num2str(mod)]);
+
 
 
 %% Electric Dominant Frequency analysis
@@ -69,10 +86,10 @@ Data = D_SYNC.EL;
 Fsampling = 4000;
 
 % Dominant Frequency calculation
-freq_up = 50;
+freq_up = 10;
 freq_down = 0.5;
-in_sample = 1;
-end_sample = 4*4000;
+in_sample = 8366;
+end_sample = 25464;
 % Calc
 Data_temp = Data(:, in_sample:end_sample);
 [MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
@@ -88,9 +105,37 @@ xlabel('Frequency (Hz)');
 title(['Frequency spectrum']);
 legend('show');
 
+% Metrics
+HDF = max(MFFTi);
+disp(['Higher DF: ',num2str(HDF)]);
+avg = mean(MFFTi);
+disp(['Average DF: ',num2str(avg)]);
+mod = mode(MFFTi);
+disp(['Mode DF: ',num2str(mod)]);
+
 % Ploting maps
 plot_electric_DF(MFFTi, [freq_down freq_up], 1); % MEA 1
 plot_electric_DF(MFFTi, [freq_down freq_up], 2); % MEA 2
 plot_electric_DF(MFFTi, [freq_down freq_up], 3); % MEA 3
 plot_electric_DF(MFFTi, [freq_down freq_up], 4); % TANK
+
+
+%% Cicle Lenth - CL
+
+% Loadind data
+Data = D_SYNC.EL;
+Fsampling = 4000;
+in_sample = 8366;
+end_sample = 25464;
+
+% CL - Calculation
+Data_temp = Data(:, in_sample:end_sample);
+for i=1:size(Data_temp,1)
+    s=Data_temp(i,:);
+    [y,x]=findpeaks(s,'MinPeakHeight',0.005,'MinPeakDistance',1000);
+    if ~isempty(x)
+        cl=x(2)-x(1);
+        CL(i)=cl/4000*1000;
+    end
+end
 

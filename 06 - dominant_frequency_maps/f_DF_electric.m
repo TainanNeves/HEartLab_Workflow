@@ -34,6 +34,7 @@ function [MFFTi,Sffti,fstep]=f_DF_electric(DATA,fs, freq_up, freq_down)
 %
 % Data:
 %   - 24/10/2023
+%   - 13/03/2024 - Filtering in 20 Hz and absolute of the peaks before fft
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %To AF
@@ -50,26 +51,39 @@ function [MFFTi,Sffti,fstep]=f_DF_electric(DATA,fs, freq_up, freq_down)
 % plot(fstep:fstep:freq_up,Sffti(electrode,:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-samples = length (DATA(1, :));
+samples = length(DATA(1, :));
 time = samples/fs;
-factor=5; 
-sizefft=factor*fs*time;%factor*samples
-fstep=fs/sizefft;
-H=hamming (sizefft/factor);
-[a,~]=size(DATA);
-for i=1:a
-        x=DATA(i,:)';
-        xx=detrend(x);
-        Sfft=abs(fft(xx.*H, sizefft)); % Zero Padding
-        Sfft=Sfft.*Sfft/length(Sfft);  % for power 
-        Sffti (i,:)=Sfft(1:floor(freq_up*(1/fstep))); 
-        [~,F] = max(Sfft(floor(freq_down*(1/fstep)):floor(freq_up*(1/fstep))));  
-        Fsam=(F+floor(freq_down*(1/fstep))-1);  
-        Fhz=Fsam*fstep;
-            if  (Fhz>=freq_down&&Fhz<=freq_up)       
-                MFFTi(i)=Fhz;
-            else
-                MFFTi(i)=0;
-            end %if
+factor = 5; 
+sizefft = factor * fs * time; % factor * samples
+fstep = fs / sizefft;
+H = hamming(sizefft/factor);
+[a, ~] = size(DATA);
 
+% Analyse over absolute values
+DATA_2=abs(DATA);
+% Filtering
+Lw=20; %Cut off frequency
+[z,p,k] = butter(5,Lw/(fs/2),'low'); % Design the filter
+[sos, g] = zp2sos(z,p,k); % Change the format
+DATA_3 = zeros(size(DATA_2));
+for i = 1:size(DATA_2, 1)
+    DATA_3(i, :) = filtfilt(sos, g, DATA_2(i, :)); % Apply the filter to each row
+end
+
+
+% FFT
+for i = 1:a
+    x = DATA_3(i,:)';
+    xx = detrend(x);   
+    Sfft = abs(fft(xx .* H, sizefft)); % Zero Padding
+    Sfft = Sfft .* Sfft / length(Sfft);  % for power 
+    Sffti(i, :) = Sfft(1:floor(freq_up*(1/fstep)));     
+    [~, F] = max(Sfft(floor(freq_down*(1/fstep)):floor(freq_up*(1/fstep))));  
+    Fsam = (F + floor(freq_down*(1/fstep)) - 1);  
+    Fhz = Fsam * fstep;    
+    if (Fhz >= freq_down && Fhz <= freq_up)       
+        MFFTi(i) = Fhz;
+    else
+        MFFTi(i) = 0;
+    end
 end

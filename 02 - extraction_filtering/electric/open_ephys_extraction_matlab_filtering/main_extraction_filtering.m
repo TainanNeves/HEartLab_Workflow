@@ -7,7 +7,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = 'E:\HEartLab\TAINAN WORKFLOW\00 - examples\electric_E14_F3_recording4\structure.oebin'; % Put the .oebin path
+fullfilename = "C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\electric_E14_F3_recording4\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -64,14 +64,16 @@ el2 = 70;      %LA
 el3 = 26;      %V
 el4 = 132;      %Tank
 
-
+% Filter range
+f_low = 0.5;
+f_high = 20;
 
 % Create a figure
 figure;
 sgtitle('EXP XX - Folder XX - REC XX');
 
 subplot(5, 1, 1);
-filteredSignal1 = filter_signal(0.5, 250, DATA.Data(el1, :), Fs);
+filteredSignal1 = filter_signal(f_low, f_high, DATA.Data(el1, :), Fs);
 plot(time, filteredSignal1(:, ti * Fs:tf * Fs));
 title(['Eletrodo: ' num2str(el1) ' (RA)']);
 xlabel("Time (s)");
@@ -80,7 +82,7 @@ xline(tline1, 'red');
 xline(tline2, 'red');
 
 subplot(5, 1, 2);
-filteredSignal1 = filter_signal(0.5, 250, DATA.Data(el2, :), Fs);
+filteredSignal1 = filter_signal(f_low, f_high, DATA.Data(el2, :), Fs);
 plot(time, filteredSignal1(:, ti * Fs:tf * Fs));
 title(['Eletrodo: ' num2str(el2) ' (LA)']);
 xlabel("Time (s)");
@@ -89,7 +91,7 @@ xline(tline1, 'red');
 xline(tline2, 'red');
 
 subplot(5, 1, 3);
-filteredSignal2 = filter_signal(0.5, 250, DATA.Data(el3, :), Fs);
+filteredSignal2 = filter_signal(f_low, f_high, DATA.Data(el3, :), Fs);
 plot(time, filteredSignal2(:, ti * Fs:tf * Fs));
 title(['Eletrodo: ' num2str(el3) ' (V)']);
 xlabel("Time (s)");
@@ -98,7 +100,7 @@ xline(tline1, 'red');
 xline(tline2, 'red');
 
 subplot(5, 1, 4);
-filteredSignal3 = filter_signal(0.5, 250, DATA.Data(el4, :), Fs);
+filteredSignal3 = filter_signal(f_low, f_high, DATA.Data(el4, :), Fs);
 plot(time, filteredSignal3(:, ti * Fs:tf * Fs));
 title(['Eletrodo: ' num2str(el4) ' (Tanque)']);
 xlabel("Time (s)");
@@ -111,7 +113,7 @@ xline(tline2, 'red');
 
 % subplot(5, 1, 5);
 % sub = DATA.Data(el1,:) - DATA.Data(el3, :);
-% filteredSignal4 = filter_signal(0.5, 250, sub, Fs);
+% filteredSignal4 = filter_signal(f_in, f_out, sub, Fs);
 % plot(time, filteredSignal4(:, ti * Fs:tf * Fs));
 % title(['Subtração: ' num2str(el1) ' - ' num2str(el3) ' (RA - V)']);
 % xlabel("Time (s)");
@@ -121,7 +123,7 @@ xline(tline2, 'red');
 
 subplot(5, 1, 5);
 sub = DATA.Data(el2,:) - DATA.Data(el3, :);
-filteredSignal4 = filter_signal(0.5, 250, sub, Fs);
+filteredSignal4 = filter_signal(f_low, f_high, sub, Fs);
 plot(time, filteredSignal4(:, ti * Fs:tf * Fs));
 title(['Subtração: ' num2str(el2) ' - ' num2str(el3) ' (LA - V)']);
 xlabel("Time (s)");
