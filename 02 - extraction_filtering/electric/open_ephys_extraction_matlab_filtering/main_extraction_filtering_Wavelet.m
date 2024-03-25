@@ -160,6 +160,7 @@ clear D_EL;
 
 
 % Filtered file export
+Fs = 4000;
 dataFiltered = wavelet_filter(DATA.Data, Fs, channels, waveletType, numLevels, reconstructionLevelsSets);
 
 D_EL.Data = dataFiltered; 

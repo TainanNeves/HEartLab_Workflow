@@ -50,6 +50,10 @@
 %
 function data_filtered = wavelet_filter(D_EL, fs, electrodes, waveletTypes, numLevels, reconstructionLevelsSets, saveMRA)
     
+    % get the original frequency sample and set the target frequency sample
+    original_fs = fs;  
+    new_fs = 3600;
+
     % check if saveMRA is provided, if not, set to false
     if nargin < 7
         saveMRA = false;
@@ -79,6 +83,9 @@ function data_filtered = wavelet_filter(D_EL, fs, electrodes, waveletTypes, numL
                 % Original signal
                 Signal = D_EL(electrode, :);
 
+                %resampling the signal
+                Signal = resample(Signal, new_fs, original_fs);
+
                 % Applying conversion factor to microvolts
                 factor_conv = 0.1949999928474426;
                 Signal = Signal * factor_conv;
@@ -101,6 +108,9 @@ function data_filtered = wavelet_filter(D_EL, fs, electrodes, waveletTypes, numL
 
                 % Signal reconstruction by summing the selected rows
                 Signal_reconstructed = sum(mra_temp(levelForReconstruction, :), 1);
+
+                %resampling the signal to the original frequency
+                Signal_reconstructed = resample(Signal_reconstructed, original_fs, new_fs);
                 
                 % Concatenate reconstructed signal from the current electrode to Signal_reconstructed_all
                 Signal_reconstructed_all = [Signal_reconstructed_all; Signal_reconstructed];
