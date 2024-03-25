@@ -53,8 +53,8 @@ clear ans Fsampling i j lo optical S To xq;
 
 %% Keep the rawcamera index
 D_SYNC.IMG.CAM1 = D_OP.D_CAM1_rawimage;
-D_SYNC.IMG.CAM1 = D_OP.D_CAM2_rawimage;
-D_SYNC.IMG.CAM1 = D_OP.D_CAM3_rawimage;
+D_SYNC.IMG.CAM2 = D_OP.D_CAM2_rawimage;
+D_SYNC.IMG.CAM3 = D_OP.D_CAM3_rawimage;
 
 
 %% Electric synchronization
