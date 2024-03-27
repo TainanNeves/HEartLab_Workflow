@@ -98,7 +98,6 @@ There are three folders within this directory, two related to maps for electrica
 
 # To Do:
 
-<<<<<<< HEAD
 1. Add lines demarcating the faces of the tank in plots containing a tank.
 2. DONE - Change electrode indicators to black (currently in red).
 3. In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection.
@@ -107,7 +106,12 @@ There are three folders within this directory, two related to maps for electrica
 6. Create a switch to select cameras for filtering instead of set it manually
 7. Verify why there is one more sample after syncronization and correct it
 8. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
-=======
-1. Create a switch to select cameras for filtering instead of set it manually
-2. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
->>>>>>> master
+9. Add CL code
+for i=1:(size(A,1)-1)
+   s=A(i,:);
+   [y,x]=findpeaks(s,'MinPeakHeight',0.005,'MinPeakDistance',1000);
+   if ~isempty(x)
+      cl=x(2)-x(1);
+      CL(i)=cl;
+   end
+end
