@@ -107,11 +107,3 @@ There are three folders within this directory, two related to maps for electrica
 7. Verify why there is one more sample after syncronization and correct it
 8. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
 9. Add CL code
-for i=1:(size(A,1)-1)
-   s=A(i,:);
-   [y,x]=findpeaks(s,'MinPeakHeight',0.005,'MinPeakDistance',1000);
-   if ~isempty(x)
-      cl=x(2)-x(1);
-      CL(i)=cl;
-   end
-end
