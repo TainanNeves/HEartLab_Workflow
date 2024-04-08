@@ -34,10 +34,18 @@ if isempty(TTL)==false
     optictime(2) = optictime(1) + 10; %s
 end
 
-%% Plot novo
+
+%% Tank average subtraction
+tank_signals = DATA.Data([129:174,177:190], :);
+mean_tank = mean(tank_signals);
+DATA.Data([129:174,177:190], :) = tank_signals - mean_tank;
+
+
+%% Comparation Plot
 Fs = 4000;
-%Default time
-if isempty(TTL)         %Sem TTL
+
+% Default time
+if isempty(TTL) % Sem TTL
     ti = 1;
     tf = rectime;
     tline1 = ti;
@@ -45,92 +53,83 @@ if isempty(TTL)         %Sem TTL
 else
     ti = optictime(1);
     tf = optictime(2);
-    tline1 = (TTL(1) - DATA.Timestamps(1)); %s
-    tline2 = tline1 + 10; %s
+    tline1 = (TTL(1) - DATA.Timestamps(1)); % s
+    tline2 = tline1 + 10; % s
 end
 
-%Specific Time
-% ti = 10;
-% tf = 15;
-% tline1 = ti;
-% tline2 = tf;
+% Specific Time
+ti = 6;
+tf = 10;
+tline1 = ti;
+tline2 = tf;
 
 time = linspace(ti, tf, (tf - ti) * Fs + 1);
 
+% Electrodes selection
+el1 = 6;  % RA
+el2 = 70; % LA
+el3 = 26; % V
+el4 = 132; % Tank
+Index = {'RA', 'LA', 'V','TANK'};
 
-%Electrodes selection
-el1 = 6;       %RA
-el2 = 70;      %LA
-el3 = 26;      %V
-el4 = 132;      %Tank
-
-% Filter range
+% Filter range (Butterworth)
 f_low = 0.5;
-f_high = 20;
+f_high = 250;
+
+% Filter Configuration (Wavelet)
+waveletType = {'db4'}; % Wavelet type
+numLevels = 10; % Number of decomposition levels
+reconstructionLevelsSets = {[7, 8, 9, 10]}; % Levels to be used on reconstruction
 
 % Create a figure
 figure;
 sgtitle('EXP XX - Folder XX - REC XX');
 
-subplot(5, 1, 1);
-filteredSignal1 = filter_signal(f_low, f_high, DATA.Data(el1, :), Fs);
-plot(time, filteredSignal1(:, ti * Fs:tf * Fs));
-title(['Eletrodo: ' num2str(el1) ' (RA)']);
+% Plotting using filter_signal function (Butterworth)
+for i = 1:4
+    subplot(5, 2, 2*i - 1); % Adjusted index for Butterworth
+    filteredSignal = filter_signal(f_low, f_high, DATA.Data(eval(['el' num2str(i)]), :), Fs);
+    plot(time, filteredSignal(:, ti * Fs:tf * Fs));
+    title(['Eletrodo: ' num2str(eval(['el' num2str(i)])) ' (' Index{i} ') - Butterworth']);
+    xlabel("Time (s)");
+    ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
+    xline(tline1, 'red');
+    xline(tline2, 'red');
+end
+
+% Plotting using wavelet_filter function (Wavelet)
+for i = 1:4
+    subplot(5, 2, 2*i); % Adjusted index for Wavelet
+    filteredSignal = wavelet_filter(DATA.Data(eval(['el' num2str(i)]), :), Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
+    plot(time, filteredSignal(:, ti * Fs:tf * Fs));
+    title(['Eletrodo: ' num2str(eval(['el' num2str(i)])) ' (' Index{i} ') - Wavelet']);
+    xlabel("Time (s)");
+    ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
+    xline(tline1, 'red');
+    xline(tline2, 'red');
+end
+
+% Subtraction plot - Butterworth
+subplot(5, 2, 9);
+sub = DATA.Data(el2, :) - DATA.Data(el3, :);
+filteredSignal = filter_signal(f_low, f_high, sub, Fs);
+plot(time, filteredSignal(:, ti * Fs:tf * Fs));
+title(['Subtração: ' num2str(el2) ' - ' num2str(el3) ' (LA - V) - Butterworth']);
 xlabel("Time (s)");
 ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
 xline(tline1, 'red');
 xline(tline2, 'red');
 
-subplot(5, 1, 2);
-filteredSignal1 = filter_signal(f_low, f_high, DATA.Data(el2, :), Fs);
-plot(time, filteredSignal1(:, ti * Fs:tf * Fs));
-title(['Eletrodo: ' num2str(el2) ' (LA)']);
+% Subtraction plot - Wavelet
+subplot(5, 2, 10);
+sub = DATA.Data(el2, :) - DATA.Data(el3, :);
+filteredSignal = wavelet_filter(sub, Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
+plot(time, filteredSignal(:, ti * Fs:tf * Fs));
+title(['Subtração: ' num2str(el2) ' - ' num2str(el3) ' (LA - V) - Wavelet']);
 xlabel("Time (s)");
 ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
 xline(tline1, 'red');
 xline(tline2, 'red');
-
-subplot(5, 1, 3);
-filteredSignal2 = filter_signal(f_low, f_high, DATA.Data(el3, :), Fs);
-plot(time, filteredSignal2(:, ti * Fs:tf * Fs));
-title(['Eletrodo: ' num2str(el3) ' (V)']);
-xlabel("Time (s)");
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
-xline(tline1, 'red');
-xline(tline2, 'red');
-
-subplot(5, 1, 4);
-filteredSignal3 = filter_signal(f_low, f_high, DATA.Data(el4, :), Fs);
-plot(time, filteredSignal3(:, ti * Fs:tf * Fs));
-title(['Eletrodo: ' num2str(el4) ' (Tanque)']);
-xlabel("Time (s)");
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
-xline(tline1, 'red');
-xline(tline2, 'red');
-
-
-
-
-% subplot(5, 1, 5);
-% sub = DATA.Data(el1,:) - DATA.Data(el3, :);
-% filteredSignal4 = filter_signal(f_in, f_out, sub, Fs);
-% plot(time, filteredSignal4(:, ti * Fs:tf * Fs));
-% title(['Subtração: ' num2str(el1) ' - ' num2str(el3) ' (RA - V)']);
-% xlabel("Time (s)");
-% ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
-% xline(tline1, 'red');
-% xline(tline2, 'red');
-
-subplot(5, 1, 5);
-sub = DATA.Data(el2,:) - DATA.Data(el3, :);
-filteredSignal4 = filter_signal(f_low, f_high, sub, Fs);
-plot(time, filteredSignal4(:, ti * Fs:tf * Fs));
-title(['Subtração: ' num2str(el2) ' - ' num2str(el3) ' (LA - V)']);
-xlabel("Time (s)");
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
-xline(tline1, 'red');
-xline(tline2, 'red');
-
 
 
 %% Save file to .mat
@@ -139,6 +138,7 @@ xline(tline2, 'red');
 FileName = 'EXX_FXX_RXX';
 
 % Raw file export
+D_EL = struct(); % Initialize structure
 D_EL.Data = DATA.Data; 
 D_EL.Timestamps = DATA.Timestamps;
 D_EL.Header = DATA.Header;
@@ -149,28 +149,44 @@ save(['electric_data_', FileName, '_raw'], 'D_EL');
 
 clear D_EL;
 
-% Filtered file export
-dataRaw = DATA.Data;
-dataFiltered = zeros(size(dataRaw));
-for i = 1:size(dataRaw, 1)
-    Data = dataRaw(i, :);
-    dataFiltered(i, :) = filter_signal(0.5, 250, Data, DATA.Header.sample_rate);
+% Filtered export
+% Electrodes selection
+el_butter = 1:85; % for Butterworth
+el_wavelet = 86:192; % for Wavelet
+
+% Filter range (Butterworth)
+f_low_butter = 0.5;
+f_high_butter = 250;
+% Filter Configuration (Wavelet)
+waveletType = {'db4'}; % Wavelet type
+numLevels = 10; % Number of decomposition levels
+reconstructionLevelsSets = {[7, 8, 9, 10]}; % Levels to be used on reconstruction
+
+% Initialize filtered data variable
+filtered_data = zeros(size(DATA.Data));
+% Filter electrodes 1 to 85 with Butterworth
+for i = 1:length(el_butter)
+    filteredSignal = filter_signal(f_low_butter, f_high_butter, DATA.Data(el_butter(i), :), Fs);
+    filtered_data(el_butter(i), :) = filteredSignal;
+end
+% Filter electrodes 86 to 192 with Wavelet
+for i = 1:length(el_wavelet)
+    filteredSignal = wavelet_filter(DATA.Data(el_wavelet(i), :), Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
+    filtered_data(el_wavelet(i), :) = filteredSignal(1:size(filteredSignal,2)-1);
 end
 
-% Subtraindo o sinal - média (apenas no tanque)
-tank_signals = dataFiltered([129:174,177:190], :);
-mean_tank = mean(tank_signals);
-dataFiltered([129:174,177:190], :) = tank_signals - mean_tank;
-
-D_EL.Data = dataFiltered; 
+% Save filtered data
+D_EL = struct(); % Initialize structure
+D_EL.Data = filtered_data; 
 D_EL.Timestamps = DATA.Timestamps;
 D_EL.Header = DATA.Header;
 D_EL.Header.channels = channels;
 D_EL.TTL = TTL;
 D_EL.opticalin = TTL(1) - DATA.Timestamps(1);
 
+% Save the filtered data
 save(['electric_data_', FileName, '_filtered'], 'D_EL', '-v7.3');
 
-% Limpar variáveis indesejadas
+% Clear unwanted variables
 clear bitVolts channels DATA EVENTS D_EL FileName TTL fullfilename
 
