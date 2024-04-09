@@ -164,6 +164,105 @@ xlim([start_time end_time])
 linkaxes([subplot(6, 1, 1), subplot(6, 1, 2), subplot(6, 1, 3), subplot(6, 1, 4), subplot(6, 1, 5), subplot(6, 1, 6)], 'x')
 
 
+%% MULTIMIXED PLOT
+
+% Selecting eletrodes and pixels
+% Define Cameras to use
+Data_OV = D_SYNC.CAM1;
+Background = squeeze(Data_OV(:,:,2000));
+pick_up_a_trace(Background, Data_OV,1);
+
+Data_ORA = D_SYNC.CAM2;
+Background = squeeze(Data_ORA(:,:,2000));
+pick_up_a_trace(Background, Data_ORA,1);
+
+Data_OLA = D_SYNC.CAM3;
+Background = squeeze(Data_OLA(:,:,2000));
+pick_up_a_trace(Background, Data_OLA,1);
+
+% Optical Pixel
+pV = [37 51];
+pRA = [28 141];
+pLA = [43 162];
+
+% Electric electrodes
+el1 = 6; % RA MEA1
+el2 = 70; % LA MEA3
+el3 = 26; % V MEA2
+el4 = 132; % Tank
+
+%Ploting
+% Frequency Sampling
+Fsampling = 4000;
+
+% Time to plot
+start_time = 2.4;
+end_time = 6.4;
+
+% Loading electric data
+Data_E = D_SYNC.EL;
+
+% Ploting
+To = linspace(0, length(Data_E(1, :)) / Fsampling, length(Data_E(1, :)));
+f1 = figure('color', 'white', 'Position', [40 40 600 700]);
+% Subplot 1 - Optic Right Atrium
+subplot(7, 1, 1)
+plot(To, squeeze(Data_ORA(pRA(1), pRA(2), :)), 'LineWidth', 1);
+ylabel('%F');
+title(['Optical Signal (RA) | Points: ', num2str(pRA(1)), 'x', num2str(pRA(2))]);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 2 - Optic Left Atrium
+subplot(7, 1, 2)
+plot(To, squeeze(Data_OLA(pLA(1), pLA(2), :)), 'LineWidth', 1);
+ylabel('%F');
+title(['Optical Signal (LA) | Points: ', num2str(pLA(1)), 'x', num2str(pLA(2))]);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 3 - Optic Ventricle
+subplot(7, 1, 3)
+plot(To, squeeze(Data_OV(pV(1), pV(2), :)), 'LineWidth', 1);
+ylabel('%F');
+title(['Optical Signal (V) | Points: ', num2str(pV(1)), 'x', num2str(pV(2))]);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 4 - MEA 1 (RA)
+i = el1;
+subplot(7, 1, 4)
+plot(To, Data_E(i, :), 'LineWidth', 1);
+ylabel('$\mu$V', 'Interpreter', 'latex');
+title(['MEA1 el', num2str(i), ' (RA)']);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 5 - MEA 3 (LA)
+i = el2;
+subplot(7, 1, 5)
+plot(To, Data_E(i, :), 'LineWidth', 1);
+ylabel('$\mu$V', 'Interpreter', 'latex');
+title(['MEA3 el', num2str(i), ' (LA)']);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 6 - MEA 2 (V)
+i = el3;
+subplot(7, 1, 6)
+plot(To, Data_E(i, :), 'LineWidth', 1);
+ylabel('$\mu$V', 'Interpreter', 'latex');
+title(['MEA2 el', num2str(i), ' (V)']);
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Subplot 7 - TANK
+i = el4;
+subplot(7, 1, 7)
+plot(To, Data_E(i, :), 'LineWidth', 1);
+ylabel('$\mu$V', 'Interpreter', 'latex');
+title(['TANK el', num2str(i)]);
+xlabel('Time (s)');
+set(gca, 'fontsize', 14);
+xlim([start_time end_time])
+% Linking Axes (move x axes in all data together)
+linkaxes([subplot(7, 1, 1), subplot(7, 1, 2), subplot(7, 1, 3), subplot(7, 1, 4), subplot(7, 1, 5), subplot(7, 1, 6), subplot(7, 1, 7)], 'x');
+
+
 %% Multielectrode optical signal plot
 
 % Define a Camera to use
