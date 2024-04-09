@@ -50,15 +50,19 @@ indices = find(abs(DF_O - find_value) < tolerancia);
 DF_O(indices) = 0; % Value to include
 
 
-% Display Dominant Frequency map
+% Dominant Frequency map
 C = jet(256);
-C(1,1:3) = [1 1 1];
+C(1,1:3) = [1 1 1]; % White for background
+C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
 d = 200;  % Define the color for the background
 color = 'black';  % Specify color for text
 tam = 11;  % Set font size
 f1 = figure('color', 'white', 'Position', [50 50 500 500]);
 J = DF_O;
+% Set zeros inside ROI to 0.5
+J(D_OP.ROI.ROI_2 & J == 0) = UP; %Put Max value in zeros inside the ROI
 J = imrotate(J, 90);
+% Plot
 imagesc(J);
 colormap(C);
 box off;
@@ -70,14 +74,29 @@ hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Dominant Frequency [Hz]', 'FontSize', 14);
 caxis([DOWN UP]);
 
-% Metrics
-HDF = max(max(DF_O));
-disp(['Higher DF: ',num2str(HDF)]);
-avg = mean(mean(DF_O));
-disp(['Average DF: ',num2str(avg)]);
-mod = mode(mode(DF_O));
-disp(['Mode DF: ',num2str(mod)]);
 
+%% Optical Dominant Frequency Analysis - Statistics
+% Display the image and let the user define the ROI
+figure();
+imshow(DF_O);
+title('Select ROI');
+roi = roipoly;
+
+% Apply the ROI to your matrix (assuming DF_O is your matrix)
+DF_O_roi = DF_O .* roi;
+
+% Metrics within the selected ROI for non-zero values
+nonzero_values = DF_O_roi(DF_O_roi ~= 0);
+HDF_roi = max(nonzero_values);
+disp(['Higher DF in ROI: ', num2str(HDF_roi)]);
+avg_roi = mean(nonzero_values);
+disp(['Average DF in ROI: ', num2str(avg_roi)]);
+mod_roi = mode(nonzero_values);
+disp(['Mode DF in ROI: ', num2str(mod_roi)]);
+std_roi = std(nonzero_values);
+disp(['Standard Deviation of DF in ROI: ', num2str(std_roi)]);
+var_roi = var(nonzero_values);
+disp(['Variance of DF in ROI: ', num2str(var_roi)]);
 
 
 %% Electric Dominant Frequency analysis
