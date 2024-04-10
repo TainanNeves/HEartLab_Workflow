@@ -107,3 +107,4 @@ There are three folders within this directory, two related to maps for electrica
 7. Verify why there is one more sample after syncronization and correct it
 8. Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
 9. Add CL code
+10. Keep ROI and optical In in the sincronyzation code.
