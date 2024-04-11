@@ -124,19 +124,30 @@ xlabel('Frequency (Hz)');
 title(['Frequency spectrum']);
 legend('show');
 
-% Metrics
-HDF = max(MFFTi);
-disp(['Higher DF: ',num2str(HDF)]);
-avg = mean(MFFTi);
-disp(['Average DF: ',num2str(avg)]);
-mod = mode(MFFTi);
-disp(['Mode DF: ',num2str(mod)]);
-
 % Ploting maps
 plot_electric_DF(MFFTi, [freq_down freq_up], 1); % MEA 1
 plot_electric_DF(MFFTi, [freq_down freq_up], 2); % MEA 2
 plot_electric_DF(MFFTi, [freq_down freq_up], 3); % MEA 3
 plot_electric_DF(MFFTi, [freq_down freq_up], 4); % TANK
+
+
+%% Electric Dominant Frequency analysis - Statistics
+% Select Electrodes range
+roi = [129:174, 177:190];
+
+% Metrics within the selected ROI for non-zero values
+nonzero_values = MFFTi(roi);
+nonzero_values = nonzero_values(nonzero_values ~= 0);
+HDF_roi = max(nonzero_values);
+disp(['Higher DF in ROI: ', num2str(HDF_roi)]);
+avg_roi = mean(nonzero_values);
+disp(['Average DF in ROI: ', num2str(avg_roi)]);
+mod_roi = mode(nonzero_values);
+disp(['Mode DF in ROI: ', num2str(mod_roi)]);
+std_roi = std(nonzero_values);
+disp(['Standard Deviation of DF in ROI: ', num2str(std_roi)]);
+var_roi = var(nonzero_values);
+disp(['Variance of DF in ROI: ', num2str(var_roi)]);
 
 
 %% Cicle Lenth - CL
