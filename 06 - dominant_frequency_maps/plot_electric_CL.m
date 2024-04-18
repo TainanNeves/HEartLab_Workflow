@@ -1,4 +1,4 @@
-function [] = plot_electric_DF(MFFTi, lim, caso)
+function [] = plot_electric_CL(CL, lim, caso)
 
 switch caso
     case 1
@@ -24,12 +24,12 @@ switch caso
         [int1, ~, ~] = mesh_laplacian_interp(lap, MEA1_plane_indx);
         
         % Interpolate and filter data for MEA1
-        dataFiltered = MFFTi';
+        dataFiltered = CL';
         MEA1_list_indx([1 8]) = []; % Exclude bad electrodes
-        DF_MEA1 = int1 * dataFiltered(MEA1_list_indx,:);
+        CL_MEA1 = int1 * dataFiltered(MEA1_list_indx,:);
         
         % Plot MEA1
-        plotMEA_DF(DF_MEA1, MEA, MEA_plane_indx, 'MEA 1 (Right Atrium)', lim);
+        plotMEA_CL(CL_MEA1, MEA, MEA_plane_indx, 'MEA 1 (Right Atrium)', lim);
 
 
     case 2
@@ -54,11 +54,11 @@ switch caso
         [int2, ~, ~] = mesh_laplacian_interp(lap, MEA2_plane_indx);
         
         % Interpolate and filter data for MEA2
-        dataFiltered = MFFTi';
-        DF_MEA2 = int2 * dataFiltered(MEA2_list_indx,:);
+        dataFiltered = CL';
+        CL_MEA2 = int2 * dataFiltered(MEA2_list_indx,:);
         
         % Plot MEA1
-        plotMEA_DF(DF_MEA2, MEA, MEA_plane_indx, 'MEA 2 (Ventricle)', lim);
+        plotMEA_CL(CL_MEA2, MEA, MEA_plane_indx, 'MEA 2 (Ventricle)', lim);
 
 
     case 3
@@ -84,12 +84,12 @@ switch caso
         [int3, ~, ~] = mesh_laplacian_interp(lap, MEA3_plane_indx);
         
         % Interpolate and filter data for MEA1
-        dataFiltered = MFFTi';
+        dataFiltered = CL';
         MEA3_list_indx([4]) = []; % Exclude bad electrodes
-        DF_MEA3 = int3 * dataFiltered(MEA3_list_indx,:);
+        CL_MEA3 = int3 * dataFiltered(MEA3_list_indx,:);
         
         % Plot MEA3
-        plotMEA_DF(DF_MEA3, MEA, MEA_plane_indx, 'MEA 3 (Left Atrium)', lim);
+        plotMEA_CL(CL_MEA3, MEA, MEA_plane_indx, 'MEA 3 (Left Atrium)', lim);
 
 
     case 4
@@ -117,11 +117,11 @@ switch caso
         [intTANK, ~, ~] = mesh_laplacian_interp(lap, tank_plane_indx);
         
         % Interpolate and filter data for the tank
-        dataFiltered = MFFTi';
-        DF_TANK = intTANK * dataFiltered(tank_list_indx,:);
+        dataFiltered = CL';
+        CL_TANK = intTANK * dataFiltered(tank_list_indx,:);
         
         % Plot the tank
-        plotTank_DF(DF_TANK, Plane, tank_plane_indx, 'TANK' ,lim);
+        plotTank_CL(CL_TANK, Plane, tank_plane_indx, 'TANK' ,lim);
 
 
 end

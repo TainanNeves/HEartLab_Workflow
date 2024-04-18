@@ -107,8 +107,8 @@ Fsampling = 4000;
 % Dominant Frequency calculation
 freq_up = 10;
 freq_down = 0.5;
-in_sample = 8366;
-end_sample = 25464;
+in_sample = 9386;
+end_sample = 12015;
 % Calc
 Data_temp = Data(:, in_sample:end_sample);
 [MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
@@ -150,22 +150,136 @@ var_roi = var(nonzero_values);
 disp(['Variance of DF in ROI: ', num2str(var_roi)]);
 
 
-%% Cicle Lenth - CL
+%% Electric Cicle Lenth - CL
 
 % Loadind data
 Data = D_SYNC.EL;
 Fsampling = 4000;
-in_sample = 8366;
-end_sample = 25464;
+in_sample = 9386;
+end_sample = 12015;
 
 % CL - Calculation
 Data_temp = Data(:, in_sample:end_sample);
 for i=1:size(Data_temp,1)
     s=Data_temp(i,:);
-    [y,x]=findpeaks(s,'MinPeakHeight',0.005,'MinPeakDistance',1000);
+    [y,x]=findpeaks(s,'MinPeakHeight',max(s)*0.7,'MinPeakDistance',100); % Defaut 0.005 and 1000
+        % Ploting in time with peaks (Checking if its good to select
+        % automaticly = Its not)
+        figure();
+        plot(s);
+        hold on;
+        scatter(x, y, 'r','filled');
+        hold off;
+        title('Electrode ', num2str(i));
+        xlabel('Time (samples)'); ylabel('Signal'); legend('Signal', 'Detected Peaks');
     if ~isempty(x)
         cl=x(2)-x(1);
-        CL(i)=cl/4000*1000;
+        CL_E(i)=cl/4000*1000; % Transforming to ms
     end
 end
+
+% Ploting maps
+plot_electric_CL(CL_E, [floor(min(CL_E)) ceil(max(CL_E))], 1); % MEA 1
+plot_electric_CL(CL_E, [floor(min(CL_E)) ceil(max(CL_E))], 2); % MEA 2
+plot_electric_CL(CL_E, [floor(min(CL_E)) ceil(max(CL_E))], 3); % MEA 3
+plot_electric_CL(CL_E, [floor(min(CL_E)) ceil(max(CL_E))], 4); % TANK
+
+
+%% Electric Cycle Length analysis - Statistics
+% Select Electrodes range
+roi = [129:174, 177:190];
+
+% Metrics within the selected ROI for non-zero values
+nonzero_values = CL_E(roi);
+nonzero_values = nonzero_values(nonzero_values ~= 0);
+HDF_roi = max(nonzero_values);
+disp(['Higher CL in ROI: ', num2str(HDF_roi)]);
+avg_roi = mean(nonzero_values);
+disp(['Average CL in ROI: ', num2str(avg_roi)]);
+mod_roi = mode(nonzero_values);
+disp(['Mode CL in ROI: ', num2str(mod_roi)]);
+std_roi = std(nonzero_values);
+disp(['Standard Deviation of CL in ROI: ', num2str(std_roi)]);
+var_roi = var(nonzero_values);
+disp(['Variance of CL in ROI: ', num2str(var_roi)]);
+
+
+%% Optic Cicle Lenth - CL
+
+% Loadind data
+Data = D_SYNC.CAM3;
+Fsampling = 4000;
+in_sample = 9386;
+end_sample = 12015;
+
+% CL - Calculation
+Data_temp = Data(:,:,in_sample:end_sample);
+[num_rows, num_cols, num_frames] = size(Data_temp);
+CL_O = zeros(num_rows, num_cols); % Initialize CL matrix
+for i = 1:num_rows
+    for j = 1:num_cols
+        s = squeeze(Data_temp(i, j, :)); % Extract time series for each pixel
+        [y,x]=findpeaks(s,'MinPeakHeight',max(s)*0.5,'MinPeakDistance',100); % Defaut 0.005 and 1000
+        if ~isempty(x) && length(x) >= 2 % Ensure there are at least two peaks
+            cl = x(2) - x(1);
+            CL_O(i, j) = cl/4000*1000; % Transforming to ms
+        end
+    end
+end
+
+% Susbstitude values (If needed)
+find_value = 0.5; % Value to replace
+tolerancia = 1e-10;
+indices = find(abs(CL_O - find_value) < tolerancia);
+CL_O(indices) = 0; % Value to include
+
+% Cycle Length map
+C = jet(256);
+C(1,1:3) = [1 1 1]; % White for background
+C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
+d = 200;  % Define the color for the background
+color = 'black';  % Specify color for text
+tam = 11;  % Set font size
+f1 = figure('color', 'white', 'Position', [50 50 500 500]);
+J = CL_O;
+% Set zeros inside ROI to max
+% J(D_OP.ROI.ROI_2 & J == 0) = ceil(max(max(CL_O)))+10; %Put Max value in zeros inside the ROI
+% J = imrotate(J, 90);
+% Plot
+imagesc(J);
+colormap(C);
+box off;
+set(gca, 'fontsize', 18);
+ylabel('Pixels');
+xlabel('Pixels');
+axis off;
+hBar1 = colorbar('eastoutside');
+ylabel(hBar1, 'Cycle Length [ms]', 'FontSize', 14);
+caxis([floor(min(CL_O(CL_O ~= 0))) ceil(max(max(CL_O)))+10]);
+
+
+%% Optical Cycle Length Analysis - Statistics
+% Display the image and let the user define the ROI
+figure();
+imshow(CL_O);
+title('Select ROI');
+roi = roipoly;
+
+% Apply the ROI to your matrix (assuming DF_O is your matrix)
+CL_O_roi = CL_O .* roi;
+
+% Metrics within the selected ROI for non-zero values
+nonzero_values = CL_O_roi(CL_O_roi ~= 0);
+HDF_roi = max(nonzero_values);
+disp(['Higher CL in ROI: ', num2str(HDF_roi)]);
+avg_roi = mean(nonzero_values);
+disp(['Average CL in ROI: ', num2str(avg_roi)]);
+mod_roi = mode(nonzero_values);
+disp(['Mode CL in ROI: ', num2str(mod_roi)]);
+std_roi = std(nonzero_values);
+disp(['Standard Deviation of CL in ROI: ', num2str(std_roi)]);
+var_roi = var(nonzero_values);
+disp(['Variance of CL in ROI: ', num2str(var_roi)]);
+
+
 

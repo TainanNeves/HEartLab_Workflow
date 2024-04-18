@@ -1,22 +1,5 @@
-function plotTank(DF_TANK, Plane, tank_plane_indx, title_str, lim)
-% PLOTTANK Plots the Tank using patch with dominant frequency information.
-%
-%   plotTank(DF_TANK, Plane, tank_plane_indx, title_str, lim) takes the following inputs:
-%   - DF_TANK: Matrix representing the dominant frequency values for each vertex of the Tank.
-%   - Plane: Structure containing Tank information with fields 'faces' and 'vertices'.
-%   - tank_plane_indx: Index of electrodes to be highlighted on the Tank plot.
-%   - title_str: String for the title of the plot.
-%   - lim: Limits for the color axis.
-%
-%   Example:
-%   DF_TANK = rand(1201, 1) * 10; % Example dominant frequency values
-%   Plane = load('your_Tank_data.mat'); % Replace with actual Tank data
-%   tank_plane_indx = 1:10; % Replace with actual electrode indices
-%   title_str = 'Tank Plot';
-%   lim = [0, 10]; % Replace with actual color axis limits
-%   plotTank(DF_TANK, Plane, tank_plane_indx, title_str, lim);
-%
-%   Note: Make sure to replace the placeholder values with your actual data.
+function plotTank_CL(CL_TANK, Plane, tank_plane_indx, title_str, lim)
+
 
     % Set the sampling frequency
     Fs = 4000; % Hz
@@ -26,11 +9,11 @@ function plotTank(DF_TANK, Plane, tank_plane_indx, title_str, lim)
 
     % Plot the Tank using patch
     patch('faces', Plane.faces, 'vertices', Plane.vertices, ...
-        'FaceVertexCData', DF_TANK(:), 'FaceColor', 'interp', ...
+        'FaceVertexCData', CL_TANK(:), 'FaceColor', 'interp', ...
         'FaceAlpha', 1, 'EdgeAlpha', 0, 'FaceLighting','gouraud');
 
     % Set the title for the plot
-    title([title_str, ' | Dominant Frequency']);
+    title([title_str, ' | Cycle Length']);
 
     % Adjust axis properties
     axis equal;
@@ -47,7 +30,7 @@ function plotTank(DF_TANK, Plane, tank_plane_indx, title_str, lim)
     set(hBar1, 'Position', [pos(1)-0.02 pos(2) pos(3) pos(4)]);
     
     % Add y-axis label
-    ylabel(hBar1, 'Frequency [Hz]', 'FontSize', 14);
+    ylabel(hBar1, 'Cycle Length [ms]', 'FontSize', 14);
 
     % Add a transparent overlay to highlight electrode positions
     hold on;

@@ -1,5 +1,5 @@
-function plotMEA(DF_MEA, MEA, MEA_plane_indx, title_str, lim)
-% PLOTMEA Plots the MEA using patch with dominant frequency information.
+function plotMEA_DF(DF_MEA, MEA, MEA_plane_indx, title_str, lim)
+% PLOTMEA Plots the MEA using patch data information.
 %
 %   plotMEA(DF_MEA, MEA, MEA_plane_indx, title_str, lim) takes the following inputs:
 %   - DF_MEA: Matrix representing the dominant frequency values for each vertex of the MEA.
