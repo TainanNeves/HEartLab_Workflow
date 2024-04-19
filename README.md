@@ -97,10 +97,12 @@ There are three folders within this directory, two related to maps for electrica
 ## 08 – 
 
 # To Do:
-- Add lines demarcating the faces of the tank in plots containing a tank.
-- In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection.
+- Add lines demarcating the faces of the tank in plots containing a tank
+- In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection
 - Create a switch to select cameras for filtering instead of set it manually
 - Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
 - Correct CL code - Selection of the point must not be 100% automatizated (use peaks up or down)
 - add LAT/CV code
-- Keep ROI and optical In in the sincronyzation code.
+- Keep ROI and optical In in the sincronyzation code
+- Put zeros in the non-used electrodes
+- Update CV electric codes. We need to better specify distances between vertices.
