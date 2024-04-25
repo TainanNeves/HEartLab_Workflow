@@ -87,9 +87,10 @@ function [T_LAT_ms] = find_LAT_linearFit_1D(y, fr, L, PCL, debug)
     % Debug visualization
     if debug
         figure(101);
-        plot(squeeze(y));
+        plot(y);
         hold on;
-        plot(round(x), y(round(x)), 'o', 'markersize', 10, 'color', 'red');
+        valid_x = max(1, min(length(y), round(x)));
+        plot(valid_x, y(valid_x), 'o', 'markersize', 10, 'color', 'red');
         hold off;
     end
 end
