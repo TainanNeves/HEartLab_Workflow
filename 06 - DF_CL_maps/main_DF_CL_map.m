@@ -131,6 +131,51 @@ plot_electric_DF(MFFTi, [freq_down freq_up], 3); % MEA 3
 plot_electric_DF(MFFTi, [freq_down freq_up], 4); % TANK
 
 
+%% Electric Dominant Frequency analysis - ECGi
+
+% Heart geometry
+heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\heart_geometry_exp14.mat';
+heart_data = load(heart_geo_file);
+heart_geo = heart_data.(subsref(fieldnames(heart_data),substruct('{}',{1})));
+
+% Estimated signal
+estimated_signal = load('C:\Users\HeartLAB\Documents\Documents\CBEB 2024\estimated_signal_E14F4R10_sync_8s.mat');
+estimated_signal = estimated_signal.(subsref(fieldnames(estimated_signal),substruct('{}',{1})));
+
+Data = estimated_signal;
+Fsampling = 4000;
+
+% Parameters setting
+freq_up = 10;
+freq_down = 0.5;
+start_time = 1;
+end_time = 2;
+in_sample = start_time * Fsampling;
+end_sample = end_time * Fsampling;
+
+% Dominant Frequency calculation
+Data_temp = Data(:, in_sample:end_sample);
+[MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
+
+% Organizing geometry
+faces = heart_geo.faces;
+x = heart_geo.vertices(:,1);
+y = heart_geo.vertices(:,2);
+z = heart_geo.vertices(:,3);
+
+% Plotting
+figure();
+trisurf(faces,x,y,z,MFFTi,'facecolor','interp','LineStyle','none');
+grid off; axis off;
+%title(['Instante ', num2str(inst1/Fs), 's Frame', num2str(inst1)]);
+colormap('jet');
+
+% Adding colorbar with label
+c = colorbar;
+c.Label.String = 'Frequency (Hz)';
+caxis([0 10]);
+
+
 %% Electric Dominant Frequency analysis - Statistics
 % Select Electrodes range
 roi = [129:174, 177:190];
