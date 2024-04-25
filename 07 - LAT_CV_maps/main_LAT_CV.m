@@ -114,6 +114,71 @@ LAT_E_matrix2 = plot_electric_LAT(LAT_E, [0 30], 1, 2); % MEA 2
 LAT_E_matrix3 = plot_electric_LAT(LAT_E, [0 30], 1, 3); % MEA 3
 LAT_E_matrix4 = plot_electric_LAT(LAT_E, [0 30], 1, 4); % TANK
 
+%% Minimum LAT values for MEAs
+
+% MEA1
+mea1_id = [1:11, 14:16]; % Define indices for MEA1 electrodes
+min_mea1 = min(LAT_E(mea1_id)); % Find the minimum LAT value for MEA1
+el_min_mea1 = mea1_id(LAT_E(mea1_id) == min_mea1); % Find the electrode with the minimum LAT value for MEA1
+
+% MEA2
+mea2_id = [17:32]; % Define indices for MEA2 electrodes
+min_mea2 = min(LAT_E(mea2_id)); % Find the minimum LAT value for MEA2
+el_min_mea2 = mea2_id(LAT_E(mea2_id) == min_mea2); % Find the electrode with the minimum LAT value for MEA2
+
+% MEA3
+mea3_id = [65:79]; % Define indices for MEA3 electrodes
+min_mea3 = min(LAT_E(mea3_id)); % Find the minimum LAT value for MEA3
+el_min_mea3 = mea3_id(LAT_E(mea3_id) == min_mea3); % Find the electrode with the minimum LAT value for MEA3
+
+% Correcting indices for MEA2 and MEA3
+el_min_mea2 = el_min_mea2 + 16; % correcting the electrode number
+el_min_mea3 = el_min_mea3 + 64; % correcting the electrode number
+
+
+%% LAT from ECGi
+
+% Load the estimated potentials
+estimated_signal = load('estimated_signal_E18F2R2_sync.mat');
+estimated_signal = estimated_signal.(subsref(fieldnames(estimated_signal),substruct('{}',{1})));
+
+% Load the positions of the MEAs
+files_id_meas = load('C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\projected_signals_exp14.mat');
+
+% Combine the indices of MEA1, MEA2, and MEA3 to obtain all vertices
+vertices = cat(2, [files_id_meas.MEAS_IDX_20000.MEA1], [files_id_meas.MEAS_IDX_20000.MEA2], [files_id_meas.MEAS_IDX_20000.MEA3]);
+
+% Extract the estimated potentials corresponding to the vertices
+estimated_meas = estimated_signal(vertices,:);
+
+Fs = 4000; % Sampling frequency (Hz)
+start_time = 1; % Start time in seconds
+end_time = 2; % End time in seconds
+
+% Calculate the start and end sample indices
+start_index = start_time * Fs + 1; % Start sample index
+end_index = end_time * Fs; % End sample index
+
+% Calculate LAT for electrodes using the find_LAT_diff function
+LAT_ECGI = find_LAT_diff(estimated_meas, Fs, lim1, lim2, 0);
+
+%% Mininum ECGi LAT values in MEAs positions
+
+% Correspondence for MEA1
+min_mea1_ecgi = min(LAT_ECGI([1:11,14:16])); % Find the minimum LAT value in MEA1
+el_min_mea1_ecgi = find(LAT_ECGI([1:11,14:16]) == min_mea1_ecgi); % Find the electrode index with the minimum value for MEA1
+
+% Correspondence for MEA2
+min_mea2_ecgi = min(LAT_ECGI([17:32])); % Find the minimum LAT value in MEA2
+el_min_mea2_ecgi = find(LAT_ECGI([17:32]) == min_mea2_ecgi); % Find the electrode index with the minimum value for MEA2
+
+% Correspondence for MEA3
+min_mea3_ecgi = min(LAT_ECGI([33:47])); % Find the minimum LAT value in MEA3
+el_min_mea3_ecgi = find(LAT_ECGI([33:47]) == min_mea3_ecgi); % Find the electrode index with the minimum value for MEA3
+
+% Correcting indices for MEA2 and MEA3
+el_min_mea2_ecgi = el_min_mea2_ecgi + 16; % correcting the electrode number
+el_min_mea3_ecgi = el_min_mea3_ecgi + 64; % correcting the electrode number
 
 %% CV Electric Analysis
 
