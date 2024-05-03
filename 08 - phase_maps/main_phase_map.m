@@ -5,7 +5,7 @@ clear; clc;
 
 %% Loading variables
 
-load("E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
+load("C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
 
 
 %% Optic Phase Map
@@ -91,4 +91,80 @@ plot_electric_phasemap(phase_el, [-3 3], frame, 1); % MEA 1
 plot_electric_phasemap(phase_el, [-3 3], frame, 2); % MEA 2
 plot_electric_phasemap(phase_el, [-3 3], frame, 3); % MEA 3
 plot_electric_phasemap(phase_el, [-3 3], frame, 4); % TANK
+
+
+%% New Pahse TANK
+Data = D_SYNC.EL;
+Fsampling = 4000;
+% Selecting sample interval
+start_sample = 13931;
+end_sample = 21690;
+
+% Variables
+A = Data([129:174,177:190], start_sample:end_sample);
+frame = 17621;
+frame = frame - start_sample;
+
+% Loading colormap
+load("PS_colormaps.mat");
+mycmap_2 = mycmap;
+mycmap_2(1, 1:3) = [1 1 1];
+
+
+
+% Phase Calc
+if length(size(A))==2
+     [nx,ny]=size(A);
+     D=zeros(size(A));
+     for i=1:nx
+        s=A(i,:);
+        s=s-mean(s);
+        %não corregido 
+
+        ha=imag(hilbert(s));
+        k=-atan2(ha,s);
+        S(i,:)=s;
+        D(i,:)=k;
+
+        f2=figure('color','white','Position', [40 40 1200 500]);
+        subplot(2,1,1);
+        plot(s,'LineWidth', 1,'Color', 'black');
+        hold on;  
+        line([frame,frame], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+        title('Señal Original');
+        xlabel('samples');
+        ylabel('Amplitud');
+        legend('Real Part','Imaginary Part');set(gca,'fontsize', 14);
+        
+        subplot(2,1,2);
+        plot(k,'LineWidth', 1,'Color', 'black');
+        hold on;
+        line([frame,frame], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+        title('Fase de la Señal');
+        xlabel('samples');
+        ylabel('Fase (radianes)');
+        legend('-atan','phase');set(gca,'fontsize', 14);
+        linkaxes([subplot(2, 1, 1), subplot(2, 1, 2)], 'x');
+        
+     end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
