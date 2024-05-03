@@ -1,4 +1,4 @@
-function [] = plot_electric_phasemap(dataFiltered, lim, frame, caso)
+function [phase_matrix] = plot_electric_phasemap(dataFiltered, lim, frame, caso)
 % PLOT_ELECTRIC_PHASEMAP - Create visual phase maps from MEAs or Tank electrodes.
 %
 % Syntax:
@@ -51,6 +51,9 @@ switch caso
         MEA1_list_indx([1 8]) = []; % Exclude bad electrodes
         V_MEA1 = int1 * sgolayfilt(dataFiltered(MEA1_list_indx,:), 2, 201, [], 2);
         
+        % Fill and save the interpolated matrix
+        phase_matrix = fillMatrixMEA(V_MEA1);
+
         % Plot MEA1
         plotMEA(V_MEA1, MEA, MEA_plane_indx, 'MEA 1 (Right Atrium)', frame, lim);
         
@@ -78,6 +81,9 @@ switch caso
         % Interpolate and filter data for MEA2
         V_MEA2 = int2 * sgolayfilt(dataFiltered(MEA2_list_indx,:), 2, 201, [], 2);
         
+        % Fill and save the interpolated matrix
+        phase_matrix = fillMatrixMEA(V_MEA2);
+
         % Plot MEA2
         plotMEA(V_MEA2, MEA, MEA_plane_indx, 'MEA 2 (Ventricle)', frame, lim);
 
@@ -107,6 +113,9 @@ switch caso
         MEA3_list_indx([4]) = []; % Exclude bad electrodes
         V_MEA3 = int3 * sgolayfilt(dataFiltered(MEA3_list_indx,:), 2, 201, [], 2);
         
+        % Fill and save the interpolated matrix
+        phase_matrix = fillMatrixMEA(V_MEA3);
+
         % Plot MEA3
         plotMEA(V_MEA3, MEA, MEA_plane_indx, 'MEA 3 (Left Atrium)', frame, lim);
 
@@ -137,6 +146,9 @@ switch caso
         % Interpolate and filter data for the tank
         V_TANK = intTANK * sgolayfilt(dataFiltered(tank_list_indx,:), 2, 201, [], 2);
         
+        % Fill and save the interpolated matrix
+        phase_matrix = fillMatrixTANK(V_TANK);
+
         % Plot the tank
         plotTank(V_TANK, Plane, tank_plane_indx, frame, lim);
 

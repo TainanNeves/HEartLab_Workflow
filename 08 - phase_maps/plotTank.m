@@ -24,7 +24,7 @@ function plotTank(V_TANK, Plane, tank_plane_indx, frame, lim)
 Fs = 4000; % Hz
 
 % Create a new figure for the Tank plot
-f1 = figure('color','white','Position', [160 40 800 400]);
+f1 = figure('color','white','Position', [160 40 800 600]);
 
 % Plot the Tank using patch
 patch('faces', Plane.faces, 'vertices', Plane.vertices, ...
@@ -40,9 +40,12 @@ axis off;
 caxis(lim);
 
 % Add colorbar
-hBar1 = colorbar('eastoutside');
-colormap('jet');
+load("PS_colormaps.mat");
+hBar1 = colorbar('southoutside');
+colormap(mycmap);
 ylabel(hBar1, ['Radians [' char(960) ']'],'FontSize',14);
+hBar1.Ticks = [-2, 0, 2];
+
 
 % Add a transparent overlay to highlight electrode positions
 hold on;
