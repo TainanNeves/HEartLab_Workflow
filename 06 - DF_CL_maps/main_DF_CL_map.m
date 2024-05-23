@@ -115,17 +115,6 @@ end_sample = 4*4000;
 % Calc
 Data_temp = Data(:, in_sample:end_sample);
 
-% % Ploting frequency spectrum
-% el_to_plot = [149 162 164 183];
-% figure;
-% for i = 1:length(el_to_plot)
-%     plot(fstep:fstep:freq_up, Sffti(el_to_plot(i),:), 'DisplayName', ['Electrode ' num2str(el_to_plot(i))]);
-%     hold on
-% end
-% xlabel('Frequency (Hz)');
-% title(['Frequency spectrum']);
-% legend('show');
-
 % Initialize the struct to store results
 df_values = struct();
 
@@ -143,6 +132,17 @@ for i = 1:4
         df_values.(electrodes) = fillMatrixTANK(MFFTi);
     end
 end
+
+% Ploting frequency spectrum
+el_to_plot = [149 162 164 183];
+figure;
+for i = 1:length(el_to_plot)
+    plot(fstep:fstep:freq_up, Sffti(el_to_plot(i),:), 'DisplayName', ['Electrode ' num2str(el_to_plot(i))]);
+    hold on
+end
+xlabel('Frequency (Hz)');
+title(['Frequency spectrum']);
+legend('show');
 
 
 %% Electric Dominant Frequency analysis - ECGi
