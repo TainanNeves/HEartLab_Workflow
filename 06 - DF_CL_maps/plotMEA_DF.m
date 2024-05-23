@@ -30,7 +30,7 @@ function plotMEA_DF(DF_MEA, MEA, MEA_plane_indx, title_str, lim)
         'FaceAlpha', 1, 'EdgeAlpha', 0, 'FaceLighting','gouraud');
 
     % Set the title for the plot
-    title([title_str, ' | Dominant Frequency']);
+    title([title_str, ]);
 
     % Adjust axis properties
     axis equal;

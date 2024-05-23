@@ -1,15 +1,15 @@
-function [phase_matrix] = plot_electric_phasemap(dataFiltered, lim, frame, caso)
+function [] = plot_electric_phasemap(phase_el, lim, frame, caso)
 % PLOT_ELECTRIC_PHASEMAP - Create visual phase maps from MEAs or Tank electrodes.
 %
 % Syntax:
-%   plot_electric_phasemap(dataFiltered, lim, frame, caso)
+%   plot_electric_phasemap(V_interpolated, lim, frame, caso)
 %
 % Description:
 %   This function generates visual phase maps for Multi-Electrode Arrays (MEAs) or Tank
 %   electrodes based on the given phase data, electrode layout, and filtering.
 %
 % Input:
-%   - dataFiltered: Phase data for electrodes over time (rows: electrodes, columns: phase).
+%   - V_interpolated: Phase data for electrodes over time (rows: electrodes, columns: phase).
 %   - lim: Color axis limits for the phase map.
 %   - frame: Frame index for visualization.
 %   - caso: Case identifier (1-4) specifying the electrode configuration.
@@ -32,30 +32,13 @@ switch caso
         load('MEA.mat');
         
         % Electrode indices and positions for MEA1
-        MEA1_list_indx = [13 14 15 16, ...
-                        9 10 11 12, ...
-                        5 6 7 8, ...
-                        1 2 3 4];
         MEA_plane_indx = [25:2:31, ...
                         47:2:53, ...
                         69:2:75, ...
                         91:2:97];
         
-        % Laplacian interpolation for MEA1
-        [lap, ~] = mesh_laplacian(MEA.vertices, MEA.faces);
-        MEA1_plane_indx = MEA_plane_indx;
-        MEA1_plane_indx([1 8]) = []; % Exclude bad electrodes
-        [int1, ~, ~] = mesh_laplacian_interp(lap, MEA1_plane_indx);
-        
-        % Interpolate and filter data for MEA1
-        MEA1_list_indx([1 8]) = []; % Exclude bad electrodes
-        V_MEA1 = int1 * sgolayfilt(dataFiltered(MEA1_list_indx,:), 2, 201, [], 2);
-        
-        % Fill and save the interpolated matrix
-        phase_matrix = fillMatrixMEA(V_MEA1);
-
         % Plot MEA1
-        plotMEA(V_MEA1, MEA, MEA_plane_indx, 'MEA 1 (Right Atrium)', frame, lim);
+        plotMEA(phase_el, MEA, MEA_plane_indx, 'MEA 1 (Right Atrium)', frame, lim);
         
     case 2
         % MEA2 - Ventricle
@@ -64,28 +47,13 @@ switch caso
         load('MEA.mat');
         
         % Electrode indices and positions for MEA2
-        MEA2_list_indx = [17 21 25 29, ...
-                        18 22 26 30, ...
-                        19 23 27 31, ...
-                        20 24 28 32];
         MEA_plane_indx = [25:2:31, ...
                         47:2:53, ...
                         69:2:75, ...
                         91:2:97];
         
-        % Laplacian interpolation for MEA2
-        [lap, ~] = mesh_laplacian(MEA.vertices, MEA.faces);
-        MEA2_plane_indx = MEA_plane_indx;
-        [int2, ~, ~] = mesh_laplacian_interp(lap, MEA2_plane_indx);
-        
-        % Interpolate and filter data for MEA2
-        V_MEA2 = int2 * sgolayfilt(dataFiltered(MEA2_list_indx,:), 2, 201, [], 2);
-        
-        % Fill and save the interpolated matrix
-        phase_matrix = fillMatrixMEA(V_MEA2);
-
         % Plot MEA2
-        plotMEA(V_MEA2, MEA, MEA_plane_indx, 'MEA 2 (Ventricle)', frame, lim);
+        plotMEA(phase_el, MEA, MEA_plane_indx, 'MEA 2 (Ventricle)', frame, lim);
 
     case 3
         % MEA3 - Left Atrium
@@ -94,30 +62,13 @@ switch caso
         load('MEA.mat');
         
         % Electrode indices and positions for MEA3
-        MEA3_list_indx = [77 78 79 80, ...
-                        73 74 75 76, ...
-                        69 70 71 72, ...
-                        65 66 67 68];
         MEA_plane_indx = [25:2:31, ...
                         47:2:53, ...
                         69:2:75, ...
                         91:2:97];
-        
-        % Laplacian interpolation for MEA3
-        [lap, ~] = mesh_laplacian(MEA.vertices, MEA.faces);
-        MEA3_plane_indx = MEA_plane_indx;
-        MEA3_plane_indx([4]) = []; % Exclude bad electrodes
-        [int3, ~, ~] = mesh_laplacian_interp(lap, MEA3_plane_indx);
-        
-        % Interpolate and filter data for MEA3
-        MEA3_list_indx([4]) = []; % Exclude bad electrodes
-        V_MEA3 = int3 * sgolayfilt(dataFiltered(MEA3_list_indx,:), 2, 201, [], 2);
-        
-        % Fill and save the interpolated matrix
-        phase_matrix = fillMatrixMEA(V_MEA3);
-
+               
         % Plot MEA3
-        plotMEA(V_MEA3, MEA, MEA_plane_indx, 'MEA 3 (Left Atrium)', frame, lim);
+        plotMEA(phase_el, MEA, MEA_plane_indx, 'MEA 3 (Left Atrium)', frame, lim);
 
     case 4
         % Tank
@@ -138,19 +89,9 @@ switch caso
             402:2:424, ...
             478:4:498, ...
             552:2:574];
-        
-        % Laplacian interpolation for the tank
-        [lap, ~] = mesh_laplacian(Plane.vertices, Plane.faces);
-        [intTANK, ~, ~] = mesh_laplacian_interp(lap, tank_plane_indx);
-        
-        % Interpolate and filter data for the tank
-        V_TANK = intTANK * sgolayfilt(dataFiltered(tank_list_indx,:), 2, 201, [], 2);
-        
-        % Fill and save the interpolated matrix
-        phase_matrix = fillMatrixTANK(V_TANK);
-
+             
         % Plot the tank
-        plotTank(V_TANK, Plane, tank_plane_indx, frame, lim);
+        plotTank(phase_el, Plane, tank_plane_indx, frame, lim);
 
 end
 

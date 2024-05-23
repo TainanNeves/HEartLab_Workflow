@@ -114,6 +114,7 @@ in_sample = 2*4000;
 end_sample = 4*4000;
 % Calc
 Data_temp = Data(:, in_sample:end_sample);
+% [MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
 
 % % Ploting frequency spectrum
 % el_to_plot = [149 162 164 183];
@@ -131,8 +132,8 @@ df_values = struct();
 
 for i = 1:4
     V_interpolated = electric_interp(Data_temp, i);  % Interpolate data
-    [MFFTi,Sffti,fstep] = f_DF_electric(V_interpolated, Fsampling, freq_up, freq_down);  % Compute frequency map
-    plot_electric_DF(MFFTi, [freq_down freq_up], i);  % Plot frequency map
+    [MFFTi,Sffti,fstep] = f_DF_electric(V_interpolated, Fsampling, freq_up, freq_down);  % Compute phase map
+    plot_electric_DF(MFFTi, [freq_down freq_up], i);  % Plot phase map
    
     % storing the adjusted matrices
     if i < 4

@@ -26,7 +26,7 @@ function plotMEA(V_MEA, MEA, MEA_plane_indx, title_str, frame, lim)
 Fs = 4000; % Hz
 
 % Create a new figure for the MEA plot
-f1 = figure('color','white','Position', [40 40 500 550]);
+f1 = figure('color','white','Position', [40 40 300 350]);
 
 % Plot the MEA using patch
 patch('faces', MEA.faces, 'vertices', MEA.vertices, ...
@@ -42,12 +42,9 @@ axis off;
 caxis(lim);
 
 % Add colorbar
-load("PS_colormaps.mat");
 hBar1 = colorbar('southoutside');
-colormap(mycmap);
+colormap('jet');
 ylabel(hBar1, ['Radians [' char(960) ']'],'FontSize',14);
-hBar1.Ticks = [-2, 0, 2];
-
 
 % Add a transparent overlay to highlight electrode positions
 hold on;
