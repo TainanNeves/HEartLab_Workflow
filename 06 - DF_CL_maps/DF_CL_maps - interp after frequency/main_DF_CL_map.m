@@ -1,4 +1,3 @@
-
 %% DOMINANT FREQUENCY
 clear; clc;
 
@@ -6,8 +5,6 @@ clear; clc;
 %% Loading variables
 
 load("C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
-
-signal_file = load('C:\Users\HeartLAB\Documents\Documents\Current codes\filtered_recordings\data_filtered_sync_E14_F4_R10.mat');
 
 
 %% Optic Dominant Frequency Analysis
@@ -108,65 +105,53 @@ Data = D_SYNC.EL;
 Fsampling = 4000;
 
 % Dominant Frequency calculation
-freq_up = 4;
+freq_up = 10;
 freq_down = 0.5;
-in_sample = 2*4000;
-end_sample = 4*4000;
+in_sample = 9386;
+end_sample = 12015;
 % Calc
 Data_temp = Data(:, in_sample:end_sample);
-% [MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
+[MFFTi,Sffti,fstep] = f_DF_electric(Data_temp, Fsampling, freq_up, freq_down);
 
-% % Ploting frequency spectrum
-% el_to_plot = [149 162 164 183];
-% figure;
-% for i = 1:length(el_to_plot)
-%     plot(fstep:fstep:freq_up, Sffti(el_to_plot(i),:), 'DisplayName', ['Electrode ' num2str(el_to_plot(i))]);
-%     hold on
-% end
-% xlabel('Frequency (Hz)');
-% title(['Frequency spectrum']);
-% legend('show');
-
-% Initialize the struct to store results
-df_values = struct();
-
-for i = 1:4
-    V_interpolated = electric_interp(Data_temp, i);  % Interpolate data
-    [MFFTi,Sffti,fstep] = f_DF_electric(V_interpolated, Fsampling, freq_up, freq_down);  % Compute phase map
-    plot_electric_DF(MFFTi, [freq_down freq_up], i);  % Plot phase map
-   
-    % storing the adjusted matrices
-    if i < 4
-        electrodes = sprintf('MEA%d', i);
-        df_values.(electrodes) = fillMatrixMEA(MFFTi);
-    else
-        electrodes = sprintf('TANK');
-        df_values.(electrodes) = fillMatrixTANK(MFFTi);
-    end
+% Ploting frequency spectrum
+el_to_plot = [10 75 23 132];
+figure;
+for i = 1:length(el_to_plot)
+    plot(fstep:fstep:freq_up, Sffti(el_to_plot(i),:), 'DisplayName', ['Electrode ' num2str(el_to_plot(i))]);
+    hold on
 end
+xlabel('Frequency (Hz)');
+title(['Frequency spectrum']);
+legend('show');
+
+% Ploting maps
+plot_electric_DF(MFFTi, [freq_down freq_up], 1); % MEA 1
+plot_electric_DF(MFFTi, [freq_down freq_up], 2); % MEA 2
+plot_electric_DF(MFFTi, [freq_down freq_up], 3); % MEA 3
+plot_electric_DF(MFFTi, [freq_down freq_up], 4); % TANK
 
 
 %% Electric Dominant Frequency analysis - ECGi
 
 % Heart geometry
-heart_geo_file = 'D:\3D Heart Geometry\heart_geometry_exp18.mat';
+heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\heart_geometry_exp14.mat';
 heart_data = load(heart_geo_file);
 heart_geo = heart_data.(subsref(fieldnames(heart_data),substruct('{}',{1})));
 
 % Estimated signal
-estimated_signal = load('D:\Figura Frontiers\EXP18_data\estimated_signal_E18F2R2_sync_2s_4s');
+estimated_signal = load('C:\Users\HeartLAB\Documents\Documents\CBEB 2024\estimated_signal_E14F4R10_sync_8s.mat');
 estimated_signal = estimated_signal.(subsref(fieldnames(estimated_signal),substruct('{}',{1})));
 
 Data = estimated_signal;
 Fsampling = 4000;
 
 % Parameters setting
-freq_up = 4;
+freq_up = 10;
 freq_down = 0.5;
 start_time = 1;
-end_time = 4;
-in_sample = 1;
-end_sample = 8000;
+end_time = 2;
+in_sample = start_time * Fsampling;
+end_sample = end_time * Fsampling;
 
 % Dominant Frequency calculation
 Data_temp = Data(:, in_sample:end_sample);
@@ -191,23 +176,6 @@ c.Label.String = 'Frequency (Hz)';
 caxis([0 10]);
 
 
-%% Electric Dominant Frequency analysis ECGi - Statistics
-% Select Electrodes range
-roi = [1:length(MFFTi)];
-
-% Metrics within the selected ROI for non-zero values
-nonzero_values = MFFTi(roi);
-nonzero_values = nonzero_values(nonzero_values ~= 0);
-HDF_roi = max(nonzero_values);
-disp(['Higher DF in ROI: ', num2str(HDF_roi)]);
-avg_roi = mean(nonzero_values);
-disp(['Average DF in ROI: ', num2str(avg_roi)]);
-mod_roi = mode(nonzero_values);
-disp(['Mode DF in ROI: ', num2str(mod_roi)]);
-std_roi = std(nonzero_values);
-disp(['Standard Deviation of DF in ROI: ', num2str(std_roi)]);
-var_roi = var(nonzero_values);
-disp(['Variance of DF in ROI: ', num2str(var_roi)]);
 %% Electric Dominant Frequency analysis - Statistics
 % Select Electrodes range
 roi = [129:174, 177:190];

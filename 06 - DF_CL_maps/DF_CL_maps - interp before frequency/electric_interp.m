@@ -22,7 +22,8 @@ function V_interpolated = electric_interp(dataFiltered, caso)
 %   - V_interpolated: Interpolated and filtered data for the specified electrode configuration.
 %
 % Author:
-%   Tainan Neves, HEartLab - UFABC
+%   Angélica Quadros, Tainan Neves
+%   HEartLab - UFABC
 %
 % Example:
 %   dataFiltered = Data(:, start_sample:end_sample);
