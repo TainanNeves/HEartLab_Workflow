@@ -35,12 +35,11 @@ xlabel('Pixels');
 
 %Run if you need it
 Background = squeeze(DATA(:,:,20));
-pick_up_a_trace(Background, DATA,1);    % Select a pixel in the image and shows the optical signal
-                                        %Press space to stop
+[x, y] = pick_up_a_trace(Background, DATA,1);
 
 % Extract a pixel intensity profile along a line and plot it
-row_pixel = 47;
-col_pixel = 110;
+row_pixel = x(length(x));
+col_pixel = y(length(y));
 p = double(squeeze(DATA(row_pixel,col_pixel,:)));
 figure;
 plot(p);

@@ -107,3 +107,5 @@ There are three folders within this directory, two related to maps for electrica
 - Put zeros in the non-used electrodes
 - Update CV electric codes. We need to better specify distances between vertices.
 - Put Npy-matlab library path add in the readme file
+- Add potential plot with laplacian interpolation applied in the signals
+- Add LAT_CV plot with laplacian interpolation applied in the signals

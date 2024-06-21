@@ -14,11 +14,11 @@ load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sy
 % Define a Camera to use
 Data = D_SYNC.CAM1;
 Background = squeeze(Data(:,:,2000));
-pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
+[x, y] = pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
                                         %Press space to stop
 
 % Define a pixel position
-p = [68, 58];
+p = [x(length(x)), y(length(y))];
 %Frame Sampling
 Fsampling = 4000;
 
@@ -35,8 +35,10 @@ title('Optical Signal Time Plot');
 
 % Specific optic time plot
 % Define the time range for the plot
-start_sample = 4*Fsampling; % Adjust the start sample according to your data
-end_sample = 6*Fsampling;   % Adjust the end sample according to your data
+t_in = 4;
+t_out = 6;
+start_sample = t_in*Fsampling; % Adjust the start sample according to your data
+end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
 % Create a time vector
 To = linspace(0, length(Data(1,1,:))/Fsampling, length(Data(1,1,:)));
 % Plot the optical signal within the specified time range
@@ -45,6 +47,7 @@ plot(To(start_sample:end_sample), squeeze(Data(p(1), p(2), start_sample:end_samp
 ylabel('%F');
 set(gca, 'fontsize', 14);
 xlabel('Time (s)');
+xlim([t_in, t_out]);
 title('Optical Signal Time Plot');
 
 
@@ -70,8 +73,10 @@ title('Electric Signal Time Plot');
 
 % Specific electric time plot
 % Define the time range for the plot
-start_sample = 4*Fsampling; % Adjust the start sample according to your data
-end_sample = 6*Fsampling;   % Adjust the end sample according to your data
+t_in = 4;
+t_out = 6;
+start_sample = t_in*Fsampling; % Adjust the start sample according to your data
+end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
 % Create a time vector
 To = linspace(0, length(Data)/Fsampling, length(Data));
 % Plot the electricl signal for an specific electrode
@@ -80,6 +85,7 @@ plot(To(start_sample:end_sample), Data(start_sample:end_sample), 'LineWidth', 1)
 ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
 set(gca, 'fontsize', 14);
 xlabel('Time (s)');
+xlim([t_in t_out]);
 title('Electric Signal Time Plot');
 
 
@@ -88,11 +94,11 @@ title('Electric Signal Time Plot');
 % Define a Camera to use
 Data_O = D_SYNC.CAM1;
 Background = squeeze(Data_O(:,:,2000));
-pick_up_a_trace(Background, Data_O,1);    % Select a pixel in the image and shows the optical signal
+[x, y] = pick_up_a_trace(Background, Data_O, 1);    % Select a pixel in the image and shows the optical signal
                                         %Press space to stop                                      
 % Optical Pixel
-pa = [95 130];
-pv = [75 49];
+pa = [x(1) y(1)];
+pv = [x(2) y(2)];
 
 % Electric electrodes
 el1 = 14; % RA MEA1
@@ -170,20 +176,20 @@ linkaxes([subplot(6, 1, 1), subplot(6, 1, 2), subplot(6, 1, 3), subplot(6, 1, 4)
 % Define Cameras to use
 Data_OV = D_SYNC.CAM1;
 Background = squeeze(Data_OV(:,:,2000));
-pick_up_a_trace(Background, Data_OV,1);
+[xV, yV] = pick_up_a_trace(Background, Data_OV,1);
 
 Data_ORA = D_SYNC.CAM2;
 Background = squeeze(Data_ORA(:,:,2000));
-pick_up_a_trace(Background, Data_ORA,1);
+[xRA, yRA] = pick_up_a_trace(Background, Data_ORA,1);
 
 Data_OLA = D_SYNC.CAM3;
 Background = squeeze(Data_OLA(:,:,2000));
-pick_up_a_trace(Background, Data_OLA,1);
+[xLA, yLA] = pick_up_a_trace(Background, Data_OLA,1);
 
 % Optical Pixel
-pV = [37 51];
-pRA = [28 141];
-pLA = [43 162];
+pV = [xV yV];
+pRA = [xRA yRA];
+pLA = [xLA yLA];
 
 % Electric electrodes
 el1 = 6; % RA MEA1
@@ -265,34 +271,42 @@ linkaxes([subplot(7, 1, 1), subplot(7, 1, 2), subplot(7, 1, 3), subplot(7, 1, 4)
 
 %% Multielectrode optical signal plot
 
-% Define a Camera to use
-Data_O = D_SYNC.CAM1;
-Background = squeeze(Data_O(:,:,2000));
-pick_up_a_trace(Background, Data_O,1);    % Select a pixel in the image and shows the optical signal
-                                        %Press space to stop
-
 %Frequency Sampling
 Fsampling = 4000;
+time = [4, 5]; % s
+Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
 
-% Positioning end ploting electrodes (In optical signal)
+
 % MEA 1
-p13 = [68,142]; p14 = [78,144]; p15 = [87,146]; p16 = [97,149];
-p9 = [72,131]; p10 = [81,134]; p11 = [92,138]; p12 = [101,138];
-p5 = [75,120]; p6 = [86,125]; p7 = [96,126]; p8 = [104,128];
-p1 = [78,112]; p2 = [88,115]; p3 = [97,118]; p4 = [106,118];
-plotar_pontos_1(Data_O, Data_O, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
+Data_O = D_SYNC.CAM1(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2000));
+[x, y] = pick_up_a_trace(Background, Data_O,1);  
+p13 = [x(13), y(13)]; p14 = [x(14), y(14)]; p15 = [x(15), y(15)]; p16 = [x(16), y(16)];
+p9 = [x(9), y(9)]; p10 = [x(10), y(10)]; p11 = [x(11), y(11)]; p12 = [x(12), y(12)];
+p5 = [x(5), y(5)]; p6 = [x(6), y(6)]; p7 = [x(7), y(7)]; p8 = [x(8), y(8)];
+p1 = [x(1), y(1)]; p2 = [x(2), y(2)]; p3 = [x(3), y(3)]; p4 = [x(4), y(4)];
+plotar_pontos_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
+
 % MEA 2
-p17 = [68,142]; p21 = [78,144]; p25 = [87,146]; p29 = [97,149];
-p18 = [72,131]; p22 = [81,134]; p26 = [92,138]; p30 = [101,138];
-p19 = [75,120]; p23 = [86,125]; p27 = [96,126]; p31 = [104,128];
-p20 = [78,112]; p24 = [88,115]; p28 = [97,118]; p32 = [106,118];
-plotar_pontos_2(Data_O, Data_O, Fsampling, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32);
+Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2000));
+[x, y] = pick_up_a_trace(Background, Data_O,1); 
+p17 = [x(1), y(1)]; p21 = [x(5), y(5)]; p25 = [x(9), y(9)]; p29 = [x(13), y(13)];
+p18 = [x(2), y(2)]; p22 = [x(6), y(6)]; p26 = [x(10), y(10)]; p30 = [x(14), y(14)];
+p19 = [x(3), y(3)]; p23 = [x(7), y(7)]; p27 = [x(11), y(11)]; p31 = [x(15), y(15)];
+p20 = [x(4), y(4)]; p24 = [x(8), y(8)]; p28 = [x(12), y(12)]; p32 = [x(16), y(16)];
+plotar_pontos_2(Data_O, Data_E, Fsampling, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32);
+
 % MEA 3
-p77 = [68,142]; p78 = [78,144]; p79 = [87,146]; p80 = [97,149];
-p73 = [72,131]; p74 = [81,134]; p75 = [92,138]; p76 = [101,138];
-p69 = [75,120]; p70 = [86,125]; p71 = [96,126]; p72 = [104,128];
-p65 = [78,112]; p66 = [88,115]; p67 = [97,118]; p68 = [106,118];
-plotar_pontos_3(Data_O, Data_O, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
+Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2000));
+[x, y] = pick_up_a_trace(Background, Data_O,1); 
+p77 = [x(13), y(13)]; p78 = [x(14), y(14)]; p79 = [x(15), y(15)]; p80 = [x(16), y(16)];
+p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(12)];
+p69 = [x(5), y(5)]; p70 = [x(6), y(6)]; p71 = [x(7), y(7)]; p72 = [x(8), y(8)];
+p65 = [x(1), y(1)]; p66 = [x(2), y(2)]; p67 = [x(3), y(3)]; p68 = [x(4), y(4)];
+plotar_pontos_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
+
 
 
 

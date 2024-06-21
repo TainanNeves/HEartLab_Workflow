@@ -159,8 +159,9 @@ clear D_EL;
 
 % Filtered export
 % Electrodes selection
-el_butter = 1:85; % for Butterworth
-el_wavelet = 86:192; % for Wavelet
+el_butter = [1:32, 65:80]; % for Butterworth
+el_wavelet = [129:174, 177:190]; % for Wavelet
+el_toZero = [33:64, 81:128, 175:176, 191:192]; % for receive value zero
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
@@ -181,6 +182,10 @@ end
 for i = 1:length(el_wavelet)
     filteredSignal = wavelet_filter(DATA.Data(el_wavelet(i), :), Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
     filtered_data(el_wavelet(i), :) = filteredSignal(1:size(filteredSignal,2)-1);
+end
+% Puting zeros in el_toZero
+for i = el_toZero(1):el_toZero(length(el_toZero))
+    filtered_data(i) = zeros(length(filtered_data));
 end
 
 % Save filtered data

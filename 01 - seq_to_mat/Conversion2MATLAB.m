@@ -12,7 +12,7 @@
 binSize = 8;
 precision = 'uint16'; %for binning
 
-String = {'Camera 1', 'Camera 2', 'Camera 3'}
+String = {'Camera 1', 'Camera 2', 'Camera 3'};
 
 for N=1:3
     cd 'Optical Mapping'
