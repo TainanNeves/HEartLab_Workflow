@@ -62,6 +62,23 @@ plot_electric_pot(Data, lim, sample, 2); % MEA 2
 plot_electric_pot(Data, lim, sample, 3); % MEA 3
 plot_electric_pot(Data, lim, sample, 4); % TANK
 
+%% SAVING STRUCT WITH INTERPOLATED DATA
+
+% Initialize the struct to store results
+pot_values = struct();
+
+for i = 1:4
+    V_interpolated = electric_interp(Data, i);  % Interpolate data
+   
+    % storing the adjusted matrices
+    if i < 4
+        electrodes = sprintf('MEA%d', i);
+        pot_values.(electrodes) = fillMatrixMEA(phase_el);
+    else
+        electrodes = sprintf('TANK');
+        pot_values.(electrodes) = fillMatrixTANK(phase_el);
+    end
+end
 
 %% VIDEO - calculating time of video
 isample = 4.0*4000;

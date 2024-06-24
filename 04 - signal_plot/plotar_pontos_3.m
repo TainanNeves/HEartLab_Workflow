@@ -1,13 +1,7 @@
-% this function plots an image of the data with the location of
-% the electrodes
-% and a plot with th OP after filtering in each electrode location 
-% DATAO= original data without filter
-% DATA= data filtered 
-% pn= pontos dos eletrodos
-% fs= sample frequency
+function f1= plotar_pontos_3 (DATA_O,DATA_E,fs,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16)
 
-function f1= plotar_pontos_3 (DATAO,DATA,fs,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16)
-I=double(squeeze( DATAO(:,:,50)));
+%% Figure 01: Picture
+I=double(squeeze( DATA_O(:,:,50)));
 f=figure('color','white','Position', [40 40 500 500]);
 imagesc(I);colormap('gray');% axis square
 hold on;
@@ -31,78 +25,158 @@ set(gca,'fontsize', 14);
 title('Cam 2');
 ylabel('Pixels');xlabel('Pixels');
 
-%plotar
-channel1=squeeze(DATA(p1(1), p1(2),:));%1
-channel2=squeeze(DATA(p2(1), p2(2),:));%2
-channel3=squeeze(DATA(p3(1), p3(2),:));%3
-channel4=squeeze(DATA(p4(1), p4(2),:));%4
-channel5=squeeze(DATA(p5(1), p5(2),:));%5
-channel6=squeeze(DATA(p6(1), p6(2),:));%6
-channel7=squeeze(DATA(p7(1), p7(2),:));%7
-channel8=squeeze(DATA(p8(1), p8(2),:));%8
-channel9=squeeze(DATA(p9(1), p9(2),:));%9
-channel10=squeeze(DATA(p10(1), p10(2),:));%10
-channel11=squeeze(DATA(p11(1), p11(2),:));%11
-channel12=squeeze(DATA(p12(1), p12(2),:));%12
-channel13=squeeze(DATA(p13(1), p13(2),:));%13
-channel14=squeeze(DATA(p14(1), p14(2),:));%14
-channel15=squeeze(DATA(p15(1), p15(2),:));%15
-channel16=squeeze(DATA(p16(1), p16(2),:));%16
 
-lo=length(channel10);
-To=linspace(0,lo/fs,lo);%com a nova frequencia de 4000 que igualamos para o eletrico
+%% Figure 02: Optic plots
+% Selectin Optical signals
+channel65 = squeeze(DATA_O(p1(1), p1(2),:));
+channel66 = squeeze(DATA_O(p2(1), p2(2),:));
+channel67 = squeeze(DATA_O(p3(1), p3(2),:));
+channel68 = squeeze(DATA_O(p4(1), p4(2),:));
+channel69 = squeeze(DATA_O(p5(1), p5(2),:));
+channel70 = squeeze(DATA_O(p6(1), p6(2),:));
+channel71 = squeeze(DATA_O(p7(1), p7(2),:));
+channel72 = squeeze(DATA_O(p8(1), p8(2),:));
+channel73 = squeeze(DATA_O(p9(1), p9(2),:));
+channel74 = squeeze(DATA_O(p10(1), p10(2),:));
+channel75 = squeeze(DATA_O(p11(1), p11(2),:));
+channel76 = squeeze(DATA_O(p12(1), p12(2),:));
+channel77 = squeeze(DATA_O(p13(1), p13(2),:));
+channel78 = squeeze(DATA_O(p14(1), p14(2),:));
+channel79 = squeeze(DATA_O(p15(1), p15(2),:));
+channel80 = squeeze(DATA_O(p16(1), p16(2),:));
+
+% Plotting Optical Signals
+lo=length(channel74);
+To=linspace(0,lo/fs,lo);
 f1=figure('color','white','Position', [40 40 600 600]);
-subplot(4,4,1);plot(To,channel13);
+subplot(4,4,1);plot(To,channel77);
 ylabel('P77', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,2);plot(To,channel14);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,2);plot(To,channel78);
 ylabel('P78', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,3);plot(To,channel15);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,3);plot(To,channel79);
 ylabel('P79', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,4);plot(To,channel16);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,4);plot(To,channel80);
 ylabel('P80', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
 
 
-subplot(4,4,5);plot(To,channel9);
+subplot(4,4,5);plot(To,channel73);
 ylabel('P73', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,6);plot(To,channel10);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,6);plot(To,channel74);
 ylabel('P74', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,7);plot(To,channel11);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,7);plot(To,channel75);
 ylabel('P75', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,8);plot(To,channel12);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,8);plot(To,channel76);
 ylabel('P76', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
 
-subplot(4,4,9);plot(To,channel5);
+subplot(4,4,9);plot(To,channel69);
 ylabel('P64', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,10);plot(To,channel6);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,10);plot(To,channel70);
 ylabel('P70', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,11);plot(To,channel7);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,11);plot(To,channel71);
 ylabel('P71', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,12);plot(To,channel8);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,12);plot(To,channel72);
 ylabel('P72', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
 
-subplot(4,4,13);plot(To,channel1);
+subplot(4,4,13);plot(To,channel65);
 ylabel('P65', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,14);plot(To,channel2);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,14);plot(To,channel66);
 ylabel('P66', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,15);plot(To,channel3);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,15);plot(To,channel67);
 ylabel('P67', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
-subplot(4,4,16);plot(To,channel4);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,16);plot(To,channel68);
 ylabel('P68', 'Interpreter','latex');
-set(gca,'fontsize', 12); xlim([0 3]);
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
 xlabel('Time [s]');
-set(gca,'fontsize', 12); xlim([0 3]);
+
+
+%% Figure 03: Electric plots
+% Select Electric signals
+channel65 = DATA_E(65,:);
+channel66 = DATA_E(66,:);
+channel67 = DATA_E(67,:);
+channel68 = DATA_E(68,:);
+channel69 = DATA_E(69,:);
+channel70 = DATA_E(70,:);
+channel71 = DATA_E(71,:);
+channel72 = DATA_E(72,:);
+channel73 = DATA_E(73,:);
+channel74 = DATA_E(74,:);
+channel75 = DATA_E(75,:);
+channel76 = DATA_E(76,:);
+channel77 = DATA_E(77,:);
+channel78 = DATA_E(78,:);
+channel79 = DATA_E(79,:);
+channel80 = DATA_E(80,:);
+
+% Plotting Electrical Signals
+lo=length(channel74);
+To=linspace(0,lo/fs,lo);
+f1=figure('color','white','Position', [40 40 600 600]);
+subplot(4,4,1);plot(To,channel77);
+ylabel('el77', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,2);plot(To,channel78);
+ylabel('el78', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,3);plot(To,channel79);
+ylabel('el79', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,4);plot(To,channel80);
+ylabel('el80', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+
+
+subplot(4,4,5);plot(To,channel73);
+ylabel('el73', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,6);plot(To,channel74);
+ylabel('el74', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,7);plot(To,channel75);
+ylabel('el75', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,8);plot(To,channel76);
+ylabel('el76', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+
+subplot(4,4,9);plot(To,channel69);
+ylabel('el64', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,10);plot(To,channel70);
+ylabel('el70', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,11);plot(To,channel71);
+ylabel('el71', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,12);plot(To,channel72);
+ylabel('el72', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+
+subplot(4,4,13);plot(To,channel65);
+ylabel('el65', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,14);plot(To,channel66);
+ylabel('el66', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,15);plot(To,channel67);
+ylabel('el67', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+subplot(4,4,16);plot(To,channel68);
+ylabel('el68', 'Interpreter','latex');
+set(gca,'fontsize', 12); xlim([0 lo/fs]);
+xlabel('Time [s]');
