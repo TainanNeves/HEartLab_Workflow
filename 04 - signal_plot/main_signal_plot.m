@@ -280,6 +280,7 @@ Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
 % MEA 1
 Data_O = D_SYNC.CAM1(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2000));
+% Background = single(D_SYNC.IMG.CAM1); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1);  
 p13 = [x(13), y(13)]; p14 = [x(14), y(14)]; p15 = [x(15), y(15)]; p16 = [x(16), y(16)];
 p9 = [x(9), y(9)]; p10 = [x(10), y(10)]; p11 = [x(11), y(11)]; p12 = [x(12), y(12)];
@@ -290,6 +291,7 @@ plotar_pontos_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p
 % MEA 2
 Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2000));
+% Background = single(D_SYNC.IMG.CAM2); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1); 
 p17 = [x(1), y(1)]; p21 = [x(5), y(5)]; p25 = [x(9), y(9)]; p29 = [x(13), y(13)];
 p18 = [x(2), y(2)]; p22 = [x(6), y(6)]; p26 = [x(10), y(10)]; p30 = [x(14), y(14)];
@@ -300,6 +302,7 @@ plotar_pontos_2(Data_O, Data_E, Fsampling, p17, p18, p19, p20, p21, p22, p23, p2
 % MEA 3
 Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2000));
+% Background = single(D_SYNC.IMG.CAM3); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1); 
 p77 = [x(13), y(13)]; p78 = [x(14), y(14)]; p79 = [x(15), y(15)]; p80 = [x(16), y(16)];
 p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(12)];

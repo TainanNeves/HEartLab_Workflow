@@ -57,6 +57,12 @@ D_SYNC.IMG.CAM2 = D_OP.D_CAM2_rawimage;
 D_SYNC.IMG.CAM3 = D_OP.D_CAM3_rawimage;
 
 
+%% Keep ROIs
+D_SYNC.ROI.ROI_1 = D_OP.ROI.ROI_1;
+D_SYNC.ROI.ROI_2 = D_OP.ROI.ROI_2;
+D_SYNC.ROI.ROI_3 = D_OP.ROI.ROI_3;
+
+
 %% Electric synchronization
 
 S = 8; % Multiplication factor

@@ -55,12 +55,13 @@ clear el1 el2 el3 el4;
 
 
 %% POTENTIAL MAPS
-lim = [-50 50];
-sample = 4.5*4000;
-plot_electric_pot(Data, lim, sample, 1); % MEA 1
-plot_electric_pot(Data, lim, sample, 2); % MEA 2
-plot_electric_pot(Data, lim, sample, 3); % MEA 3
-plot_electric_pot(Data, lim, sample, 4); % TANK
+lim = [-40 20];
+for sample = 3.25*4000:10:3.32*4000
+    plot_electric_pot(Data, lim, sample, 1); % MEA 1
+    plot_electric_pot(Data, lim, sample, 2); % MEA 2
+    plot_electric_pot(Data, lim, sample, 3); % MEA 3
+    plot_electric_pot(Data, lim, sample, 4); % TANK
+end
 
 %% SAVING STRUCT WITH INTERPOLATED DATA
 
@@ -73,12 +74,15 @@ for i = 1:4
     % storing the adjusted matrices
     if i < 4
         electrodes = sprintf('MEA%d', i);
-        pot_values.(electrodes) = fillMatrixMEA(phase_el);
+        pot_values.(electrodes) = fillMatrixMEA(V_interpolated);
     else
         electrodes = sprintf('TANK');
-        pot_values.(electrodes) = fillMatrixTANK(phase_el);
+        pot_values.(electrodes) = fillMatrixTANK(V_interpolated);
     end
 end
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%% CREATE FILL MEAS FUNCTION %%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% VIDEO - calculating time of video
 isample = 4.0*4000;
@@ -93,41 +97,22 @@ fprintf('Video final com %.2f s de duração, levando em conta um step de %d e u
 clear   Tvideo;
 
 %% VIDEO - TANK CREATING VIDEO
-% Create the VideoWriter object
-writerObj = VideoWriter(videoFileName, 'MPEG-4');
-writerObj.FrameRate = 30;
-
-% Open the video writer
-open(writerObj);
-% Write frames to the video
-for i = 1:length(F)
-    % Extract the current frame
-    frame = F(i);
-    % Write the current frame to the video
-    writeVideo(writerObj, frame);
-end
-% Close the video writer
-close(writerObj);
-
-% Display a message indicating successful video creation
-disp(['Video successfully saved as: ', videoFileName]);
-%choosing the electrodes to plot
+%Electrodes Selection
 el1 = 10; %(RA)
-el2 = 75; %(LA)
-el3 = 28; %(V)
-el4 = 129; %(Tank - High)
-el5 = 160; %(Tank - Mid)
-el6 = 190; %(Tank - Low)
+el2 = 74; %(LA)
+el3 = 23; %(V)
+el4 = 131; %(Tank - High)
+el5 = 136; %(Tank - Mid)
+el6 = 150; %(Tank - Low)
 
 % General Information
-videoFileName = 'teste';
+videoFileName = 'tank_video';
 dataFiltered = Data;
-lim = [-50 50];
+lim = [-10 10];
 [V_TANK, Plane, tank_plane_indx] = potentialMatrix(dataFiltered, 4);
 
-
-%Creating Video
-figure;
+% Plot
+figure('color','white','Position', [40 40 1000 600]);
 set(gcf, 'color', 'white');
 colormap(jet)
 fr=1;
@@ -190,10 +175,10 @@ for ii=isample:step:fsample
     subplot(5, 2, [7:10]);
     plotTank_video(V_TANK, ii, Plane, tank_plane_indx, lim);
     
-
+    %config
     F(fr) = getframe(gcf) ;
     pause(0.01);
-    fr=fr+1;%
+    fr=fr+1;
 end
 
 % Create the VideoWriter object
@@ -220,20 +205,20 @@ disp(['Video successfully saved as: ', videoFileName]);
 
 %electrodes Selection
 el1 = 10; %(RA)
-el2 = 75; %(LA)
-el3 = 28; %(V)
-el4 = 129; %(Tank)
+el2 = 74; %(LA)
+el3 = 23; %(V)
+el4 = 136; %(Tank)
 
 % general info
-videoFileName = 'teste';
+videoFileName = 'MEAs_video';
 dataFiltered = Data;
-lim = [-800 800];
+lim = [-40 40];
 [V_MEA1, MEA, MEA1_plane_indx] = potentialMatrix(dataFiltered, 1);
 [V_MEA2, ~, MEA2_plane_indx] = potentialMatrix(dataFiltered, 2);
 [V_MEA3, ~, MEA3_plane_indx] = potentialMatrix(dataFiltered, 3);
 
 %plot
-figure();
+figure('color','white','Position', [40 40 1000 600]);
 set(gcf, 'color', 'white');
 colormap(jet)
 fr=1;
@@ -261,7 +246,7 @@ for ii=isample:step:fsample
     title(['Electrode ', num2str(el3), ' (Ventricle)']);
     ylabel('uV');
     xlim([0 fsample-isample]);
-    xlabel('Time (s)');
+    xlabel('Samples');
     xline(ii-isample, 'r');
 
     % Subplot 4
@@ -270,7 +255,7 @@ for ii=isample:step:fsample
     title(['Electrode ', num2str(el4), ' (Tank)']);
     ylabel('uV');
     xlim([0 fsample-isample]);
-    xlabel('Time (s)');
+    xlabel('Samples');
     xline(ii-isample, 'r');
 
     %subplot 5
@@ -309,4 +294,5 @@ close(writerObj);
 
 % Display a message indicating successful video creation
 disp(['Video successfully saved as: ', videoFileName]);
+
 
