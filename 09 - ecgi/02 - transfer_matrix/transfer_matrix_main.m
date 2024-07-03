@@ -4,20 +4,23 @@
 heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\projected_signals_exp14.mat';
 tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\LR_smoothed_tank.mat';
 
-% Loading data
+% Load tank geometry data
 tank_data = load(tank_geo_file);
-tank_geo = tank_data.(subsref(fieldnames(tank_data),substruct('{}',{1})));
+tank_geo = tank_data.(subsref(fieldnames(tank_data), substruct('{}', {1})));
 
+% Load heart geometry data
 heart_data = load(heart_geo_file);
 heart_geo = heart_data.geometry_20000;
 
 % Clear unnecessary variables
 clear heart_geo_file tank_geo_file heart_data tank_data;
+
 %% Define Conductivity
 
-% Conductivity of blood, tissues, and air, respectively
+% Conductivities for blood, tissues, and air, respectively (in S/m)
+% Uncomment the appropriate line for the desired conductivities
 conductivities = [0.3 0.2 0] * 0.01; % Old
-%conductivities = [0 0.2 0] * 0.01; % New
+% conductivities = [0 0.2 0] * 0.01; % New
 
 %% Organize Geometries
 
@@ -27,11 +30,11 @@ Model(1).faces = heart_geo.faces;
 Model(2).vertices = tank_geo.vertices;
 Model(2).faces = tank_geo.faces;
 
-%% Create Matrix
+%% Create Transfer Matrix
 
-disp('Calculating Transfer Matrix [Direct Problem]...')
+disp('Calculating Transfer Matrix [Direct Problem]...');
 
-% Save transfer matrix in a data matrix
+% Calculate the transfer matrix using the BEM method
 [MTransfer] = BEM_TransfMat(Model, conductivities);
 
 %% Saving
