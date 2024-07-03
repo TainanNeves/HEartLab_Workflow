@@ -35,8 +35,20 @@ For optical data manipulation, significant processing power is required. Since m
 - This code requires substantial processing capacity and takes hours to complete. It is recommended to run it overnight. Monitor the first exported files to ensure the code is running correctly.
 
 ## 02 – extraction_filtering: Data Extraction and Filtering
-
 These codes perform the extraction of electrical data and the filtering of electrical and optical data.
+
+### Npy-matlab library instalation
+This library is needed to run this codes.
+Download the files in: https://github.com/kwikteam/npy-matlab.
+After downloading npy-matlab as a zip file or via git, just add the
+npy-matlab directory to your search path. I advise you to create a folder within my documents, you will never access this page again
+
+Use this commands in the Command Window:
+```matlab
+>> addpath('my-idiosyncratic-path/npy-matlab/npy-matlab')  
+>> savepath
+```
+
 
 ### How to Use:
 
@@ -61,6 +73,13 @@ Here, optical data is resampled to a 4000 Hz frequency to match the electrical f
 
 1. Run the code "main_synchronization" (..\03 - synchronization_optical_electric).
    - The code exports a variable containing all synchronized optical and electrical data.
+
+## 04 – Interpolate signal Laplacian
+This folder generate interpolated electrodes for analysis.
+- MEAs (11x11)
+- TANK (25x25)
+
+The signal in time for all those electrodes will be saved for the full electric recording time, But it keeps the informations needed to synchronaze if you need.
 
 ## 04 – signal_plot: Signal Plots
 
@@ -117,4 +136,3 @@ There are three folders within this directory, two related to maps for electrica
 # To Do:
 - Automatize search and filtering of optical recordings (Junior)
 - Plot of the 12 leads ECG derivations (Junior)
-- Put Npy-matlab library path add in the readme file (Tainan)
