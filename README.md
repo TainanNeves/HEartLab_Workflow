@@ -98,12 +98,23 @@ There are three folders within this directory, two related to maps for electrica
 
 ## 09 – ECGi Codes
 
+# Individual tasks
+- Tainan
+   - Signal interpolation folder
+   - Dominant Frequency
+   - Cycle Length
+   - Phase codes
+- Junior
+   - Extraction and Filtering codes
+   - Signal Plots
+   - Potential
+- Angélica
+  - ECGi
+  - Local Activation Time
+  - Conduction Velocity
+  - Phase codes
+
 # To Do:
-- Add lines demarcating the faces of the tank in plots containing a tank
-- Create a switch to select cameras for filtering instead of set it manually
-- Correct CL code - Selection of the point must not be 100% automatizated (use peaks up or down)
-- add LAT/CV code
-- Add LAT_CV plot with laplacian interpolation applied in the signals
-- Update CV electric codes. We need to better specify distances between vertices.
-- Put Npy-matlab library path add in the readme file
-- Add potential plot with laplacian interpolation applied in the signals
+- Automatize search and filtering of optical recordings (Junior)
+- Plot of the 12 leads ECG derivations (Junior)
+- Put Npy-matlab library path add in the readme file (Tainan)
