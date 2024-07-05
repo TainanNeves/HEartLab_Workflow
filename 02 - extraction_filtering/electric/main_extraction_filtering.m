@@ -41,12 +41,16 @@ mean_tank = mean(tank_signals);
 DATA.Data([129:174,177:190], :) = tank_signals - mean_tank;
 
 
-%% Add 60 Hz notch filter
+%% Extra notch filter
+% Run it just if you want to apply an extra layer of filtering
+% This is a temporal code. Final version must have this filtering inside
+% the filter_signal function.
 Fs = DATA.Header.sample_rate; % Sampling frequency
 notch_freq = 60; % Frequency to be removed (60Hz)
 bandwidth = 2; % Bandwidth of the notch filter
 [b, a] = iirnotch(notch_freq/(Fs/2), bandwidth/(Fs/2)); % Design 60Hz notch filter
 DATA.Data = filtfilt(b, a, DATA.Data); % Apply 60Hz notch filter to data, DATA.Data); % Apply 60Hz notch filter to data
+% Not conclusive if there is an increasement of filtering quality.
 
 
 %% Comparation Plot
@@ -185,7 +189,7 @@ for i = 1:length(el_wavelet)
 end
 % Puting zeros in el_toZero
 for i = el_toZero(1):el_toZero(length(el_toZero))
-    filtered_data(i) = zeros(length(filtered_data));
+    filtered_data(i, :) = zeros(1, length(filtered_data));
 end
 
 % Save filtered data

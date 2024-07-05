@@ -80,32 +80,81 @@ There are three folders within this directory, two related to maps for electrica
    - For electrical – matrix_mode – close neighbors: "main"
    - For optic: "main_optic_potential_map.m"
 
-## 06 - dominant_frequency_maps: Dominant Frequency Maps
+## 06 - Dominant Frequency and Cicle Length maps: Dominant Frequency Maps
 
 ### How to Use:
 
 1. Run the code "main_dominant_frquency_map.m" (..\06 – dominant_frequency_maps).
    - Run it point by point using F9. It is well-documented and generates dominant frequency plots for MEAs, TANK, and OPTIC.
 
-## 07 – phase_maps: Phase Maps
+## 07 - Local Activation and Conduction Velocity Codes
+
+## 08 – phase_maps: Phase Maps
 
 ### How to Use:
 
 1. Run the code "main_phase_map.m" (..\07 – phase_maps).
    - Run point by point using F9 to ensure control of occurrences.
 
-## 08 – 
+## 09 – ECGi Codes
+
+This part of the workflow is dedicated to estimating epicardial signals from tank signals using the ECGi technique.
+The necessary data includes:
+- Electrical recordings
+- 3D tank geometry
+- 3D heart geometry
+
+Use the provided link to access the required data and test the code:
+   https://drive.google.com/file/d/1zg2_ksFMtSZZ4n85zVh8T5sUOVvZD2jM/view?usp=sharing
+
+The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - transfer_matrix and 03 - estimation.
+
+### How to Use:
+
+1. Verify Geometries
+   - Navigate to the "01 - correct_geometries" folder.
+   - Open the "correct_geometries" file.
+   - Run the code section by section, as some sections might not be necessary.
+   - Plot both the tank and heart geometries to ensure they are correctly positioned. The heart should be centered within the tank.
+
+2. Generate Transfer Matrix
+   - Navigate to the "02 - transfer_matrix" folder.
+   - Open the "transfer_matrix_main" file.
+   - Load the adjusted heart and tank geometries.
+   - Run the code section by section.
+   - The process will generate and save a structure containing the transfer matrix.
+
+3. Estimate Signals
+   - Navigate to the "03 - estimation" folder.
+   - Open the "estimation_main.m" file.
+   - Run the code section by section, as some sections might not be necessary.
+   - Load all necessary data for estimation:
+      - Electrical signals
+      - Transfer matrix (generated in the previous step)
+      - 3D heart geometry
+      - 3D tank geometry
+      - Electrodes indices (mapping vertices on the 3D geometry to electrode positions)
+   - In the "Estimation Calculation" section, set the initial and final times for the original recording to be estimated.
+   - In the "Plot" sections, adjust the instants for plotting the results.
+
+
+# Individual tasks
+- Tainan
+   - Signal interpolation folder
+   - Dominant Frequency
+   - Cycle Length
+   - Phase codes
+- Junior
+   - Extraction and Filtering codes
+   - Signal Plots
+   - Potential
+- Angélica
+  - ECGi
+  - Local Activation Time
+  - Conduction Velocity
+  - Phase codes
 
 # To Do:
-- Add lines demarcating the faces of the tank in plots containing a tank
-- In the optical export code, create a figure that is load with low filter to guide electrodes position. Keep the export file smooth, but export a single frame to guide this selection
-- Create a switch to select cameras for filtering instead of set it manually
-- Save the pixel position by clicking instead of insert it manually (Pick up a trace) - Save in variable
-- Correct CL code - Selection of the point must not be 100% automatizated (use peaks up or down)
-- add LAT/CV code
-- Keep ROI and optical In in the sincronyzation code
-- Put zeros in the non-used electrodes
-- Update CV electric codes. We need to better specify distances between vertices.
-- Put Npy-matlab library path add in the readme file
-- Add potential plot with laplacian interpolation applied in the signals
-- Add LAT_CV plot with laplacian interpolation applied in the signals
+- Automatize search and filtering of optical recordings (Junior)
+- Plot of the 12 leads ECG derivations (Junior)
+- Put Npy-matlab library path add in the readme file (Tainan)
