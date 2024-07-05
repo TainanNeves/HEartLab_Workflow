@@ -156,5 +156,5 @@ The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - tra
 
 # To Do:
 - Automatize search and filtering of optical recordings (Junior)
-- Plot of the 12 leads ECG derivations (Junior)
+- Plot of the 12 leads ECG derivations (Junior) - 50% done
 - Put Npy-matlab library path add in the readme file (Tainan)
