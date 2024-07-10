@@ -141,13 +141,13 @@ The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - tra
 # Individual tasks
 - Tainan
    - Signal interpolation folder
+   - Potential
    - Dominant Frequency
    - Cycle Length
    - Phase codes
 - Junior
    - Extraction and Filtering codes
    - Signal Plots
-   - Potential
 - Angélica
   - ECGi
   - Local Activation Time
