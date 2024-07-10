@@ -104,10 +104,10 @@ The necessary data includes:
 - 3D tank geometry
 - 3D heart geometry
 
-Use the provided link to access the required data and test the code:
-   https://drive.google.com/file/d/1zg2_ksFMtSZZ4n85zVh8T5sUOVvZD2jM/view?usp=sharing
+The "ECGi example files" folder contains example files used for learning how to use the codes. Due to their size, they should be downloaded to a cloud folder available at: 
+   https://drive.google.com/drive/folders/1mnPHndhv8YsTKY7OhFATb5cnypMQiDiF?usp=sharing
 
-The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - transfer_matrix and 03 - estimation.
+The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - transfer_matrix, 03 - estimation and 04 - statistical analysis.
 
 ### How to Use:
 
@@ -137,6 +137,13 @@ The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - tra
    - In the "Estimation Calculation" section, set the initial and final times for the original recording to be estimated.
    - In the "Plot" sections, adjust the instants for plotting the results.
 
+4. Statistical analysis
+ - Navigate to the "04 - statistical_analysis" folder.
+ - Open the "ecgi_meas_analysis.m" file.
+ - Load all necessary data for estimation:
+   - Electrical signals
+   - Estimated signals
+   - MEAs electrodes indices (mapping vertices on the 3D geometry to MEAs electrodes positions)
 
 # Individual tasks
 - Tainan
