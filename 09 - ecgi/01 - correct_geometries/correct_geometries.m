@@ -4,9 +4,9 @@
 heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\projected_signals_exp14.mat';
 tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\LR_smoothed_tank.mat';
 
-% Loading data
+% Extracting and reading data
 tank_data = load(tank_geo_file);
-tank_geo = tank_data.(subsref(fieldnames(tank_data),substruct('{}',{1})));
+tank_geo = tank_data.(subsref(fieldnames(tank_data), substruct('{}', {1})));
 
 heart_data = load(heart_geo_file);
 heart_geo = heart_data.geometry_20000;
@@ -14,21 +14,37 @@ heart_geo = heart_data.geometry_20000;
 % Clear unnecessary variables
 clear heart_geo_file tank_geo_file heart_data tank_data;
 
-%% Correction of the faces vector (removing zero indices)
-% Some heart geometries might contain zero indices. Check it and correct it
-% if necessary.
+%% Plot Initial Geometries
+% Plot both tank and heart geometries to check initial alignment
 
-for j=1:3
-    for i=1:length(heart_geo.faces)
+figure(1);
+trisurf(heart_geo.faces, heart_geo.vertices(:,1), heart_geo.vertices(:,2), heart_geo.vertices(:,3), ...
+    'FaceAlpha', 0.2, 'FaceColor', 'y');
+hold on;
+trisurf(tank_geo.faces, tank_geo.vertices(:,1), tank_geo.vertices(:,2), tank_geo.vertices(:,3), ...
+    'FaceAlpha', 0.2, 'FaceColor', 'g');
+title('Initial Geometries');
+hold off;
+
+%% Correct Upside Down Geometry
+% Check if the heart geometry is upside down and correct it if necessary
+
+heart_geo.vertices(:,3) = -heart_geo.vertices(:,3);
+
+%% Correction of Face Indices
+% Some heart geometries might contain zero indices. If you can plot both
+% geometries without any error, this part is not necessary
+
+for j = 1:3
+    for i = 1:length(heart_geo.faces)
         heart_geo.faces(i,j) = heart_geo.faces(i,j) + 1;
     end
 end
 
-%% Shifting atrium geometry to the center of the tank
-% Plot both tank and heart and verify if the heart is placed in the center
-% of the tank before estimation. If not, use this code block for
-% displacement.
+%% Shifting Heart Geometry to Center of Tank
+% Shift heart vertices to center the heart geometry within the tank
 
+vertices_new = zeros(size(heart_geo.vertices));
 
 for dim = 1:3
     if dim == 3
@@ -43,16 +59,29 @@ for dim = 1:3
     end
 end
 
-% Saving new geometry with displacement
-heart_geo = struct('vertices', vertices_new, 'faces' , heart_geo.faces);
+% Update heart geometry with shifted vertices
+heart_geo = struct('vertices', vertices_new, 'faces', heart_geo.faces);
 
 % Clear temporary variables
 clear dim vertice_index dc vertices_new;
 
-%% Plot
-% Plot both tank and heart geometries
+%% Plot Corrected Geometries
+% Plot both tank and heart geometries after correction
 
-figure(1)
-trisurf(heart_geo.faces, heart_geo.vertices(:,1), heart_geo.vertices(:,2), heart_geo.vertices(:,3), 'FaceAlpha',0.2,'FaceColor','y');
+figure(2);
+trisurf(heart_geo.faces, heart_geo.vertices(:,1), heart_geo.vertices(:,2), heart_geo.vertices(:,3), ...
+    'FaceAlpha', 0.2, 'FaceColor', 'y');
 hold on;
-trisurf(tank_geo.faces, tank_geo.vertices(:,1), tank_geo.vertices(:,2), tank_geo.vertices(:,3), 'FaceAlpha',0.2,'FaceColor','g');
+trisurf(tank_geo.faces, tank_geo.vertices(:,1), tank_geo.vertices(:,2), tank_geo.vertices(:,3), ...
+    'FaceAlpha', 0.2, 'FaceColor', 'g');
+title('Corrected Geometries');
+hold off;
+
+%% Saving Corrected Geometry
+% Define the path to save the corrected structure
+adjusted_geo = 'heart_geometry_exp14.mat';
+
+% Save the corrected heart geometry
+save(adjusted_geo, 'heart_geo');
+
+disp('Corrected heart geometry saved.');
