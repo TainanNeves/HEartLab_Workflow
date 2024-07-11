@@ -1,10 +1,10 @@
-function [row, col] = getElectrodePosition(electrodeNumber)
-%GETELECTRODEPOSITION Returns the row and column position of a given electrode.
+function [row, col, source] = getElectrodePosition(electrodeNumber)
+%GETELECTRODEPOSITION Returns the row, column position, and source of a given electrode.
 %
-%   [row, col] = GETELECTRODEPOSITION(electrodeNumber) returns the row and
-%   column position of the specified electrode. If the electrode number is 
-%   invalid or the position is not defined, the function returns an empty 
-%   array and displays a message indicating the electrode is not found.
+%   [row, col, source] = GETELECTRODEPOSITION(electrodeNumber) returns the row and
+%   column position of the specified electrode, as well as the source number. If the
+%   electrode number is invalid or the position is not defined, the function returns 
+%   an empty array and displays a message indicating the electrode is not found.
 %
 %   Input:
 %       electrodeNumber - A scalar integer representing the electrode number.
@@ -12,12 +12,13 @@ function [row, col] = getElectrodePosition(electrodeNumber)
 %   Output:
 %       row - The row position of the electrode.
 %       col - The column position of the electrode.
+%       source - The source number of the electrode.
 %
 %   If the electrode number is not found or its position is undefined,
-%   the function returns empty arrays for both row and col, and displays 
+%   the function returns empty arrays for row, col, and source, and displays 
 %   the message 'Electrode not found'.
 
-    % Matrix for Electrode and its row and col cordinates
+    % Matrix for Electrode and its row and col coordinates
     matrix = [
         1, 9, 3; 2, 9, 5; 3, 9, 7; 4, 9, 9; 5, 7, 3; 6, 7, 5; 7, 7, 7; 8, 7, 9; 
         9, 5, 3; 10, 5, 5; 11, 5, 7; 12, 5, 9; 13, 3, 3; 14, 3, 5; 15, 3, 7; 
@@ -57,6 +58,7 @@ function [row, col] = getElectrodePosition(electrodeNumber)
         disp('Electrode number is not valid');
         row = [];
         col = [];
+        source = [];
         return;
     end
 
@@ -64,10 +66,24 @@ function [row, col] = getElectrodePosition(electrodeNumber)
     row = matrix(electrodeNumber, 2);
     col = matrix(electrodeNumber, 3);
 
+    % Determine the source based on the electrode number
+    if electrodeNumber >= 1 && electrodeNumber <= 16
+        source = 1;
+    elseif electrodeNumber >= 17 && electrodeNumber <= 32
+        source = 2;
+    elseif electrodeNumber >= 65 && electrodeNumber <= 80
+        source = 3;
+    elseif (electrodeNumber >= 129 && electrodeNumber <= 174) || (electrodeNumber >= 177 && electrodeNumber <= 190)
+        source = 4;
+    else
+        source = [];
+    end
+
     % Check if the position is defined
     if row == -1 && col == -1
         disp('Electrode do not have signal');
         row = [];
         col = [];
+        source = [];
     end
 end
