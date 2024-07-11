@@ -104,10 +104,10 @@ The necessary data includes:
 - 3D tank geometry
 - 3D heart geometry
 
-The "ECGi example files" folder contains example files used for learning how to use the codes. Due to their size, they should be downloaded to a cloud folder available at: 
-   https://drive.google.com/drive/folders/1mnPHndhv8YsTKY7OhFATb5cnypMQiDiF?usp=sharing
+Use the provided link to access the required data and test the code:
+   https://drive.google.com/file/d/1rGyOZpxwJDRzifUjC0BH9d8kWx3Qryzl/view?usp=sharing
 
-The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - transfer_matrix, 03 - estimation and 04 - statistical analysis.
+The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - transfer_matrix, 03 - estimation and 04 - statistical_analysis.
 
 ### How to Use:
 
@@ -138,23 +138,27 @@ The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - tra
    - In the "Plot" sections, adjust the instants for plotting the results.
 
 4. Statistical analysis
- - Navigate to the "04 - statistical_analysis" folder.
- - Open the "ecgi_meas_analysis.m" file.
- - Load all necessary data for estimation:
-   - Electrical signals
-   - Estimated signals
-   - MEAs electrodes indices (mapping vertices on the 3D geometry to MEAs electrodes positions)
+   - Navigate to the "04 - statistical_analysis" folder.
+   - Open the "ecgi_meas_analysis.m" file.
+   - Run the code section by section.
+   - Load all necessary data for the analysis:
+      - Estimated signals
+      - Electrical signals
+      - Index correspondence between MEAs and 3D heart geometry (projected_signals)
+   - Be sure you are comparing the same time window for MEAs and ECGi signals.
+   - The process will generate a matrix called "metrics".
+
 
 # Individual tasks
 - Tainan
    - Signal interpolation folder
-   - Potential
    - Dominant Frequency
    - Cycle Length
    - Phase codes
 - Junior
    - Extraction and Filtering codes
    - Signal Plots
+   - Potential
 - Angélica
   - ECGi
   - Local Activation Time
@@ -163,5 +167,5 @@ The folder "09 – ecgi" contains three items: 01 - correct_geometries, 02 - tra
 
 # To Do:
 - Automatize search and filtering of optical recordings (Junior)
-- Plot of the 12 leads ECG derivations (Junior) - 50% done
+- Plot of the 12 leads ECG derivations (Junior)
 - Put Npy-matlab library path add in the readme file (Tainan)
