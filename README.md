@@ -105,7 +105,7 @@ The necessary data includes:
 - 3D heart geometry
 
 Use the provided link to access the required data and test the code:
-   https://drive.google.com/file/d/1zg2_ksFMtSZZ4n85zVh8T5sUOVvZD2jM/view?usp=sharing
+   https://drive.google.com/file/d/1rGyOZpxwJDRzifUjC0BH9d8kWx3Qryzl/view?usp=sharing
 
 The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - transfer_matrix, 03 - estimation and 04 - statistical_analysis.
 
