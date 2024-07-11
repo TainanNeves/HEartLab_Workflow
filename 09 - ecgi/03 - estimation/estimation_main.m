@@ -189,7 +189,7 @@ xlabel('Time (s)', 'FontSize', 15);
 %% Plotting 1 Map
 
 % Define time for plotting (seconds)
-inst1 = 1;
+inst1 = 3;
 
 % Conversion to samples
 inst1_sample = inst1 * fs + 1;
@@ -258,15 +258,14 @@ title(['Instant ', num2str(inst3), 's   Sample ', num2str(inst3_sample)]);
 
 % Comment from here if it's not necessary the same colorbar for all plots
 % Set the colormap for the entire figure
-% colormap(jet);
+colormap(jet);
 % 
 % % Adjust color limits to be the same for all plots
-% min_value = min([sinal1(:); sinal2(:); sinal3(:)]);
-% max_value = max([sinal1(:); sinal2(:); sinal3(:)]);
-% set([ax1, ax2, ax3], 'CLim', [min_value max_value]);
-% 
-% % Add a single colorbar for the entire figure
-% cb = colorbar;
-% cb.Layout.Tile = 'east';
-% cb.Label.String = 'Amplitude (\muV)';
+min_value = min([sinal1(:); sinal2(:); sinal3(:)]);
+max_value = max([sinal1(:); sinal2(:); sinal3(:)]);
+set([ax1, ax2, ax3], 'CLim', [min_value max_value]);
 
+% % Add a single colorbar for the entire figure
+cb = colorbar;
+cb.Layout.Tile = 'east';
+cb.Label.String = 'Amplitude (\muV)';
