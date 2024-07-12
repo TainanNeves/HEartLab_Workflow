@@ -150,15 +150,15 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 
 
 # Individual tasks
+- Junior
+   - Extraction and Filtering codes
+   - Signal Plots
+   - Potential
 - Tainan
    - Signal interpolation folder
    - Dominant Frequency
    - Cycle Length
    - Phase codes
-- Junior
-   - Extraction and Filtering codes
-   - Signal Plots
-   - Potential
 - Angélica
   - ECGi
   - Local Activation Time
@@ -166,6 +166,14 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
   - Phase codes
 
 # To Do:
-- Automatize search and filtering of optical recordings (Junior)
-- Plot of the 12 leads ECG derivations (Junior)
-- Put Npy-matlab library path add in the readme file (Tainan)
+- Junior
+  - Adicionar prog. Gerador de Funções
+  - Plot of the 12 leads ECG derivations
+  - Potential maps to Matrix mode
+  - Seq to Mat - Update to match new filtering methods
+- Tainan
+  - Put Npy-matlab library path add in the readme file
+- Angélica
+  - Statistic methrics implementation in ECGi codes
+- All
+  - Select Recordings to Library
