@@ -173,6 +173,7 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
   - Seq to Mat - Update to match new filtering methods
 - Tainan
   - Put Npy-matlab library path add in the readme file
+  - Interpolation Code Update
 - Angélica
   - Statistic methrics implementation in ECGi codes
 - All

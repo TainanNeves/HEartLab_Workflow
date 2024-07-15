@@ -76,6 +76,7 @@ axis off;
 hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Dominant Frequency [Hz]', 'FontSize', 14);
 caxis([freq_down freq_up]);
+title('Cam1 V');
 
 
 %% Optical Dominant Frequency Analysis - Statistics
@@ -228,7 +229,7 @@ DF_E = DF_values.TANK.MFFTi;
 
 % Select Electrodes range
 figure();
-imshow(DF_values.MEA1.MFFTi, 'InitialMagnification', 'fit');
+imshow(DF_E, 'InitialMagnification', 'fit');
 title('Select ROI');
 roi = roipoly;
 
