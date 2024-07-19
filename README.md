@@ -167,14 +167,16 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 
 # To Do:
 - Junior
-  - Adicionar prog. Gerador de Funções
-  - Plot of the 12 leads ECG derivations
+  - Signal Plot to Matrix mode
   - Potential maps to Matrix mode
-  - Seq to Mat - Update to match new filtering methods
+  - Update Header information in Filtering Electric Codes
 - Tainan
   - Put Npy-matlab library path add in the readme file
   - Interpolation Code Update
+  - Implementation of metrics for DF and CL
 - Angélica
-  - Statistic methrics implementation in ECGi codes
+  - Adding estimation signals information on header
+  - adding metrics information on header
+  - LAT / Cycle Lenght Codes
 - All
   - Select Recordings to Library
