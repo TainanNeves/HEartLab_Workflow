@@ -269,3 +269,39 @@ set([ax1, ax2, ax3], 'CLim', [min_value max_value]);
 cb = colorbar;
 cb.Layout.Tile = 'east';
 cb.Label.String = 'Amplitude (\muV)';
+
+%% Saving
+
+% Check the regularization method
+if exist('lambda_opt', 'var')
+    reg_method = 'Tikhonov';
+else
+    % If not Tikhonov, it was probably TSVD
+    reg_method = 'TSVD';
+end
+
+% Filename to save
+FileName = 'EXX_FXX_RXX';
+
+% Get the current directory
+current_dir = pwd;
+
+% Determine the parent directory
+[parent_dir, ~, ~] = fileparts(current_dir);
+
+% Define the path to save the file in the parent directory
+output_file = fullfile(parent_dir, ['estimated_', FileName, '.mat']);
+
+% Prepare the data structure
+estimated = struct(); % Initialize structure
+estimated.Data = x_hat; 
+estimated.Time = [init_time, final_time];
+estimated.Regularization = reg_method;
+estimated.Order = order;
+estimated.Heart_geometry = heart_geo;
+estimated.Filtering = ' ';
+
+% Save the file to the specified path
+save(output_file, 'estimated');
+
+fprintf('File saved to: %s\n', output_file);
