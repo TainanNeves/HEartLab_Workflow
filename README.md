@@ -170,6 +170,7 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
   - Signal Plot to Matrix mode
   - Potential maps to Matrix mode
   - Update Header information in Filtering Electric Codes
+  - Update Electric Extraction code for warning when the TTL is empty
 - Tainan
   - Put Npy-matlab library path add in the readme file
   - Interpolation Code Update
