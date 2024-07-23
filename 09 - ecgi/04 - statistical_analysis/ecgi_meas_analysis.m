@@ -16,6 +16,15 @@ estimated_file_path = "C:\Users\HeartLAB\Documents\Documents\Codes\Current codes
 estimated_file = load(estimated_file_path);
 estimated_signal = estimated_file.estimated.Data;
 
+%% Normalizing data
+% Comment this section if you don't want to normalize the data before
+% calculating the metrics!!
+
+meas_signal = normalize(meas_signal,2,'zscore');
+estimated_signal = normalize(estimated_signal,2,'zscore');
+norm = 'Yes';
+
+
 %% Calculating the statistics
 
 % Setting the frequency sampling
@@ -96,6 +105,7 @@ end
 estimated_file.estimated.Metrics.(metrics_field_name).Data = metrics;
 estimated_file.estimated.Metrics.(metrics_field_name).Time = [init_time, final_time];
 estimated_file.estimated.Metrics.(metrics_field_name).Columns = {'RMSE', 'MSE', 'MAE', 'Standard Deviation of MEAs', 'Standard Deviation of ECGi', 'Correlation', 'Relative Error'};
+estimated_file.estimated.Metrics.(metrics_field_name).Normalization = norm;
 
 % Save the updated estimated file
 save(estimated_file_path, '-struct', 'estimated_file');
@@ -135,6 +145,26 @@ metric_type = 3; % metric
 rhythm_names = {'Sinus','Arrhythmia'};
 
 plotMetricsBoxplot(metrics_data, metric_type, rhythm_names);
+
+%% boxplot for DF
+
+df_boxplot(df_values_meas_tank, df_values_ecgi, meas_signal, file_id_meas, 20000);
+
+
+%% Selecting only one MEA electrode and its corresponding vertex
+
+% Choose one electrode number
+electrode = 10;
+
+% Get MEA electrode position in 3D geometry
+[mea, id_mea, electrode_mea] = get_mea_electrode(electrode, meas_signal, file_id_meas, 20000);
+
+% Extract the estimated signal for the corresponding vertex
+id_est_mea = id_mea(electrode_mea); % MEA(electrode) vertex index
+pot_estimated = estimated_signal(id_est_mea, :); % Estimated signal (vertex, time)
+
+% Extract the MEA signal
+pot_measured = mea(electrode_mea, :); % Measured signal (MEA electrode, time)
 
 %% Comparison plot MEA vs ECGi
 
@@ -179,3 +209,6 @@ ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
 
 % Adjust layout for better visualization
 xlabel('Time (s)', 'FontSize', 14);
+
+
+
