@@ -91,7 +91,7 @@ for cam_idx = 1:3
     [DATA1] = -f_fil(R, Fpass, Fsampling, n, less);
     
     % Apply a Gaussian spatial and temporal filtering to the data
-    %   SpatTemp_Filtering (3D Data, S = Size Gaussian filter matrix (must be
+    % SpatTemp_Filtering (3D Data, S = Size Gaussian filter matrix (must be
     %   odd), T = Temporal filter matrix size, mode = 'CPU' or 'GPU') 
     %   Using multiple times the result becomes smooth, but you lose the
     %   electrode positions
@@ -135,9 +135,6 @@ for cam_idx = 1:3
 
     clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
     clear i I J less n p p2 R row_pixel ROI ans Background;
-
-    close all
-
 end
 
 %Exporting the Optical Data
@@ -154,6 +151,7 @@ D_OP.D_CAM3_rawimage = D_CAM3_image;
 D_OP.ROI.ROI_1 = ROI_CAM1;
 D_OP.ROI.ROI_2 = ROI_CAM2;
 D_OP.ROI.ROI_3 = ROI_CAM3;
+
 % Save variables to the .mat file
 save(filenamerecording, 'D_OP', '-v7.3');
 disp(['Variables saved to ', filenamerecording]);
@@ -161,6 +159,8 @@ disp(['Variables saved to ', filenamerecording]);
 clear D_CAM1_filtered  D_CAM2_filtered  D_CAM3_filtered
 clear D_CAM1_image     D_CAM2_image     D_CAM3_image
 clear ROI_CAM1 ROI_CAM2 ROI_CAM3 x y cam_idx
+
+close all;
 
 end
 
