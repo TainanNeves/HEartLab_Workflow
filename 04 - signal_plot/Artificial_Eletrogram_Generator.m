@@ -1,98 +1,147 @@
-%CÓDIGO HEartLab - Artificial Eletrogram Signal Generator - Versão 1 - 04/07/2024
-%Author - José Junior
+%CÓDIGO HEartLab - Artificial Electrogram Signal Generator - Version 3 - 20/07/2024
+% This code generates artificial electrogram signals.
+% The signals are generated through sinusoidal functions of different orders.
+% It is possible to choose the electrical amplitudes of the Monophasic Electrogram and
+% the Biphasic Electrogram.
+% You can choose the heart rate in BPM and the sampling frequency.
+% A figure of the Electrogram is plotted.
+% The generated signals work with a sampling frequency of 4kHz and 8s.
+% The code is simple, just run each section.
+% Author - José Junior
 
-%-------------------------------------------------------------------
-% Clear the workspace and command window
+% Mathematical Modeling Periods
+% Monophasic Wave Period is 2.34 s -> f = 0.427 Hz -> 25.64 BPM
+% Biphasic Wave Period is 2.86 s -> f = 0.349 Hz -> 20.97 BPM
+
 clear; clc;
 
-%-------------------------------------------------------------------
-% Define constants for signal generation
-MA = 1;   % Amplitude for the Monophasic Signal
-MN = 50;  % Exponent for the Monophasic Signal
-Mk = 1.35; % Frequency factor for the Monophasic Signal
-MD = -3.3; % Phase shift for the Monophasic Signal
-
-% Constants for the six different biphasic components
-B1A = 0.9;   % Amplitude of the 1st Biphasic Component
-B1N = 300;   % Exponent of the 1st Biphasic Component
-B1k = 1.1;   % Frequency factor of the 1st Biphasic Component
-B1D = -3.10; % Phase shift of the 1st Biphasic Component
-
-B2A = -0.9;  % Amplitude of the 2nd Biphasic Component
-B2N = 400;   % Exponent of the 2nd Biphasic Component
-B2k = 1.1;   % Frequency factor of the 2nd Biphasic Component
-B2D = -3.18; % Phase shift of the 2nd Biphasic Component
-
-B3A = 0.2;   % Amplitude of the 3rd Biphasic Component
-B3N = 256;   % Exponent of the 3rd Biphasic Component
-B3k = 1.1;   % Frequency factor of the 3rd Biphasic Component
-B3D = -3;    % Phase shift of the 3rd Biphasic Component
-
-B4A = 0.08;  % Amplitude of the 4th Biphasic Component
-B4N = 256;   % Exponent of the 4th Biphasic Component
-B4k = 1.1;   % Frequency factor of the 4th Biphasic Component
-B4D = -2.9;  % Phase shift of the 4th Biphasic Component
-
-B5A = -0.2;  % Amplitude of the 5th Biphasic Component
-B5N = 256;   % Exponent of the 5th Biphasic Component
-B5k = 1.1;   % Frequency factor of the 5th Biphasic Component
-B5D = -3.2;  % Phase shift of the 5th Biphasic Component
-
-B6A = -0.08; % Amplitude of the 6th Biphasic Component
-B6N = 256;   % Exponent of the 6th Biphasic Component
-B6k = 1.1;   % Frequency factor of the 6th Biphasic Component
-B6D = -3.3;  % Phase shift of the 6th Biphasic Component
-
-% Define the time vector for 8 seconds with a sampling rate of 4000 Hz
-time = linspace(0, 8, 8*4000);
+%% Sinusoidal Function Values
 
 %-------------------------------------------------------------------
-% Generate the Monophasic Signal using a sinusoidal function
-VOM = MA * (sin(Mk*time + MD)).^MN;
-
-% Generate each Biphasic Component
-g = B1A * (sin(B1k*time+B1D).^B1N); % 1st Component
-h = B2A * (sin(B2k*time+B2D).^B2N); % 2nd Component
-j = B3A * (sin(B3k*time+B3D).^B3N); % 3rd Component
-k = B4A * (sin(B4k*time+B4D).^B4N); % 4th Component
-l = B5A * (sin(B5k*time+B5D).^B5N); % 5th Component
-p = B6A * (sin(B6k*time+B6D).^B6N); % 6th Component
-
-% Combine all Biphasic Components to generate the final Biphasic Signal
-VOB = g + h + j + k + l + p;
+% Monophasic Electrogram Values
+MA = 1; % Amplitude [a.u.]
+MN = 50; % Order of the Sinusoidal Function - Order
+Mk = 1.35; % Mathematical Modeling Frequency Factor - FMM
 
 %-------------------------------------------------------------------
-% Clear variables that are no longer needed
+% Biphasic Electrogram Values
+ %Amplitude [a.u.]    %Order           %FMM     %Phase Shift
+    B1A = 0.9;      B1N = 300;      B1k = 1.1;      B1D = -3.10;
+    B2A = -0.9;     B2N = 400;      B2k = 1.1;      B2D = -3.18;
+    B3A = 0.2;      B3N = 256;      B3k = 1.1;      B3D = -3;
+    B4A = 0.08;     B4N = 256;      B4k = 1.1;      B4D = -2.9;
+    B5A = -0.2;     B5N = 256;      B5k = 1.1;      B5D = -3.2;
+    B6A = -0.08;    B6N = 256;      B6k = 1.1;      B6D = -3.3;
+
+% Sampling Time and Frequency Values
+FA = 4000; % Sampling frequency
+t = linspace(0,8,8*FA);
+
+%% Determination of Heart Rate in BPM
+
+%---Monophasic Wave------------------------------------------------------
+FFM = 1; % Heart Rate - do not alter!!!
+
+%Choose the Heart Rate by Entering a Value in BPM
+fcm = 60; % Heart Rate Value in BPM
+
+%Assign Value to Monophasic Wave
+FFM = FFM * (fcm/25.641);
+
+%---Biphasic Wave--------------------------------------------------------
+FFB = 1; % Heart Rate Frequency Factor - do not alter!!!
+
+%Choose the Heart Rate by Entering a Value in BPM
+fcb = 60; % Heart Rate Value in BPM
+
+%Assign Value to Biphasic Wave
+FFB = FFB * (fcb/20.979);
+
+%% Amplitude Modifier [a.u.]
+
+MAOM = 1; % Constant for Calculation - Do not alter!!!
+MAOB = 1; % Constant for Calculation - Do not alter!!!
+
+%Modifier for Monophasic Wave
+mao = 1; % Amplitude Value in a.u.
+MAOM = MAOM * (mao/1);
+
+%Modifier for Biphasic Wave
+mab = 1; % Amplitude Value in a.u.
+MAOB = MAOB * (mab/1);
+
+%% Generation of Artificial Electrogram Waveforms
+
+%-------------------------------------------------------------------
+%Monophasic
+VOM = MAOM * MA * (sin(FFM*Mk*t)).^MN; %Monophasic Wave Function
+
+%-------------------------------------------------------------------
+%Biphasic
+B1 = MAOB * B1A * (sin(FFB*B1k*t+B1D).^B1N); %Function 1 of Biphasic Wave
+B2 = MAOB * B2A * (sin(FFB*B2k*t+B2D).^B2N); %Function 2 of Biphasic Wave
+B3 = MAOB * B3A * (sin(FFB*B3k*t+B3D).^B3N); %Function 3 of Biphasic Wave
+B4 = MAOB * B4A * (sin(FFB*B4k*t+B4D).^B4N); %Function 4 of Biphasic Wave
+B5 = MAOB * B5A * (sin(FFB*B5k*t+B5D).^B5N); %Function 5 of Biphasic Wave
+B6 = MAOB * B6A * (sin(FFB*B6k*t+B6D).^B6N); %Function 6 of Biphasic Wave
+
+VOB = B1 + B2 + B3 + B4 + B5 + B6; %General Function of Biphasic Wave
+
+%-------------------------------------------------------------------
 clear B1A B2A B3A B4A B5A B6A B1N B2N B3N B4N B5N B6N
 clear B1D B2D B3D B4D B5D B6D B1k B2k B3k B4k B5k B6k
-clear g h j k l p
+clear B1 B2 B3 B4 B5 B6
 clear MA MN MD Mk
 
-%-------------------------------------------------------------------
-% Plot the generated signals
+%% Plotting the Artificial Electrogram
 
-% Create a figure with two subplots
+% Creating Figure with both Electrograms
 figure;
 
-% Plot the Monophasic Signal
+% Define time limits
+lower_limit_time_mono = 1;  % adjust as needed for mono wave
+upper_limit_time_mono = 4;  % adjust as needed for mono wave
+
+lower_limit_time_bi = 1;  % adjust as needed for bi wave
+upper_limit_time_bi = 4;  % adjust as needed for bi wave
+
+% Monophasic Wave Subplot
 subplot(2, 1, 1);
-plot(time, VOM); % Plot the Monophasic Signal
-title('Monophasic Signal'); % Title for the Monophasic Signal Plot
-xlabel('Time [s]'); % X-axis label
-ylabel('Amplitude [a.u.]'); % Y-axis label
-grid on; % Turn on the grid
-ylim([-1, max(VOM)*2]); % Set y-axis limits
+plot(t, VOM, 'r');
+title(sprintf('Monophasic Morphology Signal - Heart Rate: %.2f - BPM', fcm));
+xlabel('Time - [s]');
+ylabel('Amplitude - [a.u.]');
+grid on;
+ylim([min(VOM)-0.2, max(VOM)+0.2]);
+xlim([lower_limit_time_mono, upper_limit_time_mono]);  % Adjust X-axis limits
 
-% Plot the Biphasic Signal
+% Biphasic Wave Subplot
 subplot(2, 1, 2);
-plot(time, VOB); % Plot the Biphasic Signal
-title('Biphasic Signal'); % Title for the Biphasic Signal Plot
-xlabel('Time [s]'); % X-axis label
-ylabel('Amplitude [a.u.]'); % Y-axis label
-grid on; % Turn on the grid
-ylim([-1, max(VOB)*1.1]); % Set y-axis limits
-xlim([min(time), max(time)]); % Set x-axis limits to cover the entire time range
+plot(t, VOB, 'b');
+title(sprintf('Biphasic Morphology Signal - Heart Rate: %.2f - BPM', fcb));
+xlabel('Time - [s]');
+ylabel('Amplitude - [a.u.]');
+grid on;
+ylim([min(VOB)-0.2, max(VOB)+0.2]);
+xlim([lower_limit_time_bi, upper_limit_time_bi]);  % Adjust X-axis limits
 
-%-------------------------------------------------------------------
-% Save the generated signals to a .mat file
-save('Eletrograma_data.mat', 'VOM', 'VOB'); % Save Monophasic and Biphasic Signals
+% Create Formatted Title for ECG Figure
+title_text = sprintf('Mono and Biphasic Signal Electrogram Artificial - HeartLab');
+
+% Add General Title to the Figure
+sgtitle(title_text);  % General Figure Title
+
+clear lower_limit_time_bi lower_limit_time_mono
+clear upper_limit_time_bi upper_limit_time_mono
+
+%% Exporting the Signals
+
+% Saving Generated Signals and Sampling Time and Frequency in a '.mat' File
+save('Electrogram_data.mat', 'VOM', 'VOB', 't', 'FA');
+
+clear MAOM MAOB mao mab FFM FFB fcm fcb
+clear FA t title_text
+
+%% Close Figures
+
+close all;
