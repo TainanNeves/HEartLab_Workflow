@@ -2,12 +2,11 @@
 
 clear; clc;
 
-
 %% Reads the Open Ephys files
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "E:\HEartLab\experiment_data\E14\electrical_mapping_20230803_E14\04\No_filter\2023-08-03_16-41-47\Record Node 101\experiment1\recording9\structure.oebin"; % Put the .oebin path
+fullfilename = "C:\Users\HEartLab\Downloads\Pasta de Trabalho\Análise\electric\01\filter\2024-07-18_12-32-25\Record Node 111\experiment1\recording4\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -70,8 +69,8 @@ else
 end
 
 % Specific Time
-ti = 6;
-tf = 10;
+ti = 4;
+tf = 6;
 tline1 = ti;
 tline2 = tf;
 
@@ -145,9 +144,8 @@ xline(tline2, 'red');
 
 
 %% Save file to .mat
-
 % Filename to save
-FileName = 'EXX_FXX_RXX';
+FileName = 'Exx_Fxx_Rxx_xx';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
@@ -163,33 +161,36 @@ clear D_EL;
 
 % Filtered export
 % Electrodes selection
-el_butter = [1:32, 65:80]; % for Butterworth
-el_wavelet = [129:174, 177:190]; % for Wavelet
+el_butter = [1:32, 65:80, 129:174, 177:190]; % for Butterworth
+el_wavelet = [88, 89]; % for Wavelet
 el_toZero = [33:64, 81:128, 175:176, 191:192]; % for receive value zero
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
-f_high_butter = 250;
+f_high_butter = 100;
 % Filter Configuration (Wavelet)
 waveletType = {'db4'}; % Wavelet type
 numLevels = 10; % Number of decomposition levels
 reconstructionLevelsSets = {[7, 8, 9, 10]}; % Levels to be used on reconstruction
 
 % Initialize filtered data variable
-filtered_data = zeros(size(DATA.Data));
-% Filter electrodes 1 to 85 with Butterworth
+filtered_data = zeros(size(DATA.Data)); % Ensure the size matches the input data
+
+% Filter electrodes with Butterworth
 for i = 1:length(el_butter)
     filteredSignal = filter_signal(f_low_butter, f_high_butter, DATA.Data(el_butter(i), :), Fs);
     filtered_data(el_butter(i), :) = filteredSignal;
 end
-% Filter electrodes 86 to 192 with Wavelet
+
+% Filter electrodes with Wavelet
 for i = 1:length(el_wavelet)
     filteredSignal = wavelet_filter(DATA.Data(el_wavelet(i), :), Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
     filtered_data(el_wavelet(i), :) = filteredSignal(1:size(filteredSignal,2)-1);
 end
-% Puting zeros in el_toZero
-for i = el_toZero(1):el_toZero(length(el_toZero))
-    filtered_data(i, :) = zeros(1, length(filtered_data));
+
+% Set specified electrodes to zero
+for i = 1:length(el_toZero)
+    filtered_data(el_toZero(i), :) = zeros(1, size(filtered_data, 2));
 end
 
 % Save filtered data
@@ -206,4 +207,3 @@ save(['electric_data_', FileName, '_filtered'], 'D_EL', '-v7.3');
 
 % Clear unwanted variables
 clear bitVolts channels DATA EVENTS D_EL FileName TTL fullfilename
-
