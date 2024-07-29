@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "C:\Users\HEartLab\Downloads\Pasta de Trabalho\Análise\electric\01\filter\2024-07-18_12-32-25\Record Node 111\experiment1\recording4\structure.oebin"; % Put the .oebin path
+fullfilename ="E:\HEartLab\experiment_data\E18\electrical_mapping_20231026_E18\01\no_filter\2023-10-26_11-43-11\Record Node 101\experiment1\recording4\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];

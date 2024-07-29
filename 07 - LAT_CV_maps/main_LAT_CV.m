@@ -4,21 +4,21 @@ clear; clc;
 
 %% Loading Variables
 
-load("C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\data_filtered_sync_E14_F3_R4.mat"); %Filtered data
+load("E:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\data_filtered_sync_E20_F01_R01.mat"); %Filtered data
 
 
 %% LAT Optic Analysis
 
 % Parameters
-Data = D_SYNC.CAM2;
+Data = D_SYNC.CAM1;
 Fs = 4000;
 
 % Preview Signal
 Background = squeeze(Data(:,:,2000));
 pick_up_a_trace(Background, Data,1);
 % Selecting interval
-lim1 = 7710; % Start sample index
-lim2 = 9220; % End sample index
+lim1 = 9330; % Start sample index
+lim2 = 10235; % End sample index
 
 % Extract a segment of optical data
 Data_temp_O = Data(:,:,lim1:lim2);
@@ -29,7 +29,7 @@ for i = 1:size(Data_temp_O,1)
     for j = 1:size(Data_temp_O,2)
         if max(max(squeeze(Data_temp_O(i,j,:)))) ~= 0
             % (y = 1D array, fr = Frame Rate, L = length of the linear fit line, PCL = 200 (not Used), debug = 1 or 0 (Plot or not point and trace))
-            [LAT_O(i,j)] = find_LAT_linearFit_1D(squeeze(Data_temp_O(i,j,:)), Fs, 15, 200, 0); 
+            [LAT_O(i,j)] = find_LAT_linearFit_1D(squeeze(Data_temp_O(i,j,:)), Fs, 15, 200, 1); 
         end
     end
 end
@@ -44,7 +44,8 @@ J = LAT_O(:);
 % J(D_OP.ROI.ROI_2 & J == 0) = max(max(LAT_O))+10;
 J = imrotate(LAT_O,90);
 Y = prctile(nonzeros(J),[1 95],'all');
-imagesc(J-Y(1), [-1, 100]);
+contour();
+% imagesc(J-Y(1), [-1 20]);
 colormap(C);
 hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Local Activation Time [ms]', 'FontSize', 14);
