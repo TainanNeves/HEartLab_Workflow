@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename ="E:\HEartLab\experiment_data\E18\electrical_mapping_20231026_E18\01\no_filter\2023-10-26_11-43-11\Record Node 101\experiment1\recording4\structure.oebin"; % Put the .oebin path
+fullfilename = "C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\2 - Brutos\electric_E14_F3_recording4\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -33,6 +33,14 @@ if isempty(TTL)==false
     optictime(2) = optictime(1) + 10; %s
 end
 
+% Checks if the TTL variable is empty
+if isempty(TTL)
+    % Prints an alert message if TTL is empty
+    disp('Warning, the TTL is empty!');
+else
+    % Prints a confirmation message if TTL is not empty
+    disp('The TTL is not empty.');
+end
 
 %% Tank average subtraction
 tank_signals = DATA.Data([129:174,177:190], :);
@@ -53,6 +61,7 @@ DATA.Data = filtfilt(b, a, DATA.Data); % Apply 60Hz notch filter to data, DAT
 
 
 %% Comparation Plot
+
 Fs = 4000;
 
 % Default time
@@ -167,7 +176,7 @@ el_toZero = [33:64, 81:128, 175:176, 191:192]; % for receive value zero
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
-f_high_butter = 100;
+f_high_butter = 80;
 % Filter Configuration (Wavelet)
 waveletType = {'db4'}; % Wavelet type
 numLevels = 10; % Number of decomposition levels
@@ -201,6 +210,20 @@ D_EL.Header = DATA.Header;
 D_EL.Header.channels = channels;
 D_EL.TTL = TTL;
 D_EL.opticalin = TTL(1) - DATA.Timestamps(1);
+
+% Adding filtering information to the Header
+D_EL.Header.el_butter = el_butter; % Indices of electrodes filtered with Butterworth
+D_EL.Header.el_wavelet = el_wavelet; % Indices of electrodes filtered with Wavelet
+D_EL.Header.el_toZero = el_toZero; % Indices of electrodes set to zero
+
+% Butterworth filter parameters
+D_EL.Header.f_low_butter = f_low_butter;
+D_EL.Header.f_high_butter = f_high_butter;
+
+% Wavelet filter parameters
+D_EL.Header.waveletType = waveletType;
+D_EL.Header.numLevels = numLevels;
+D_EL.Header.reconstructionLevelsSets = reconstructionLevelsSets;
 
 % Save the filtered data
 save(['electric_data_', FileName, '_filtered'], 'D_EL', '-v7.3');
