@@ -6,7 +6,7 @@ clear; clc;
 
 % Loading variables
 load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
-load('C:\Users\HEartLab\Downloads\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
+load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
 
 
 %% Optical signals plot
@@ -100,13 +100,13 @@ xlim([t_in t_out]);
 title('Electric Signal Time Plot');
 legend('show');
 
-%% Mixed Plot
+%% Mixed Plot 
 
 % Define a Camera to use
-Data_O = D_SYNC.CAM1;
+Data_O = D_SYNC.CAM2;
 Background = squeeze(Data_O(:,:,2000)); % Select a pixel in the image and shows the optical signal
-[x, y] = pick_up_a_trace(Background, Data_O, 1);     %Press space to stop
-                                                                             
+[x, y] = pick_up_a_trace(Background, Data_O, 1); % Press space to stop
+
 % Optical Pixel
 pa = [x(1) y(1)];
 pv = [x(2) y(2)];
@@ -130,56 +130,46 @@ Data_E = D_SYNC.EL;
 % Ploting
 To = linspace(0, length(Data_E(1, :)) / Fsampling, length(Data_E(1, :)));
 f1 = figure('color', 'white', 'Position', [40 40 600 700]);
-% Subplot 1 - Optic Atrium
+
+% Plot Optical Atrium
 subplot(6, 1, 1)
 plot(To, squeeze(Data_O(pa(1), pa(2), :)), 'LineWidth', 1);
 ylabel('%F');
 title('Optical signal (Atria)');
 set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Subplot 2 - Optic Ventricle
+xlim([start_time end_time]);
+
+% Plot Optical Ventricle
 subplot(6, 1, 2)
 plot(To, squeeze(Data_O(pv(1), pv(2), :)), 'LineWidth', 1);
 ylabel('%F');
 title('Optical signal (Ventricle)');
 set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Subplot 3 - MEA 1 (RA)
-i = el1;
-subplot(6, 1, 3)
-plot(To, Data_E(i, :), 'LineWidth', 1);
-ylabel('$\mu$V', 'Interpreter', 'latex');
-title(['MEA1 el', num2str(i), ' (RA)']);
-set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Subplot 4 - MEA 3 (LA)
-i = el2;
-subplot(6, 1, 4)
-plot(To, Data_E(i, :), 'LineWidth', 1);
-ylabel('$\mu$V', 'Interpreter', 'latex');
-title(['MEA3 el', num2str(i), ' (LA)']);
-set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Subplot 5 - MEA 2 (V)
-i = el3;
-subplot(6, 1, 5)
-plot(To, Data_E(i, :), 'LineWidth', 1);
-ylabel('$\mu$V', 'Interpreter', 'latex');
-title(['MEA2 el', num2str(i), ' (V)']);
-set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Subplot 6 - TANK
-i = el4;
-subplot(6, 1, 6)
-plot(To, Data_E(i, :), 'LineWidth', 1);
-ylabel('$\mu$V', 'Interpreter', 'latex');
-title(['TANK el', num2str(i)]);
-xlabel('Time (s)');
-set(gca, 'fontsize', 14);
-xlim([start_time end_time])
-% Linking Axes (move x axes in all data together)
-linkaxes([subplot(6, 1, 1), subplot(6, 1, 2), subplot(6, 1, 3), subplot(6, 1, 4), subplot(6, 1, 5), subplot(6, 1, 6)], 'x')
+xlim([start_time end_time]);
 
+% Plot Electric Data for each electrode with positions
+electrodes = [el1, el2, el3, el4];
+titles = {'MEA1 el', 'MEA3 el', 'MEA2 el', 'TANK el'};
+ind = {'RA','LA','V','Tank'};
+for i = 1:length(electrodes)
+    el = electrodes(i);
+    [x, y, source] = getElectrodePosition(el);
+    
+    % Plot Electric Data
+    subplot(6, 1, i + 2)
+    plot(To, squeeze(Data_E(el, :)), 'LineWidth', 1);
+    ylabel('$\mu$V', 'Interpreter', 'latex');
+    title([titles{i}, num2str(el)],ind{i});
+    set(gca, 'fontsize', 14);
+    xlim([start_time end_time]);
+end
+
+% Plot - Final
+subplot(6, 1, 6)
+xlabel('Time (s)');
+
+% Linking Axes (move x axes in all data together)
+linkaxes(findall(gcf,'type','axes'), 'x')
 
 %% MULTIMIXED PLOT
 
@@ -320,6 +310,10 @@ p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(
 p69 = [x(5), y(5)]; p70 = [x(6), y(6)]; p71 = [x(7), y(7)]; p72 = [x(8), y(8)];
 p65 = [x(1), y(1)]; p66 = [x(2), y(2)]; p67 = [x(3), y(3)]; p68 = [x(4), y(4)];
 plotar_pontos_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
+
+
+
+
 
 
 
