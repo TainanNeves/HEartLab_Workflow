@@ -5,8 +5,8 @@ clear; clc;
 %% Loading data
 
 % Loading variables
-load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
-load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
+load("E:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\data_filtered_sync_E20_F01_R01.mat"); % Synchronized data
+load("E:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\InterpolatedSignalsE20_F01_R01_filtered.mat"); % Interpolate data
 
 
 %% Optical signals plot
@@ -53,12 +53,12 @@ title('Optical Signal Time Plot');
 %% Electric signal plot
 %Run the code section by section using F9
 
-Data_ = InterpSignal.Data.MEA1;
+Data = InterpSignal.Data.MEA1;
 Background = squeeze(Data(:,:,2000)); % Select a pixel in the image and shows the optical signal
 [x, y] = pick_up_a_trace(Background, Data,1); 
 
 % Define electrode to use
-el = 129;
+el = 5;
 Data = D_SYNC.EL(el,:);
 
 %Frame Sampling
@@ -73,7 +73,7 @@ case_name = cases{source};
 To = linspace(0, length(Data)/Fsampling, length(Data));
 % Plot the oelectrical signal for an specific electrode
 f1 = figure('color', 'white', 'Position', [40 40 600 200]);
-plot(To, squeeze(Data),'DisplayName', ['Electrode ' num2str(el)]);
+plot(To, squeeze(Data(x,y,:)),'DisplayName', ['Electrode ' num2str(el)]);
 hold on
 ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
 set(gca, 'fontsize', 14);

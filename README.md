@@ -169,9 +169,8 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 - Junior
   - Signal Plot to Matrix mode
   - Update Header information in Filtering Electric Codes
-  - Update Electric Extraction code for warning when the TTL is empty
   - Potential maps to Matrix mode
-  - .seq to .mat - verify if it's working
+  - .seq to .mat - Put in the workflow library
 - Tainan
   - Put Npy-matlab library path add in the readme file
   - Interpolation Code Update
@@ -179,8 +178,8 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
   - Phase codes with Giovanne
 - Angélica
   - LAT / Conduction Velocity Codes
+  - LAT (Isochrones maps) to ECGi
   - Pick Up a Trace for ECGi
-  - Metricas (Correlação, RDMS e MRE)
   - Phase codes with Giovanne
 - All
   - Select Recordings to Library
