@@ -169,47 +169,9 @@ save(['electric_data_', FileName, '_raw'], 'D_EL');
 clear D_EL;
 
 % Defining electrode arrays
-el_butter = [1:16, 17:32, 65:80, 129:174, 177:190]; % for Butterworth
-el_wavelet = [129:174]; % for Wavelet
+el_butter = [1:80, 81:192]; % for Butterworth
+el_wavelet = []; % for Wavelet
 el_toZero = [33:64, 81:128, 175:176, 191:192]; % to set to zero
-
-% Defining intervals
-intervals = {'MEA1', 1:16; 
-             'MEA2', 17:32; 
-             'MEA3', 65:80; 
-             'Tank_129:174', 129:174; 
-             'Tank_177:190', 177:190; 
-             'Zeros', [81:128, 175:176, 191:192]};
-
-% Initializing variables to store names of found intervals
-Filtbut = {}; Filtwav = {}; FiltZer = {};
-
-% Identifying intervals for el_butter
-for i = 1:size(intervals, 1)
-    interval_name = intervals{i, 1};
-    interval_range = intervals{i, 2};
-    if any(ismember(el_butter, interval_range))
-        Filtbut{end+1} = interval_name;
-    end
-end
-
-% Identifying intervals for el_wavelet
-for i = 1:size(intervals, 1)
-    interval_name = intervals{i, 1};
-    interval_range = intervals{i, 2};
-    if any(ismember(el_wavelet, interval_range))
-        Filtwav{end+1} = interval_name;
-    end
-end
-
-% Identifying intervals for el_toZero
-for i = 1:size(intervals, 1)
-    interval_name = intervals{i, 1};
-    interval_range = intervals{i, 2};
-    if any(ismember(el_toZero, interval_range))
-        FiltZer{end+1} = interval_name;
-    end
-end
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
@@ -250,19 +212,28 @@ D_EL.opticalin = TTL(1) - DATA.Timestamps(1);
 
 % Adding filtering information to the Header
 D_EL.Header.FilterParameters = struct();
-% ------------Butterworth filter parameters
-D_EL.Header.FilterParameters.f_low_butter = f_low_butter;
-D_EL.Header.FilterParameters.f_high_butter = f_high_butter;
-% ------------Wavelet filter parameters
-D_EL.Header.FilterParameters.waveletType = waveletType;
-D_EL.Header.FilterParameters.numLevels = numLevels;
-D_EL.Header.FilterParameters.reconstructionLevelsSets = reconstructionLevelsSets;
 
-%Adding intervals information to the Header
-D_EL.Header.IntervalFilter = struct();
-D_EL.Header.IntervalFilter.Butter = Filtbut;
-D_EL.Header.IntervalFilter.Wavelet = Filtwav;
-D_EL.Header.IntervalFilter.toZero = FiltZer;
+if ~isempty(el_butter) && all(el_butter > 0) && all(el_butter < 193)
+    if all(el_butter > 0) && all(el_butter < 81)
+        filter_butter = ["MEA", f_low_butter, f_high_butter];
+        filter_wavelet = ["Tank", reconstructionLevelsSets];
+        D_EL.Header.FilterParameters.filter_butter = filter_butter;
+        D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+    else
+        if all(el_butter > 80) && all(el_butter < 193)
+            filter_butter = ["Tank", f_low_butter, f_high_butter];
+            filter_wavelet = ["MEA", reconstructionLevelsSets];
+            D_EL.Header.FilterParameters.filter_butter = filter_butter;
+            D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+        else
+            filter_butter = ["MEA", "Tank", f_low_butter, f_high_butter];
+            D_EL.Header.FilterParameters.filter_butter = filter_butter;
+        end
+    end
+else
+    filter_wavelet = ["MEA", "Tank", reconstructionLevelsSets];
+    D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+end
 
 % Save the filtered data
 save(['electric_data_', FileName, '_filtered'], 'D_EL', '-v7.3');
