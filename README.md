@@ -179,6 +179,7 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 - Angélica
   - LAT / Conduction Velocity Codes
   - LAT (Isochrones maps) to ECGi
+  - LAT statistic metrics needs to be implemented
   - Pick Up a Trace for ECGi
   - Phase codes with Giovanne
 - All
