@@ -6,16 +6,16 @@ clear; clc;
 
 % Loading variables
 load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
-load('C:\Users\HEartLab\Downloads\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
-
+load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
 
 %% Optical signals plot
 
 % Define a Camera to use
 Data = D_SYNC.CAM1;
-Background = squeeze(Data(:,:,2000)); % Select a pixel in the image and shows the optical signal
-[x, y] = pick_up_a_trace(Background, Data,1);    %Press space to stop
-                                        
+Background = squeeze(Data(:,:,2000));
+[x, y] = pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
+                                        %Press space to stop
+
 % Define a pixel position
 p = [x(length(x)), y(length(y))];
 %Frame Sampling
@@ -51,28 +51,77 @@ title('Optical Signal Time Plot');
 
 
 %% Electric signal plot
-%Run the code section by section using F9
+%Run the code in parts using the F9 key
 
-Data_ = InterpSignal.Data.MEA1;
-Background = squeeze(Data(:,:,2000)); % Select a pixel in the image and shows the optical signal
-[x, y] = pick_up_a_trace(Background, Data,1); 
+%-----------------------------InterpSignal--------------------------------
+
+% Retrieve the data of interest
+Data_I = InterpSignal.Data.MEA1;
+
+% Select a "snapshot" or slice of the data at time 2000
+Background = squeeze(Data_I(:,:,2000)); 
+
+% Allow the user to select a specific trace on the image
+[x, y] = pick_up_a_trace(Background, Data_I, 1); 
+
+% Extract the signal corresponding to the (x, y) coordinate over time
+signal_trace = squeeze(Data_I(y, x, :));
+
+% Frame Sampling
+Fsampling = 4000;
+
+% Full electric time plot
+% Create a time vector
+To_I = linspace(0, length(signal_trace)/Fsampling, length(signal_trace));
+
+% Plot the selected signal
+figure('color', 'white', 'Position', [40 40 600 200]);
+plot(To_I, signal_trace);
+hold on;
+set(gca, 'fontsize', 14);
+title(['Electrical Signal Interpolated at (x,y) = (', num2str(x), ',', num2str(y), ')']);
+xlabel('Time (s)');
+ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
+grid on;
+
+% Specific electric time plot
+% Define the time range for the plot
+t_in = 4;
+t_out = 6;
+
+start_sample = round(t_in * Fsampling); % Adjust the start sample according to your data
+end_sample = round(t_out * Fsampling);   % Adjust the end sample according to your data
+
+% Create a time vector for the specific range
+To_I2 = linspace(t_in, t_out, end_sample - start_sample + 1);
+
+% Plot the electrical signal for the specific time range
+figure('color', 'white', 'Position', [40 40 600 200]);
+plot(To_I2, signal_trace(start_sample:end_sample));
+hold on;
+ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+xlabel('Time (s)');
+xlim([t_in t_out]);
+title(['Electrical Signal Interpolated at (x,y) = (', num2str(x), ',', num2str(y), ')']);
+
+%--------------------------------SyncroSignal-----------------------------
 
 % Define electrode to use
-el = 129;
+el = 75;
 Data = D_SYNC.EL(el,:);
+[x, y, source] = getElectrodePosition(el);
+cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
+case_name = cases{source};
 
 %Frame Sampling
 Fsampling = 4000;
-
-cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
-[x, y, source] = getElectrodePosition(el);
-case_name = cases{source};
 
 % Full electric time plot
 % Create a time vector
 To = linspace(0, length(Data)/Fsampling, length(Data));
 % Plot the oelectrical signal for an specific electrode
-f1 = figure('color', 'white', 'Position', [40 40 600 200]);
+f2 = figure('color', 'white', 'Position', [40 40 600 200]);
 plot(To, squeeze(Data),'DisplayName', ['Electrode ' num2str(el)]);
 hold on
 ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
@@ -90,8 +139,8 @@ end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
 % Create a time vector
 To = linspace(0, length(Data)/Fsampling, length(Data));
 % Plot the electricl signal for an specific electrode
-f1 = figure('color', 'white', 'Position', [40 40 600 200]);
-plot(To(start_sample:end_sample), Data(start_sample:end_sample), 'DisplayName', ['Electrode ' num2str(el)]);
+f3 = figure('color', 'white', 'Position', [40 40 600 200]);
+plot(To(start_sample:end_sample), squeeze(Data(start_sample:end_sample)), 'DisplayName', ['Electrode ' num2str(el)]);
 hold on
 ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
 set(gca, 'fontsize', 14);
@@ -100,13 +149,14 @@ xlim([t_in t_out]);
 title('Electric Signal Time Plot');
 legend('show');
 
+
 %% Mixed Plot
 
 % Define a Camera to use
 Data_O = D_SYNC.CAM1;
-Background = squeeze(Data_O(:,:,2000)); % Select a pixel in the image and shows the optical signal
-[x, y] = pick_up_a_trace(Background, Data_O, 1);     %Press space to stop
-                                                                             
+Background = squeeze(Data_O(:,:,2000));
+[x, y] = pick_up_a_trace(Background, Data_O, 1);    % Select a pixel in the image and shows the optical signal
+                                        %Press space to stop                                      
 % Optical Pixel
 pa = [x(1) y(1)];
 pv = [x(2) y(2)];
@@ -320,11 +370,6 @@ p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(
 p69 = [x(5), y(5)]; p70 = [x(6), y(6)]; p71 = [x(7), y(7)]; p72 = [x(8), y(8)];
 p65 = [x(1), y(1)]; p66 = [x(2), y(2)]; p67 = [x(3), y(3)]; p68 = [x(4), y(4)];
 plotar_pontos_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
-
-
-
-
-
 
 
 

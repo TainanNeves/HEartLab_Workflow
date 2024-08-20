@@ -168,11 +168,10 @@ save(['electric_data_', FileName, '_raw'], 'D_EL');
 
 clear D_EL;
 
-% Filtered export
-% Electrodes selection
-el_butter = [1:32, 65:80, 129:174, 177:190]; % for Butterworth
-el_wavelet = [88, 89]; % for Wavelet
-el_toZero = [33:64, 81:128, 175:176, 191:192]; % for receive value zero
+% Defining electrode arrays
+el_butter = [1:80, 81:192]; % for Butterworth
+el_wavelet = []; % for Wavelet
+el_toZero = [33:64, 81:128, 175:176, 191:192]; % to set to zero
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
@@ -212,18 +211,29 @@ D_EL.TTL = TTL;
 D_EL.opticalin = TTL(1) - DATA.Timestamps(1);
 
 % Adding filtering information to the Header
-D_EL.Header.el_butter = el_butter; % Indices of electrodes filtered with Butterworth
-D_EL.Header.el_wavelet = el_wavelet; % Indices of electrodes filtered with Wavelet
-D_EL.Header.el_toZero = el_toZero; % Indices of electrodes set to zero
+D_EL.Header.FilterParameters = struct();
 
-% Butterworth filter parameters
-D_EL.Header.f_low_butter = f_low_butter;
-D_EL.Header.f_high_butter = f_high_butter;
-
-% Wavelet filter parameters
-D_EL.Header.waveletType = waveletType;
-D_EL.Header.numLevels = numLevels;
-D_EL.Header.reconstructionLevelsSets = reconstructionLevelsSets;
+if ~isempty(el_butter) && all(el_butter > 0) && all(el_butter < 193)
+    if all(el_butter > 0) && all(el_butter < 81)
+        filter_butter = ["MEA", f_low_butter, f_high_butter];
+        filter_wavelet = ["Tank", reconstructionLevelsSets];
+        D_EL.Header.FilterParameters.filter_butter = filter_butter;
+        D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+    else
+        if all(el_butter > 80) && all(el_butter < 193)
+            filter_butter = ["Tank", f_low_butter, f_high_butter];
+            filter_wavelet = ["MEA", reconstructionLevelsSets];
+            D_EL.Header.FilterParameters.filter_butter = filter_butter;
+            D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+        else
+            filter_butter = ["MEA", "Tank", f_low_butter, f_high_butter];
+            D_EL.Header.FilterParameters.filter_butter = filter_butter;
+        end
+    end
+else
+    filter_wavelet = ["MEA", "Tank", reconstructionLevelsSets];
+    D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
+end
 
 % Save the filtered data
 save(['electric_data_', FileName, '_filtered'], 'D_EL', '-v7.3');
