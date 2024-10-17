@@ -171,11 +171,11 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 - Tainan
   - Put Npy-matlab library path add in the readme file
   - Implementation of metrics for DF and CL
-  - Phase codes with Giovanne
+  - Phase codes - Singularity Points
 - Angélica
   - LAT / Conduction Velocity Codes
   - LAT statistic metrics needs to be implemented
-  - Phase codes with Giovanne
+  - Phase codes - Phase Maps
 - Gabrielli
   - Pick Up a Trace for ECGi
 - All
