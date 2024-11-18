@@ -42,13 +42,13 @@ clear heart_geo_file tank_geo_file mtransfer_file signal_file electrodes_idx_fil
 
 %% Define Estimation Parameters
 
-lambda = 10.^(-0.5:-0.5:-12.5); % Regularization parameters
+lambda = 10.^(-0.5:-0.5:-12.5); % Regularization parameter. It will be optmized inside of the regularization code.
 order = 0; % Order of regularization (0, 1, or 2)
-reg_param_method = 'i'; % Regularization parameter selection method
-compute_params = 1; % Flag to compute parameters
+reg_param_method = 'i'; % global (g) or by instant (i) calculation
+compute_params = 1; % 1 if reg_params need to be calculated
 model = 'SAF'; % Model type
 fs = 4000; % Sampling frequency
-SNR = 100; % Signal-to-noise ratio
+SNR = 100; % Signal-to-noise ratio; it will only be used in the l-curve; set it to any number different of 40.
 
 %% Interpolate ECG Signal
 
@@ -269,3 +269,43 @@ set([ax1, ax2, ax3], 'CLim', [min_value max_value]);
 cb = colorbar;
 cb.Layout.Tile = 'east';
 cb.Label.String = 'Amplitude (\muV)';
+
+%% Saving
+
+% Check the regularization method
+if exist('lambda_opt', 'var')
+    reg_method = 'Tikhonov';
+else
+    % If not Tikhonov, it was probably TSVD
+    reg_method = 'TSVD';
+end
+
+% Filename to save
+FileName = 'EXX_FXX_RXX';
+
+% Get the current directory
+current_dir = pwd;
+
+% Determine the parent directory
+[parent_dir, ~, ~] = fileparts(current_dir);
+
+% Create a timestamp
+timestamp = datestr(now, 'yyyymmdd_HHMMSS');
+
+% Define the path to save the file in the parent directory
+output_file = fullfile(parent_dir, ['estimated_', FileName, '_', timestamp, '.mat']);
+
+% Prepare the data structure
+estimated = struct(); % Initialize structure
+estimated.Data = x_hat; 
+estimated.Time = [init_time, final_time];
+estimated.Regularization = reg_method;
+estimated.Order = order;
+estimated.Heart_geometry = heart_geo;
+estimated.Filtering = 'Butterworth(0.5-250Hz)';
+estimated.Sync = 'Yes';
+
+% Save the file to the specified path
+save(output_file, 'estimated');
+
+fprintf('File saved to: %s\n', output_file);

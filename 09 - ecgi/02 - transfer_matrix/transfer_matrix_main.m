@@ -1,8 +1,8 @@
 %% Data Loading
 
 % Define file paths
-heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\projected_signals_exp14.mat';
-tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\LR_smoothed_tank.mat';
+heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\Conferences\CinC 2024\Version1\ECGi\Dados\heart_geometry_exp14.mat';
+tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\Conferences\CinC 2024\Version1\ECGi\Dados\tank_geometry.mat';
 
 % Load tank geometry data
 tank_data = load(tank_geo_file);
@@ -10,7 +10,12 @@ tank_geo = tank_data.(subsref(fieldnames(tank_data), substruct('{}', {1})));
 
 % Load heart geometry data
 heart_data = load(heart_geo_file);
-heart_geo = heart_data.geometry_20000;
+
+% if you are taking the geometry direclty from the 'projections' file, be sure the geometry is centered and not upside down
+% heart_geo = heart_data.geometry_20000;
+
+% if you corrected and saved the geometry separately
+heart_geo = heart_data.heart_geo;
 
 % Clear unnecessary variables
 clear heart_geo_file tank_geo_file heart_data tank_data;
