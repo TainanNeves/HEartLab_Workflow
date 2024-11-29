@@ -89,6 +89,18 @@ est_end_sample = est_end * fs;
 % TSVD method
 % [x_hat, k] = tsvd(A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, order, compute_params);
 
+% Greensite
+% [x_hat, lambda_opt] = greensite (A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+
+% Total variation
+% [x_hat, lambda_opt] = totalvariation (A, L, AA, LL, interp_signal(:, est_start_sample:est_end_sample), lambda);
+
+% GRMES
+% x_hat = gmresidual (A, interp_signal(:, est_start_sample:est_end_sample));
+
+% DSVD
+% [x_hat, lambda_opt] = dsvd (A, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+
 %% Plot All Signals
 
 figure();
