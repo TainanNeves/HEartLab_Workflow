@@ -1,4 +1,13 @@
 %% Moving average comparison
+%
+% Author: Angélica Quadros
+% Affiliation: HeartLab, UFABC
+% Year: 2024
+%
+% Description:
+%   This script compares the original and smoothed signals (via moving average)
+%   for measured signals (MEA) and estimated signals (ECGi) at selected 
+%   electrodes across different regions (RA, V, LA).
 
 % defining meas and estimated signals
 meas_signal = meas_signal_raw;

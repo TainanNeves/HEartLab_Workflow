@@ -1,4 +1,16 @@
-% Define a vector of electrode numbers to plot
+%% Plot MEA and Estimated Signals for Selected Electrodes
+%
+% Author: Angélica Quadros
+% Affiliation: HeartLab, UFABC
+% Year: 2024
+%
+% This script visualizes the measured and estimated signals for a selected 
+% set of MEA electrodes on a 3D heart geometry. Each electrode's signal is 
+% displayed over a defined time window, with measured signals in black 
+% and their spatial correspondent estimated signals in red. 
+
+
+%% Define a vector of electrode numbers to plot
 electrodes = [18 19 20 21]; % Example vector of electrode numbers from 1 to 10
 
 % Define the sampling frequency (Hz)
