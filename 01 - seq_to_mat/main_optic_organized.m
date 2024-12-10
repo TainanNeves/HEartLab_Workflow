@@ -1,3 +1,13 @@
+% This script organizes the files obtained using the Conversion2MATLAB code; 
+% The organization is achieved by creating folders/directories for each record; 
+% The code is divided into two sections: 
+%   one section is for running the code with an underscore (_) and 
+%   the other section is for running the code with a hyphen (-). 
+% These two different sections correspond to the naming format of the files, 
+% so use the appropriate section according to the record's name. 
+% You only need to provide the directory of the folder where the files are located, 
+% which is usually the "Optical Mapping to MATLAB" folder.
+
 clear; clc;
 
 %% Run with Underline (_)
@@ -56,7 +66,7 @@ disp('Files have been successfully organized.');
 % Clear variables
 clear baseDir files fileStruct i k key keys name subfolder tokens validKey
 
-%% %% Run with hyphen (-)
+%% %% Run with Hyphen (-)
 
 % Step 1: Select the directory
 baseDir = uigetdir(pwd, 'Select the directory where the files are located');
@@ -111,4 +121,6 @@ disp('Files have been successfully organized.');
 
 % Clear variables
 clear baseDir files fileStruct i k key keys name subfolder tokens validKey
+
+
 
