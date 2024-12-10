@@ -56,7 +56,7 @@ disp('Files have been successfully organized.');
 % Clear variables
 clear baseDir files fileStruct i k key keys name subfolder tokens validKey
 
-%% %% Run with feature (-)
+%% %% Run with hyphen (-)
 
 % Step 1: Select the directory
 baseDir = uigetdir(pwd, 'Select the directory where the files are located');
