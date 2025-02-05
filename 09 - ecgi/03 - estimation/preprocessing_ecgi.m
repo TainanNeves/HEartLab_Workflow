@@ -46,7 +46,7 @@ tank_signal_raw = data.D_EL.Data([129:174, 177:190], :);
 %% Low-Pass Filtering
 % Define cutoff frequency
 fs = 4000;
-f_cut = 70 / (fs / 2);
+f_cut = 50 / (fs / 2);
 [b, a] = butter(6, f_cut, 'low');
 % Apply zero-phase filtering
 meas_signal_f = filtfilt(b, a, meas_signal_raw')';
@@ -61,8 +61,6 @@ time = linspace(in_time, end_time, length(in_sample:end_sample));
 
 f_up = 60;
 f_down = 0.5;
-in_sample = 1*fs+1;
-end_sample = 3*fs;
 
 %% Plot MEAs spectrum and electrical signals
 
