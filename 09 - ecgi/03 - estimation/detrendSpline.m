@@ -58,9 +58,33 @@ pp=csaps(t_m,s_m);
 s_pp=ppval(pp,t);
 s_det=signal-s_pp;
 
+% if drawflag
+%      figure(), clf, subplot(211), plot(t,signal), 
+%         hold on,  plot(t,s_pp,'r-.'), axis tight;
+%      subplot(212), plot(t,s_det), axis tight;
+%      title(mensaje)
+% end
+
 if drawflag
-     figure(1), clf, subplot(211), plot(t,signal), 
-        hold on,  plot(t,s_pp,'r-.'), axis tight;
-     subplot(212), plot(t,s_det), axis tight;
-     title(mensaje)
+    figure(), clf;
+    
+    % Plot original signal with baseline
+    subplot(2,1,1);
+    plot(t(1:8000), signal(1:8000), 'b', 'DisplayName', 'Original Signal');
+    hold on;
+    plot(t(1:8000), s_pp(1:8000), 'r-.', 'DisplayName', 'Spline Baseline');
+    legend('show'); % Show legend
+    axis tight;
+    ylabel('Amplitude');
+    
+    % Plot detrended signal
+    subplot(2,1,2);
+    plot(t(1:8000), s_det(1:8000), 'k', 'DisplayName', 'Detrended Signal');
+    legend('show'); % Show legend
+    axis tight;
+    xlabel('Time (s)');
+    ylabel('Amplitude');
+    
+    % Title above both subplots
+    sgtitle(mensaje); 
 end
