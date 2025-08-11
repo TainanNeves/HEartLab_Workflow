@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\2 - Brutos\electric_E14_F3_recording4\structure.oebin"; % Put the .oebin path
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording26\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -16,6 +16,7 @@ DATA.Data = DATA.Data(channels, :); % Select desired channels
 EVENTS = load_open_ephys_binary(fullfilename, 'events', 1); % Load the TTL file
 
 rectime = length(DATA.Data(1, :))/DATA.Header.sample_rate; %s
+disp(['RecTime: ', num2str(rectime), ' seconds']);
 
 
 
@@ -78,18 +79,18 @@ else
 end
 
 % Specific Time
-ti = 4;
-tf = 6;
+ti = 2;
+tf = 50;
 tline1 = ti;
 tline2 = tf;
 
 time = linspace(ti, tf, (tf - ti) * Fs + 1);
 
 % Electrodes selection
-el1 = 6;  % RA
-el2 = 70; % LA
-el3 = 26; % V
-el4 = 132; % Tank
+el1 = 18;  % RA
+el2 = 7; % LA
+el3 = 90; % V
+el4 = 140; % Tank
 Index = {'RA', 'LA', 'V','TANK'};
 
 % Filter range (Butterworth)
@@ -108,7 +109,7 @@ sgtitle('EXP XX - Folder XX - REC XX');
 % Plotting using filter_signal function (Butterworth)
 for i = 1:4
     subplot(5, 2, 2*i - 1); % Adjusted index for Butterworth
-    filteredSignal = filter_signal(f_low, f_high, DATA.Data(eval(['el' num2str(i)]), :), Fs);
+    filteredSignal = filter_signal_2(f_low, f_high, DATA.Data(eval(['el' num2str(i)]), :), Fs);
     plot(time, filteredSignal(:, ti * Fs:tf * Fs));
     title(['Eletrodo: ' num2str(eval(['el' num2str(i)])) ' (' Index{i} ') - Butterworth']);
     xlabel("Time (s)");
@@ -132,7 +133,7 @@ end
 % Subtraction plot - Butterworth
 subplot(5, 2, 9);
 sub = DATA.Data(el2, :) - DATA.Data(el3, :);
-filteredSignal = filter_signal(f_low, f_high, sub, Fs);
+filteredSignal = filter_signal_2(f_low, f_high, sub, Fs);
 plot(time, filteredSignal(:, ti * Fs:tf * Fs));
 title(['Subtração: ' num2str(el2) ' - ' num2str(el3) ' (LA - V) - Butterworth']);
 xlabel("Time (s)");
@@ -154,7 +155,7 @@ xline(tline2, 'red');
 
 %% Save file to .mat
 % Filename to save
-FileName = 'Exx_Fxx_Rxx_xx';
+FileName = 'E28_F01_R20';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
@@ -169,13 +170,13 @@ save(['electric_data_', FileName, '_raw'], 'D_EL');
 clear D_EL;
 
 % Defining electrode arrays
-el_butter = [1:80, 81:192]; % for Butterworth
+el_butter = [1:32, 81:96, 129:174, 177:190]; % for Butterworth
 el_wavelet = []; % for Wavelet
-el_toZero = [33:64, 81:128, 175:176, 191:192]; % to set to zero
+el_toZero = [33:80, 96:128, 175, 176, 191, 192]; % to set to zero
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
-f_high_butter = 80;
+f_high_butter = 250;
 % Filter Configuration (Wavelet)
 waveletType = {'db4'}; % Wavelet type
 numLevels = 10; % Number of decomposition levels
@@ -186,7 +187,7 @@ filtered_data = zeros(size(DATA.Data)); % Ensure the size matches the input data
 
 % Filter electrodes with Butterworth
 for i = 1:length(el_butter)
-    filteredSignal = filter_signal(f_low_butter, f_high_butter, DATA.Data(el_butter(i), :), Fs);
+    filteredSignal = filter_signal_2(f_low_butter, f_high_butter, DATA.Data(el_butter(i), :), Fs);
     filtered_data(el_butter(i), :) = filteredSignal;
 end
 

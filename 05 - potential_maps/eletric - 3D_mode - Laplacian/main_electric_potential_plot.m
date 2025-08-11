@@ -60,7 +60,7 @@ lim1 = [-100 65];
 lim2 = [-50 50];
 lim3 = [-30 20];
 lim4 = [-10 10];
-for sample = [4000]
+for sample = [4000:10:4150]
     plot_electric_pot(Data, lim1, sample, 1); % MEA 1
     plot_electric_pot(Data, lim2, sample, 2); % MEA 2
     plot_electric_pot(Data, lim3, sample, 3); % MEA 3
