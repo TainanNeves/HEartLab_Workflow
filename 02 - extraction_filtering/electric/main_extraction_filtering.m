@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording26\structure.oebin"; % Put the .oebin path
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording2\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -20,9 +20,12 @@ disp(['RecTime: ', num2str(rectime), ' seconds']);
 
 
 
-%% Comment this section if conversion to uV is not wanted
+%% Conversion to uV + 60dB transformation
+% Convertion to uV
 bitVolts = 0.1949999928474426; % Conversion factor
 DATA.Data = DATA.Data*bitVolts; % Converts the data to uV
+% Convert dB to 60dB
+DATA.Data = DATA.Data / 128 * 1024;
 
 
 %% Convert TTL to appropiate format
@@ -62,7 +65,6 @@ DATA.Data = filtfilt(b, a, DATA.Data); % Apply 60Hz notch filter to data, DAT
 
 
 %% Comparation Plot
-
 Fs = 4000;
 
 % Default time
