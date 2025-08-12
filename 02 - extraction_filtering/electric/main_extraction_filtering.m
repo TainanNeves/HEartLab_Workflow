@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording26\structure.oebin"; % Put the .oebin path
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording7\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -126,6 +126,77 @@ ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex');
 xline(tline1, 'red');
 xline(tline2, 'red');
 % Link axes for all subplots
+h = findobj(gcf, 'type', 'axes');
+linkaxes(h,'x');
+
+
+% Spectrum Frequency Plots
+% Create a new figure for frequency spectrum
+figure;
+sgtitle('Frequency Spectrum - EXP XX - Folder XX - REC XX');
+% Calculate and plot frequency spectrum for Butterworth filtered signals
+for i = 1:4
+    subplot(5, 2, 2*i - 1);
+    filteredSignal = filter_signal_2(f_low, f_high, DATA.Data(eval(['el' num2str(i)]), :), Fs);
+    Y = fft(filteredSignal);
+    L = length(filteredSignal);
+    P2 = abs(Y/L);
+    P1 = P2(1:L/2+1);
+    P1(2:end-1) = 2*P1(2:end-1);
+    f = Fs*(0:(L/2))/L;
+    plot(f, P1);
+    title(['Electrode: ' num2str(eval(['el' num2str(i)])) ' (' Index{i} ') - Butterworth Spectrum']);
+    xlabel("Frequency (Hz)");
+    ylabel('Magnitude');
+    xlim([0 f_high+10]);
+end
+% Calculate and plot frequency spectrum for Wavelet filtered signals
+for i = 1:4
+    subplot(5, 2, 2*i);
+    filteredSignal = wavelet_filter(DATA.Data(eval(['el' num2str(i)]), :), Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
+    Y = fft(filteredSignal);
+    L = length(filteredSignal);
+    P2 = abs(Y/L);
+    P1 = P2(1:L/2+1);
+    P1(2:end-1) = 2*P1(2:end-1);
+    f = Fs*(0:(L/2))/L;
+    plot(f, P1);
+    title(['Electrode: ' num2str(eval(['el' num2str(i)])) ' (' Index{i} ') - Wavelet Spectrum']);
+    xlabel("Frequency (Hz)");
+    ylabel('Magnitude');
+    xlim([0 f_high+10]);
+end
+% Calculate and plot frequency spectrum for avg subtracted tank signal (Butterworth)
+subplot(5, 2, 9);
+sub = DATA.Data(el4, :) - mean_tank;
+filteredSignal = filter_signal_2(f_low, f_high, sub, Fs);
+Y = fft(filteredSignal);
+L = length(filteredSignal);
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+f = Fs*(0:(L/2))/L;
+plot(f, P1);
+title(['Electrode: ' num2str(el4) ' (avg subtracted) - Butterworth Spectrum']);
+xlabel("Frequency (Hz)");
+ylabel('Magnitude');
+xlim([0 f_high+10]);
+% Calculate and plot frequency spectrum for avg subtracted tank signal (Wavelet)
+subplot(5, 2, 10);
+sub = DATA.Data(el4, :) - mean_tank;
+filteredSignal = wavelet_filter(sub, Fs, 1, waveletType, numLevels, reconstructionLevelsSets);
+Y = fft(filteredSignal);
+L = length(filteredSignal);
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+f = Fs*(0:(L/2))/L;
+plot(f, P1);
+title(['Electrode: ' num2str(el4) ' (avg subtracted) - Wavelet Spectrum']);
+xlabel("Frequency (Hz)");
+ylabel('Magnitude');
+xlim([0 f_high+10]);
+% Link axes for all subplots in the new figure
 h = findobj(gcf, 'type', 'axes');
 linkaxes(h,'x');
 
