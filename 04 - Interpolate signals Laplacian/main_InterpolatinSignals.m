@@ -14,7 +14,8 @@ Fsampling = D_EL.Header.sample_rate;
 
 interpolated = struct();
 for i = 1:4
-    interpolated_signals = electric_interp_2025(data, i);
+    interpolated_signals = electric_interp(data, i);
+%     interpolated_signals = electric_interp_2025(data, i);
     field_name = sprintf('case%d', i);
     interpolated.(field_name) = fill_matrix(interpolated_signals, i);
 end
@@ -101,6 +102,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 %% Electrode positions
 % Function that finds electrodes position in the matrix based on its number
 [row, col] = getElectrodePosition(5);
+% [row, col] = getElectrodePosition_2025(5);
 
 
 %% Export Struct
