@@ -42,13 +42,13 @@ clear heart_geo_file tank_geo_file mtransfer_file signal_file electrodes_idx_fil
 
 %% Define Estimation Parameters
 
-lambda = 10.^(-0.5:-0.5:-12.5); % Regularization parameters
+lambda = 10.^(-0.5:-0.5:-12.5); % Regularization parameter. It will be optmized inside of the regularization code.
 order = 0; % Order of regularization (0, 1, or 2)
-reg_param_method = 'i'; % Regularization parameter selection method
-compute_params = 1; % Flag to compute parameters
+reg_param_method = 'i'; % global (g) or by instant (i) calculation
+compute_params = 1; % 1 if reg_params need to be calculated
 model = 'SAF'; % Model type
 fs = 4000; % Sampling frequency
-SNR = 100; % Signal-to-noise ratio
+SNR = 100; % Signal-to-noise ratio; it will only be used in the l-curve; set it to any number different of 40.
 
 %% Interpolate ECG Signal
 
@@ -88,6 +88,18 @@ est_end_sample = est_end * fs;
 
 % TSVD method
 % [x_hat, k] = tsvd(A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, order, compute_params);
+
+% Greensite
+% [x_hat, lambda_opt] = greensite (A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+
+% Total variation
+% [x_hat, lambda_opt] = totalvariation (A, L, AA, LL, interp_signal(:, est_start_sample:est_end_sample), lambda);
+
+% GRMES
+% x_hat = gmresidual (A, interp_signal(:, est_start_sample:est_end_sample));
+
+% DSVD
+% [x_hat, lambda_opt] = dsvd (A, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
 
 %% Plot All Signals
 
@@ -289,8 +301,16 @@ current_dir = pwd;
 % Determine the parent directory
 [parent_dir, ~, ~] = fileparts(current_dir);
 
+<<<<<<< HEAD
 % Define the path to save the file in the parent directory
 output_file = fullfile(parent_dir, ['estimated_', FileName, '.mat']);
+=======
+% Create a timestamp
+timestamp = datestr(now, 'yyyymmdd_HHMMSS');
+
+% Define the path to save the file in the parent directory
+output_file = fullfile(parent_dir, ['estimated_', FileName, '_', timestamp, '.mat']);
+>>>>>>> Development
 
 % Prepare the data structure
 estimated = struct(); % Initialize structure
@@ -299,9 +319,18 @@ estimated.Time = [init_time, final_time];
 estimated.Regularization = reg_method;
 estimated.Order = order;
 estimated.Heart_geometry = heart_geo;
+<<<<<<< HEAD
 estimated.Filtering = ' ';
+=======
+estimated.Filtering = 'Butterworth(0.5-250Hz)';
+estimated.Sync = 'Yes';
+>>>>>>> Development
 
 % Save the file to the specified path
 save(output_file, 'estimated');
 
+<<<<<<< HEAD
 fprintf('File saved to: %s\n', output_file);
+=======
+fprintf('File saved to: %s\n', output_file);
+>>>>>>> Development

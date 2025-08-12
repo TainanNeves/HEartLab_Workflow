@@ -9,7 +9,7 @@ clear all; close all; clc;
 % Run the code with F9 part by part
 
 % Load data and region of interest (ROI)
-load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\Rec_15_23_24_Bin=8_Cam3.mat'); % Optical Data Binned
+load("F:\HEartLab\experiment_data\E28\Optical Mapping to MATLAB\Rec_17-10-36_Bin=8_Cam3.mat"); % Optical Data Binned
 ROI_3 = roipoly(DATA(:,:,50)); % If you want to create a ROI / Double click in the center to finish
 
 % If you already have the ROIs
@@ -33,7 +33,7 @@ xlabel('Pixels');
 % Creating image to se electrodes
 
 
-%Run if you need it
+% Run to select point
 Background = squeeze(DATA(:,:,20));
 [x, y] = pick_up_a_trace(Background, DATA,1);
 
@@ -64,7 +64,7 @@ less = 500; % Samples eliminated at the beginning and final (1 second each)
 %   Using multiple times the result becomes Smooth, but You lose the
 %   electrode positions
 DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
-% DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
+DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
 % DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
 % DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
 % DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
@@ -87,7 +87,7 @@ clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
 clear i I J less n p p2 R row_pixel ROI ans Background;
 
 %% Exporting the Optical data
-identification = 'E14_F3_R4';
+identification = 'E28_F01_R20';
 fileName = ['optic_data_', identification, '_filtered.mat'];
 % Creating variables
 D_OP.D_CAM1_filtered = D_CAM1_filtered;

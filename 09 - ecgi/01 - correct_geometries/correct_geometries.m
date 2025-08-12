@@ -1,8 +1,8 @@
 %% Data Loading
 
 % Define file paths
-heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\projected_signals_exp14.mat';
-tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\LR_smoothed_tank.mat';
+heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\Conferences\CinC 2024\Version1\ECGi\Dados\projected_signals_exp14.mat';
+tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\Conferences\CinC 2024\Version1\ECGi\Dados\tank_geometry.mat';
 
 % Extracting and reading data
 tank_data = load(tank_geo_file);

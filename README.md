@@ -1,7 +1,7 @@
 # HeartLab Data Analysis Workflow
 
 **Author:** Tainan Cerqueira Neves - HEartLab
-
+**Last Merge to Main:** 12/08/2025 (dd/mm/yyyy)
 ## General Information
 
 1. Never work directly in the folder if you have a local GIT repository.
@@ -150,15 +150,15 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
 
 
 # Individual tasks
+- Junior
+   - Extraction and Filtering codes
+   - Signal Plots
+   - Potential
 - Tainan
    - Signal interpolation folder
    - Dominant Frequency
    - Cycle Length
    - Phase codes
-- Junior
-   - Extraction and Filtering codes
-   - Signal Plots
-   - Potential
 - Angélica
   - ECGi
   - Local Activation Time
@@ -166,6 +166,17 @@ The folder "09 – ecgi" contains four items: 01 - correct_geometries, 02 - tran
   - Phase codes
 
 # To Do:
-- Automatize search and filtering of optical recordings (Junior)
-- Plot of the 12 leads ECG derivations (Junior)
-- Put Npy-matlab library path add in the readme file (Tainan)
+- Junior
+  - Potential maps to Matrix mode
+- Tainan
+  - Put Npy-matlab library path add in the readme file
+  - Implementation of metrics for DF and CL
+  - Phase codes - Singularity Points
+- Angélica
+  - LAT / Conduction Velocity Codes
+  - LAT statistic metrics needs to be implemented
+  - Phase codes - Phase Maps
+- Gabrielli
+  - Pick Up a Trace for ECGi
+- All
+  - Select Recordings to Library
