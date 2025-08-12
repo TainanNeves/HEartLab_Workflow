@@ -24,8 +24,9 @@ disp(['RecTime: ', num2str(rectime), ' seconds']);
 % Convertion to uV
 bitVolts = 0.1949999928474426; % Conversion factor
 DATA.Data = DATA.Data*bitVolts; % Converts the data to uV
-% Convert dB to 60dB
-DATA.Data = DATA.Data / 128 * 1024;
+% Convert to 60dB
+DATA.Data = DATA.Data / 192;
+DATA.Data = DATA.Data * 1000;
 
 
 %% Convert TTL to appropiate format
