@@ -44,7 +44,7 @@
 %
 % 9. **Scaling**  
 %    - Scaling is applied if adjustment of signal amplitude units is required.  
-%    - Plots to compare the signals before and after scaling are generated.  
+%     - Plots to compare the signals before and after normalization are generated.  
 %
 % 10. **Data Storage**  
 %     - The preprocessed signals are saved in `.mat` files for further  
