@@ -6,7 +6,7 @@ clear; clc;
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "E:\experiment_data\E29\Electrical\2\No Filter\2025-07-01_11-13-00\Record Node 108\experiment2\recording29\structure.oebin"; % Put the .oebin path
+fullfilename = "E:\experiment_data\E29\Electrical\2\No Filter\2025-07-01_11-13-00\Record Node 108\experiment2\recording12\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -204,7 +204,7 @@ linkaxes(h,'x');
 %% Plot Tank Electrodes
 Fsampling = DATA.Header.sample_rate;
 start_time = 1; % s
-end_time = 3;   % s
+end_time = 2;   % s
 
 Data_E = DATA.Data;
 To = linspace(0, length(Data_E(1, :)) / Fsampling, length(Data_E(1, :)));

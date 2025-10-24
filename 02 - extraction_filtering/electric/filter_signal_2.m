@@ -43,7 +43,7 @@ function filtered_data = apply_notch_filters(data, freq, Fs, order)
     for i = 1:order
         notch_freq = freq * i;
         % Calculate and normalize bandwidth
-        bw = notch_freq / 35; % Fixed bandwidth ratio Q = 35
+        bw = notch_freq / 45; % Fixed bandwidth ratio Q = 35
         normalized_bw = min(bw / (Fs / 2), 0.99); % Ensure < 1
         % Design and apply notch filter
         [b, a] = iirnotch(notch_freq / (Fs / 2), normalized_bw);
