@@ -9,7 +9,7 @@ clear all; close all; clc;
 % Run the code with F9 part by part
 
 % Load data and region of interest (ROI)
-load("F:\HEartLab\experiment_data\E28\Optical Mapping to MATLAB\Rec_17-10-36_Bin=8_Cam3.mat"); % Optical Data Binned
+load("E:\experiment_data\E29\Optical Mapping to MATLAB\Rec_14-14-58_Bin=8_Cam3.mat"); % Optical Data Binned
 ROI_3 = roipoly(DATA(:,:,50)); % If you want to create a ROI / Double click in the center to finish
 
 % If you already have the ROIs
@@ -87,7 +87,7 @@ clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
 clear i I J less n p p2 R row_pixel ROI ans Background;
 
 %% Exporting the Optical data
-identification = 'E28_F01_R20';
+identification = 'E29_F02_R21';
 fileName = ['optic_data_', identification, '_filtered.mat'];
 % Creating variables
 D_OP.D_CAM1_filtered = D_CAM1_filtered;
