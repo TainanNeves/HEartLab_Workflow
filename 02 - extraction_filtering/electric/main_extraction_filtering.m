@@ -2,11 +2,12 @@
 
 clear; clc;
 
+
 %% Reads the Open Ephys files
 
 % fulfilename is the path to the structure.oebin file contained in one of
 % the experiments
-fullfilename = "E:\experiment_data\E30\Electrical\02\noFilter\2025-07-15_12-45-13\Record Node 108\experiment1\recording3\structure.oebin"; % Put the .oebin path
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording7\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -67,8 +68,8 @@ time = linspace(ti, tf, (tf - ti) * Fs + 1);
 % Electrodes selection
 el1 = 22;  % RA
 el2 = 6; % LA
-el3 = 91; % V
-el4 = 144; % Tank
+el3 = 87; % V
+el4 = 142; % Tank
 Index = {'RA', 'LA', 'V','TANK'};
 % Filter range (Butterworth)
 f_low = 0.5;
@@ -203,7 +204,7 @@ linkaxes(h,'x');
 
 %% Save file to .mat
 % Filename to save
-FileName = 'E28_F01_R09';
+FileName = 'E29_F02_R21';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
@@ -219,13 +220,13 @@ clear D_EL;
 % Defining electrode arrays
 el_butter = [1:32, 81:96, 129:174, 177:190]; % for Butterworth
 el_wavelet = []; % for Wavelet
-el_toZero = [33:80, 96:128, 175, 176, 191, 192]; % to set to zero
+el_toZero = [33:80, 97:128, 175, 176, 191, 192]; % to set to zero
 tank_electrodes = [129:174,177:190]; % Tank electrodes for average subtraction
-avg_subtraction_enabled = 0; % Set to 1 to enable
+avg_subtraction_enabled = 1; % Set to 1 to enable
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
-f_high_butter = 250;
+f_high_butter = 200;
 % Filter Configuration (Wavelet)
 waveletType = {'db4'}; % Wavelet type
 numLevels = 10; % Number of decomposition levels
@@ -268,13 +269,13 @@ D_EL.Header.FilterParameters = struct();
 if ~isempty(el_butter) && all(el_butter > 0) && all(el_butter < 193)
     if all(el_butter > 0) && all(el_butter < 81)
         filter_butter = ["MEA", f_low_butter, f_high_butter];
-        filter_wavelet = ["Tank", reconstructionLevelsSets];
+        filter_wavelet = ["Tank", string(reconstructionLevelsSets{1})];
         D_EL.Header.FilterParameters.filter_butter = filter_butter;
         D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
     else
         if all(el_butter > 80) && all(el_butter < 193)
             filter_butter = ["Tank", f_low_butter, f_high_butter];
-            filter_wavelet = ["MEA", reconstructionLevelsSets];
+            filter_wavelet = ["MEA", string(reconstructionLevelsSets{1})];
             D_EL.Header.FilterParameters.filter_butter = filter_butter;
             D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
         else
@@ -283,7 +284,7 @@ if ~isempty(el_butter) && all(el_butter > 0) && all(el_butter < 193)
         end
     end
 else
-    filter_wavelet = ["MEA", "Tank", reconstructionLevelsSets];
+    filter_wavelet = ["MEA", "Tank", string(reconstructionLevelsSets{1})];
     D_EL.Header.FilterParameters.filter_wavelet = filter_wavelet;
 end
 
