@@ -14,8 +14,8 @@ Fsampling = D_EL.Header.sample_rate;
 
 interpolated = struct();
 for i = 1:4
-    interpolated_signals = electric_interp(data, i);
-%     interpolated_signals = electric_interp_2025(data, i);
+    % interpolated_signals = electric_interp(data, i);
+    interpolated_signals = electric_interp_2025(data, i);
     field_name = sprintf('case%d', i);
     interpolated.(field_name) = fill_matrix(interpolated_signals, i);
 end
@@ -107,7 +107,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E29_F02_R21';
+FileName = 'E30_F02_R26';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;

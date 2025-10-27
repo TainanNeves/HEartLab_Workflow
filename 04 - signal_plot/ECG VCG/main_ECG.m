@@ -28,7 +28,7 @@ V6 = data(135, :);
 
 
 %% Saving ECG leads
-filename = 'E28_F01_R09';
+filename = 'E14_F03_R04';
 variables = {'aVF', 'aVL', 'aVR', 'D1', 'D2', 'D3', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'Fs'};
 save([filename, ' - ECG leads.mat'], variables{:});
 clear filename variables;

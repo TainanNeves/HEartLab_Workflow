@@ -81,8 +81,7 @@ clear ans Fsampling i idf ido S valor x channel;
 
 
 %% Exporting work variables
-
-FileName = 'E29_F02_R21';
+FileName = 'E30_F02_R23';
 save(['data_filtered_sync_', FileName, '.mat'], 'D_SYNC', '-v7.3');
 
 

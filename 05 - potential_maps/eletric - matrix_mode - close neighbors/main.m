@@ -4,8 +4,8 @@
 %% Loading Data If using matlab extraction
 clear; 
 clc;
-D = load("D:\HEartLab\experiment_analyses\exp14_analysis\exp14folder03rec04_sinus_filtered.mat");
-data = D.Data;
+load("E:\Qualification\Analysis\E14F03R04\data\electric_data_E14F03R04_filtered.mat");
+data = D_EL.Data;
 
 %%Transformar para mV (Codigo de export tras em uV)
 data = data/1000;
@@ -18,25 +18,25 @@ el2 = 75; % Atria MEA
 el3 = 142; % Tank electrode
 tin = 6; % Initial time (s)
 tfin = 10; % Final time (s)
-time = linspace(tin, tfin, length(tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+time = linspace(tin, tfin, length(tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 tPlot = 7.141; % Time at which the red line will appear
 
 figure();
 subplot(3, 1, 1); 
-plot(time, data(el2, tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+plot(time, data(el2, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 title(['Electrode ', num2str(el2), ' (Left Atria MEA)']);
 ylabel('mV');
 xline(tPlot, 'r');
-text(tPlot, max(data(el2, tin * D.Header.sample_rate : tfin * D.Header.sample_rate)), [num2str(tPlot), ' s'], 'Color', 'r');
+text(tPlot, max(data(el2, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate)), [num2str(tPlot), ' s'], 'Color', 'r');
 
 subplot(3, 1, 2); 
-plot(time, data(el1, tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+plot(time, data(el1, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 title(['Electrode ', num2str(el1), ' (Ventricle MEA)']);
 ylabel('mV');
 xline(tPlot, 'r');
 
 subplot(3, 1, 3); 
-plot(time, data(el3, tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+plot(time, data(el3, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 title(['Electrode ', num2str(el3), ' (Tank Electrode)']);
 ylabel('mV');
 xlabel('Time (s)');
@@ -247,22 +247,22 @@ el2 = 75; % Atria MEA
 el3 = 142; % Tank electrode
 tin = 27; % Initial time (s)
 tfin = 29; % Final time (s)
-time = linspace(tin, tfin, length(tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
-tPlot = 27.6253; % Time at which the red line will appear
+time = linspace(tin, tfin, length(tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
+tPlot = 7:0.25:8; % Time at which the red line will appear
 
 figure();
 
 % Subplot 1
 subplot(4, 1, 1); 
-plot(time, data(el2, tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+plot(time, data(el2, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 title(['Electrode ', num2str(el2), ' (Left Atria MEA)']);
 ylabel('mV');
 xline(tPlot, 'r');
-text(tPlot, max(data(el2, tin * D.Header.sample_rate : tfin * D.Header.sample_rate)), [num2str(tPlot), ' s'], 'Color', 'r');
+text(tPlot, max(data(el2, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate)), [num2str(tPlot), ' s'], 'Color', 'r');
 
 % Subplot 2
 subplot(4, 1, 2); 
-plot(time, data(el3, tin * D.Header.sample_rate : tfin * D.Header.sample_rate));
+plot(time, data(el3, tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
 title(['Electrode ', num2str(el3), ' (Tank Electrode)']);
 ylabel('mV');
 xlabel('Time (s)');
@@ -303,8 +303,8 @@ hold off; % Release the hold on the plot
 
 %% Generating video
 % Define the time range
-tplotin = 8;
-tplotfin = 10.5;
+tplotin = 2;
+tplotfin = 2.3;
 tin = 8.2;               % Starting time
 tfin = 10.2;             % Ending time
 frameRate = 60;          % Frame rate for the video
@@ -409,17 +409,17 @@ for t = linspace(tin, tfin, numFrames)
     interpolatedMatrix = interpolateZeros(completedMatrix);
     
 
-    time = linspace(tplotin, tplotfin, length(tplotin * D.Header.sample_rate : tplotfin * D.Header.sample_rate));
+    time = linspace(tplotin, tplotfin, length(tplotin * D_EL.Header.sample_rate : tplotfin * D_EL.Header.sample_rate));
     % Subplot 1
     subplot(4, 1, 1); 
-    plot(time, data(el2, tplotin * D.Header.sample_rate : tplotfin * D.Header.sample_rate));
+    plot(time, data(el2, tplotin * D_EL.Header.sample_rate : tplotfin * D_EL.Header.sample_rate));
     title(['Electrode ', num2str(el2), ' (Left Atria MEA)']);
     ylabel('mV');
     xline(t, 'r');
     
     % Subplot 2
     subplot(4, 1, 2); 
-    plot(time, data(el3, tplotin * D.Header.sample_rate : tplotfin * D.Header.sample_rate));
+    plot(time, data(el3, tplotin * D_EL.Header.sample_rate : tplotfin * D_EL.Header.sample_rate));
     title(['Electrode ', num2str(el3), ' (Tank Electrode)']);
     ylabel('mV');
     xlabel('Time (s)');
@@ -437,7 +437,7 @@ for t = linspace(tin, tfin, numFrames)
     %title(['Tank Isopotential Map (Moment: ', num2str(t),' s)']);
 
     % Set the color axis limits
-    colorbarLimits = [min(min(data(129:190, round(tin*D.Header.sample_rate):round(tfin*D.Header.sample_rate)))), max(max(data(129:190, (tin*D.Header.sample_rate):(tfin*D.Header.sample_rate))))];  % Replace with your desired range
+    colorbarLimits = [min(min(data(129:190, round(tin*D_EL.Header.sample_rate):round(tfin*D_EL.Header.sample_rate)))), max(max(data(129:190, (tin*D_EL.Header.sample_rate):(tfin*D_EL.Header.sample_rate))))];  % Replace with your desired range
     caxis(colorbarLimits);
 
     % Remove the axes box

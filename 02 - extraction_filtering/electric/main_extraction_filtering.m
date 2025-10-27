@@ -5,9 +5,8 @@ clear; clc;
 
 %% Reads the Open Ephys files
 
-% fulfilename is the path to the structure.oebin file contained in one of
-% the experiments
-fullfilename = "E:\experiment_data\E29\Electrical\2\No Filter\2025-07-01_11-13-00\Record Node 108\experiment2\recording21\structure.oebin"; % Put the .oebin path
+% fulfilename is the path to the structure.oebin file contained in one of the experiments
+fullfilename = "E:\experiment_data\E30\Electrical\02\noFilter\2025-07-15_12-45-13\Record Node 108\experiment1\recording23\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -204,7 +203,7 @@ linkaxes(h,'x');
 
 %% Save file to .mat
 % Filename to save
-FileName = 'E29_F02_R21';
+FileName = 'E30_F02_R23';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
@@ -222,7 +221,7 @@ el_butter = [1:32, 81:96, 129:174, 177:190]; % for Butterworth
 el_wavelet = []; % for Wavelet
 el_toZero = [33:80, 97:128, 175, 176, 191, 192]; % to set to zero
 tank_electrodes = [129:174,177:190]; % Tank electrodes for average subtraction
-avg_subtraction_enabled = 1; % Set to 1 to enable
+avg_subtraction_enabled = 0; % Set to 1 to enable
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
