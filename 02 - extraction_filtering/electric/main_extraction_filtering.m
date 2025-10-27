@@ -5,8 +5,14 @@ clear; clc;
 
 %% Reads the Open Ephys files
 
+<<<<<<< HEAD
 % fulfilename is the path to the structure.oebin file contained in one of the experiments
 fullfilename = "E:\experiment_data\E30\Electrical\02\noFilter\2025-07-15_12-45-13\Record Node 108\experiment1\recording23\structure.oebin"; % Put the .oebin path
+=======
+% fulfilename is the path to the structure.oebin file contained in one of
+% the experiments
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording7\structure.oebin"; % Put the .oebin path
+>>>>>>> eb962a20ac6026441ffe7e93607257d67e63760b
 
 % Channels to save
 channels = [1:192];
@@ -67,8 +73,8 @@ time = linspace(ti, tf, (tf - ti) * Fs + 1);
 % Electrodes selection
 el1 = 22;  % RA
 el2 = 6; % LA
-el3 = 90; % V
-el4 = 144; % Tank
+el3 = 87; % V
+el4 = 142; % Tank
 Index = {'RA', 'LA', 'V','TANK'};
 % Filter range (Butterworth)
 f_low = 0.5;
