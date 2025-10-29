@@ -1,10 +1,10 @@
-%% Extracting data from recordings
-%Used the ReadSaveOE.m program
-
-%% Loading Data If using matlab extraction
+%% MAIN ELECTRIC POTENTIAL PLOTS
+% Use the electric data filtered
 clear; 
 clc;
-load("E:\Qualification\Analysis\E14F03R04\data\electric_data_E14F03R04_filtered.mat");
+
+%% Loading Data If using matlab extraction
+load("D:\Qualification\Analysis\E14F03R04\data\electric_data_E14F03R04_filtered.mat");
 data = D_EL.Data;
 
 %%Transformar para mV (Codigo de export tras em uV)
@@ -13,13 +13,13 @@ data = data/1000;
 
 %% 
 % Plot 3
-el1 = 22; % Ventricle MEA
+el1 = 28; % Ventricle MEA
 el2 = 75; % Atria MEA
 el3 = 142; % Tank electrode
-tin = 6; % Initial time (s)
-tfin = 10; % Final time (s)
+tin = 2; % Initial time (s)
+tfin = 4; % Final time (s)
 time = linspace(tin, tfin, length(tin * D_EL.Header.sample_rate : tfin * D_EL.Header.sample_rate));
-tPlot = 7.141; % Time at which the red line will appear
+tPlot = 3.1; % Time at which the red line will appear
 
 figure();
 subplot(3, 1, 1); 

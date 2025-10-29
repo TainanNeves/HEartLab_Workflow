@@ -1,9 +1,4 @@
-function [MFFTi,Sffti,fstep]=f_DF_optico(DATA_A,fs,UP,DOWN)
-    % DATA_A=O_SIN_LA;
-    % Fs=4000;
-    % i=62;
-    % j=133;
-    
+function [MFFTi,Sffti,fstep]=f_DF_optico(DATA_A,fs,UP,DOWN) 
     [a b c]=size(DATA_A);
     
     %declaro os valores que eu precisso
@@ -12,12 +7,12 @@ function [MFFTi,Sffti,fstep]=f_DF_optico(DATA_A,fs,UP,DOWN)
     factor=5; 
     sizefft=factor*fs*time;
     fstep=fs/sizefft;
-    H=hamming (sizefft/factor);
+    H=hamming(sizefft/factor);
     freq_up_AF=UP;
     freq_down_AF=DOWN;
     
     
-    %calculou a frequencua
+    %frequency calculation
     for i=1:a
         for j=1:b
             x=squeeze(DATA_A(i,j,:));

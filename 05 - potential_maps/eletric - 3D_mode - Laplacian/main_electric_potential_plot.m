@@ -9,11 +9,7 @@ clear; clc;
 %% Load data
 
 %Load the filtered data
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
-
-
-% Transform to mV (Exported default data are in uV)
-% data = data/1000;
+load("D:\Qualification\Analysis\E14F03R04\data\data_filtered_sync_E14_F03_R04.mat"); % Synchronized data
 
 
 %% Previsualizing data from electric time view
@@ -25,11 +21,11 @@ el1 = 10; pos1 = 'RA';
 el2 = 74; pos2 = 'LA';
 el3 = 23; pos3 = 'V';
 el4 = 142; pos4 = 'TANK';
-tin = 3; % Initial time (s)
+tin = 2; % Initial time (s)
 tfin = 4; % Final time (s)
 Fsampling = 4000;
 time = linspace(tin, tfin, length(tin*Fsampling:tfin*Fsampling));
-redX = [4000];
+redX = [3.1];
 
 figure();
 

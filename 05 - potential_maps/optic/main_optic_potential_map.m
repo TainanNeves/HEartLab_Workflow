@@ -10,42 +10,89 @@ load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat
 % use un your plots.
 
 
-%% Potential map
+%% Potential Map - Individual Figures
 % Select sample and camera to plot
-sample = 5400;
+sample = round(2.3058*4000):50:round(2.6388*4000);
 Data_O = D_SYNC.CAM1;
 
 % Initialize color map and adjust first color to white
 C = jet(256);
 C(1,1:3) = [1 1 1];
-% Extract a single frame from the processed data and rotate it 90 degrees
-I = squeeze(Data_O(:,:,sample));
-J = imrotate(I, 90);
-% Create a figure and display the rotated image with a color map
-f1 = figure('color', 'white', 'Position', [50 50 500 500]);
-imagesc(J, [0 10]);
-colormap(C);
-% Add a colorbar and adjust labels
+
+% Loop through each sample point
+for i = 1:length(sample)
+    % Extract current sample index
+    current_sample = sample(i);
+    
+    % Extract a single frame from the processed data and rotate it 90 degrees
+    I = squeeze(Data_O(:,:,current_sample));
+    J = imrotate(I, 90);
+    
+    % Create a figure for each sample
+    f1 = figure('color', 'white', 'Position', [50 50 500 500]);
+    imagesc(J, [0 10]);
+    colormap(C);
+    
+    % Add a colorbar and adjust labels
+    hBar1 = colorbar('eastoutside');
+    ylabel(hBar1, 'Fluorescence [%]', 'FontSize', 18);
+    set(gca, 'fontsize', 18);
+    title(['Cam - Sample ' num2str(current_sample)]);
+    ylabel('Pixels');
+    xlabel('Pixels');
+    axis off
+    
+    % Optional: Add a pause to see each figure if plotting many
+    % pause(0.5);
+end
+
+
+%% Potential Map - Multiplot
+% Potential map - Subplot version
+sample = 9580:20:10100;
+Data_O = D_SYNC.CAM3;
+
+% Initialize color map
+C = jet(256);
+C(1,1:3) = [1 1 1];
+
+% Calculate subplot dimensions - always use 8 columns
+num_samples = length(sample);
+cols = 8; % Num of coll
+rows = ceil(num_samples / cols); % Calculate rows based on 8 columns
+
+% Create single figure with subplots
+f1 = figure('color', 'white', 'Position', [50 50 1500 1500]); % Increased size for better visibility
+
+for i = 1:num_samples
+    current_sample = sample(i);
+    
+    I = squeeze(Data_O(:,:,current_sample));
+    J = imrotate(I, 90);
+    
+    subplot(rows, cols, i);
+    imagesc(J, [0 10]);
+    colormap(C);
+    title(['Sample ' num2str(current_sample)], 'FontSize', 8);
+    axis off
+end
+
+% Add one colorbar for the entire figure
 hBar1 = colorbar('eastoutside');
 ylabel(hBar1, 'Fluorescence [%]', 'FontSize', 18);
-set(gca, 'fontsize', 18);
-title('Cam ');
-ylabel('Pixels');
-xlabel('Pixels');
-axis off
 
 
-%% Potential video map
-
+%% Potential Map - Video
+Data_O = D_SYNC.CAM1;
 % Define the start and end samples for the video
-start_sample = 1;  % Adjust the start sample according to your data
-end_sample = 4000;  % Adjust the end sample according to your data
+start_sample = 9580;  % Adjust the start sample according to your data
+end_sample = 10100;  % Adjust the end sample according to your data
 Fsampling = 4000;
 
 % Define the frames per second (fps) for the video
 fps = 30;  % 30 fps is a standard value to video codec
 % Define the step for plot
-step = 2;
+step = 2; 
 
 % Define the title of the video
 video_title = 'optic_potential_map_video';

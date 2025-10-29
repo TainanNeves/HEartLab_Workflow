@@ -10,9 +10,8 @@ load("E:\HEartLab\experiment_analyses\exp20_analysis\04 - Interpolate signals La
 
 
 %% Optic Dominant Frequency Analysis
-
-Data = D_SYNC.CAM3;
-ROI = D_SYNC;
+Data = D_SYNC.CAM1;
+ROI = D_SYNC.ROI.ROI_1;
 Fsampling = 4000;
 
 % Set upper and lower frequency bounds for the Dominant Frequency calculation
@@ -20,8 +19,8 @@ freq_up = 10;
 freq_down = 0.5;
 
 % Extract a subset of the optical data for analysis (adjust the sample range accordingly)
-in_sample = 8366;
-end_sample = 25464;
+in_sample = 2*4000;
+end_sample = 4*4000;
 Data_temp = Data(:,:,in_sample:end_sample);
 
 % Perform Dominant Frequency analysis on the subset
@@ -32,7 +31,7 @@ Data_temp = Data(:,:,in_sample:end_sample);
 Background = squeeze(Data(:,:,2000));
 [px, py] = pick_up_a_trace(Background, Data,1);    % Select a pixel in the image and shows the optical signal
                                         %Press space to stop
-% Plot
+% Plot Frequency
 pa = [px(1) py(1)]; pv = [px(2) py(2)];
 b = length(Sfft_O(1, 1, :));
 figure;
@@ -44,14 +43,6 @@ xlabel('Frequency [Hz]');
 title('Spectrum');
 set(gca, 'fontsize', 14);
 xlim([freq_down freq_up]);
-
-
-% Susbstitude values (If needed)
-find_value = 0.5; % Value to replace
-tolerancia = 1e-10;
-indices = find(abs(DF_O - find_value) < tolerancia);
-DF_O(indices) = 0; % Value to include
-
 
 % Dominant Frequency map
 C = jet(256);
@@ -78,6 +69,13 @@ ylabel(hBar1, 'Dominant Frequency [Hz]', 'FontSize', 14);
 caxis([freq_down freq_up]);
 title('Cam1 V');
 
+%% In case of need to manual corrections
+% Susbstitude values
+find_value = 0.5; % Value to replace
+tolerancia = 1e-10;
+indices = find(abs(DF_O - find_value) < tolerancia);
+DF_O(indices) = 0; % Value to include
+
 
 %% Optical Dominant Frequency Analysis - Statistics
 % Display the image and let the user define the ROI
@@ -101,19 +99,20 @@ std_roi = std(nonzero_values);
 disp(['Standard Deviation of DF in ROI: ', num2str(std_roi)]);
 var_roi = var(nonzero_values);
 disp(['Variance of DF in ROI: ', num2str(var_roi)]);
+%number_points = HELPHERE;
+%disp(['Number of pixels in the ROI: ', num2str(number_points)]);
 
 
 %% Optic Organization Index - OI
-
 % Variables
 MFFTi = DF_O;
 Sffti = Sfft_O;
 fstep = fstep;
 Hzi = freq_down;
 Hzf = freq_up;
-dfh_threshold_area = 0.8;
-f_mode = 1;
-debug = 1;
+dfh_threshold_area = 0.8; %HELPHERE explain the difference
+f_mode = 1; %HELPHERE explain the difference
+debug = 1; %HELPHERE explain the difference
 
 % Calculating
 OI = calculate_OI(MFFTi, Sffti, fstep, Hzi, Hzf, dfh_threshold_area, f_mode, debug);
@@ -135,6 +134,8 @@ std_roi = std(nonzero_values);
 disp(['Standard Deviation of OI in ROI: ', num2str(std_roi)]);
 var_roi = var(nonzero_values);
 disp(['Variance of OI in ROI: ', num2str(var_roi)]);
+%number_points = HELPHERE;
+%disp(['Number of pixels in the ROI: ', num2str(number_points)]);
 
 
 %% Electric Dominant Frequency Analysis
