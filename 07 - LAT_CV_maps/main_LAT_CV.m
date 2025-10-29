@@ -4,7 +4,7 @@ clear; clc;
 
 %% Loading Variables
 
-load("F:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\data_filtered_sync_E14_F03_R09.mat"); %Filtered data
+load("F:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\data_filtered_sync_E14_F03_R09.mat"); %Filtered Sync data
 
 
 %% LAT Optic Analysis
