@@ -62,7 +62,7 @@ end
 % Add plot formatting
 legend('show', 'FontSize', 10, 'Location', 'best');
 xlabel('Frequency [Hz]', 'FontSize', 12);
-ylabel('Power Spectral Density', 'FontSize', 12);
+ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
 title(['Frequency Spectrum - ' num2str(n_points) ' Selected Points'], 'FontSize', 14);
 set(gca, 'fontsize', 12);
 xlim([freq_down freq_up]);
@@ -101,7 +101,7 @@ if n_points > 1
             
             title([point_names{i} ' (DF=' num2str(dominant_freq, '%.2f') 'Hz)'], 'FontSize', 10);
             xlabel('Frequency [Hz]');
-            ylabel('Power');
+            ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
             xlim([freq_down freq_up]);
             grid on;
         end
@@ -405,7 +405,7 @@ end
 % Add plot formatting
 legend('show', 'FontSize', 10, 'Location', 'best');
 xlabel('Frequency [Hz]', 'FontSize', 12);
-ylabel('Power Spectral Density', 'FontSize', 12);
+ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
 title(['Frequency Spectrum - ' current_case ' - ' num2str(n_points) ' Selected Points'], 'FontSize', 14);
 set(gca, 'fontsize', 12);
 xlim([freq_down freq_up]);
@@ -446,7 +446,7 @@ if n_points > 1
             
             title([point_names{i} ' (DF=' num2str(dominant_freq, '%.2f') 'Hz)'], 'FontSize', 10);
             xlabel('Frequency [Hz]');
-            ylabel('Power');
+            ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
             xlim([freq_down freq_up]);
             grid on;
         end
