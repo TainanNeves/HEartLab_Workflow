@@ -5,8 +5,8 @@ clear; clc;
 
 
 %% Load Data
-load("E:\HEartLab\experiment_analyses\exp20_analysis\03 - synchronization_optical_electric\data_filtered_sync_E20_F01_R01.mat"); % Filtered syncrhonised data
-load("E:\HEartLab\experiment_analyses\exp20_analysis\04 - Interpolate signals Laplacian\InterpolatedSignalsE20_F01_R01_filtered.mat"); % Filteres interpolated data
+load(); % Filtered syncrhonised data
+load(); % Filteres interpolated data
 
 
 %% Optic Dominant Frequency Analysis

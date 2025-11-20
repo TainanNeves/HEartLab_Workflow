@@ -198,9 +198,9 @@ Sffti = Sfft_O;
 % fstep = fstep; % Already defined above
 % Hzi = freq_down; % Already defined above
 % Hzf = freq_up; % Already defined above
-dfh_threshold_area = 0.8; % Threshold for dominant frequency harmonic area (0-1)
+dfh_threshold_area = 0.6; % Threshold for dominant frequency harmonic area (0-1)
 f_mode = 2; % Frequency mode: 1 = fundamental frequency, 2 = harmonic analysis
-debug = 0; % Debug mode: 1 = show plots, 0 = no plots
+debug = 1; % Debug mode: 1 = show plots, 0 = no plots
 
 % Calculating
 OI = calculate_OI(MFFTi, Sffti, fstep, freq_down, freq_up, dfh_threshold_area, f_mode, debug);
@@ -359,7 +359,7 @@ DF_values.fstep = fstep;
 
 %% Spectrum of multiple electrodes - Electrical
 % Select which case to analyze
-current_case = 'MEA2'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
+current_case = 'TANK'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
 Data = InterpSignal.Sync.(current_case);
 Background = squeeze(Data(:,:,2000));
 
@@ -628,7 +628,7 @@ end
 %% Electrical Organization Index - OI
 % Calculate OI for each case
 OI_values = struct();
-dfh_threshold_area = 0.8;
+dfh_threshold_area = 0.6;
 f_mode = 2;
 debug = 1;
 
