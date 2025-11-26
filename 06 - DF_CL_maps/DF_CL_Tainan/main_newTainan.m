@@ -138,11 +138,17 @@ title(Title);
 
 
 %% In case of need to manual corrections
-% Susbstitude values
-find_value = 0.5; % Value to replace
+% Susbstitude exactly values
+find_value = 0.5; 
 tolerancia = 1e-10;
+new_value = 0.5;
 indices = find(abs(DF_O - find_value) < tolerancia);
-DF_O(indices) = 0; % Value to include
+DF_O(indices) = new_value; % Value to include
+
+% Substitute Highew or Lower Values
+find_value = 0.5;
+new_value = 0.5;
+DF_O(DF_O < find_value) = new_value;
 
 
 %% DF CL Statistics - Optical
