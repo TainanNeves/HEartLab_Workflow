@@ -383,84 +383,191 @@ for i = 1:length(cases)
 end
 
 
+%% LAT Calculation COM - Electrical
+debug_COM = 0; % 1 for debugging plots 
+LAT_values_COM = struct();
+
+for i = 1:length(cases)
+    case_name = cases{i};
+    Data_current_E = Data_E_Structure.(case_name);
+    Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
+    % Get the size of the segment
+    [num_x, num_y, segment_length] = size(Data_temp_E);
+    % Inicialize matrix
+    LAT_map_COM = zeros(num_x, num_y);
+    for x = 1:num_x % X-coordinate
+        for y = 1:num_y % Y-coordinate
+            signal_segment = squeeze(Data_temp_E(x,y,:))'; % Ensure it's a row vector
+            if max(abs(signal_segment)) ~= 0
+                % Calculate LAT map (pixel by pixel)
+                LAT_map_COM(x,y) = find_LAT_com(signal_segment, ...
+                                    Fsampling, x, y, ...
+                                    debug_COM, case_name);
+            end
+        end
+    end
+    % Normalization and Filtering
+    LAT_map_COM(LAT_map_COM < 0) = 0;
+    min_LAT_COM = min(LAT_map_COM(LAT_map_COM ~= 0));
+    if ~isempty(min_LAT_COM) && ~isnan(min_LAT_COM)
+        LAT_map_COM(LAT_map_COM ~= 0) = LAT_map_COM(LAT_map_COM ~= 0) - min_LAT_COM;
+    end
+    % Spatial Filtering (Using S=1 | T=0)
+    LAT_map_filtered_COM = SpatTemp_Filtering(LAT_map_COM, 1, 0, 'GPU'); 
+    
+    % Store
+    LAT_values_COM.(case_name).LAT_matrix = LAT_map_filtered_COM;
+    fprintf('  -> %s LAT matrix (COM Method) (Size: %dx%d) stored.\n', case_name, size(LAT_map_filtered_COM, 1), size(LAT_map_filtered_COM, 2));
+end
+
+
 %% LAT MAP PLOTTING - Electrical
 C = parula(256); C(1,1:3) = [1 1 1]; % White for background (0 LAT)
 for i = 1:length(cases)
     case_name = cases{i};
-    LAT_matrix = LAT_values.(case_name).LAT_matrix;
-    figure('color', 'white', 'Position', [40 40 600 600]);
-    if strcmp(case_name, 'TANK')
-        % TANK case: Rectangular aspect ratio
-        J = LAT_matrix;
-        imagesc(J);
-        pbaspect([2 1 1]); % 2:1 aspect ratio
+    LAT_matrix_DIFF = LAT_values.(case_name).LAT_matrix;
+    LAT_matrix_COM = LAT_values_COM.(case_name).LAT_matrix;
+    % Create a figure to show both methods
+    figure('color', 'white', 'Position', [40 + i*20 40 + i*20 1200 600]);
+    % Determine the common color limits
+    all_LATS = [LAT_matrix_DIFF(LAT_matrix_DIFF ~= 0); LAT_matrix_COM(LAT_matrix_COM ~= 0)];
+    if ~isempty(all_LATS)
+        max_LAT = max(all_LATS);
     else
-        % MEA cases: Square aspect ratio (typically rotated 90 degrees)
-        J = imrotate(LAT_matrix, 90);
+        max_LAT = 1; % Default max
+    end
+
+    % --- Subplot 1: Derivative Method ---
+    subplot(1, 2, 1);
+    if strcmp(case_name, 'TANK')
+        J = LAT_matrix_DIFF;
+        imagesc(J);
+        pbaspect([2 1 1]);
+    else
+        J = imrotate(LAT_matrix_DIFF, 90);
         imagesc(J);
         axis equal;
     end
-    colormap(C);
+    colormap(gca, C);
+    caxis([0 max_LAT]);
+    axis off;
+    title(['Derivative Method - ' case_name], 'FontSize', 16);
+    
+    % --- Subplot 2: COM Method ---
+    subplot(1, 2, 2);
+    if strcmp(case_name, 'TANK')
+        J = LAT_matrix_COM;
+        imagesc(J);
+        pbaspect([2 1 1]);
+    else
+        J = imrotate(LAT_matrix_COM, 90);
+        imagesc(J);
+        axis equal;
+    end
+    colormap(gca, C);
+    caxis([0 max_LAT]);
     axis off;
     hBar = colorbar('eastoutside');
     ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 14);
-    title(['Electrical ' case_name ' - Local Activation Time'], 'FontSize', 16);
+    title(['COM Method - ' case_name], 'FontSize', 16);
+    
+    sgtitle(['Electrical ' case_name ' - LAT Map Comparison'], 'FontSize', 18, 'FontWeight', 'bold');
+end
+
+
+%% LAT METHOD CONSOLIDATION - Electrical
+% Choose the preferred LAT detection method for each case:
+% 1. 'DIFF' (Derivative Method: LAT_values)
+% 2. 'COM' (Center of Mass Method: LAT_values_COM)
+
+% --- Define Method Selection ---
+MethodSelection = struct();
+MethodSelection.MEA1 = 'DIFF';
+MethodSelection.MEA2 = 'DIFF';
+MethodSelection.MEA3 = 'DIFF';
+MethodSelection.TANK = 'COM';
+
+LAT_values_FINAL = struct();
+
+for i = 1:length(cases)
+    case_name = cases{i};
+    % Get the selected method for the current case
+    if isfield(MethodSelection, case_name)
+        method = MethodSelection.(case_name);
+    else
+        method = 'DIFF'; % Default to DIFF if not specified
+    end
+    
+    % Select the matrix based on the method
+    if strcmp(method, 'COM')
+        LAT_matrix_final = LAT_values_COM.(case_name).LAT_matrix;
+        fprintf('  -> %s: Using COM Method (LAT_values_COM)\n', case_name);
+    elseif strcmp(method, 'DIFF')
+        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
+        fprintf('  -> %s: Using Derivative Method (LAT_values)\n', case_name);
+    else
+        warning('Unknown method "%s" specified for case %s. Defaulting to DIFF.', method, case_name);
+        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
+    end
+    
+    LAT_values_FINAL.(case_name).LAT_matrix = LAT_matrix_final;
 end
 
 
 %% In case of need to manual corrections - Electrical
 % Histogram plots
 num_bins = 50;
-
 for i = 1:length(cases)
     case_name = cases{i};
-    LAT_matrix = LAT_values.(case_name).LAT_matrix;
+    LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
     valid_LATS = LAT_matrix(LAT_matrix ~= 0);
-
     figure();
     set(gcf, 'color', 'white', 'Position', [600 50 600 400]);
     h = histogram(valid_LATS, num_bins);
-    title(['LAT Distribution: Electrical ', case_name], 'FontSize', 14);
+    title(['LAT Distribution: Electrical ', case_name, ' (FINAL)'], 'FontSize', 14);
     xlabel('Local Activation Time [ms]', 'FontSize', 12);
     ylabel('Count (Number of Electrodes/Pixels)', 'FontSize', 12);
     grid on;
-
     mean_lat = mean(valid_LATS);
     std_lat = std(valid_LATS);
     fprintf('  -> %s LAT Stats: Mean = %.2f ms, STD = %.2f ms\n', ...
             case_name, mean_lat, std_lat);
 end
 
+
 % Substitute specific value
 case_to_correct = 'MEA1';
-LAT_temp = LAT_values.(case_to_correct).LAT_matrix;
+LAT_temp = LAT_values_FINAL.(case_to_correct).LAT_matrix;
 find_value = 9; % Value to replace
 tolerancia = 1;
 indices = find(abs(LAT_temp - find_value) < tolerancia);
 LAT_temp(indices) = 3; % Value to include
-LAT_values.(case_to_correct).LAT_matrix = LAT_temp;
+LAT_values_FINAL.(case_to_correct).LAT_matrix = LAT_temp;
+
 
 % Substitute Higher or lower than
 case_to_correct = 'MEA1';
 find_value = 9; % Value to replace
 new_value = 0;
-LAT_values.(case_to_correct).LAT_matrix( ...
-            LAT_values.(case_to_correct).LAT_matrix < ...
+LAT_values_FINAL.(case_to_correct).LAT_matrix( ...
+            LAT_values_FINAL.(case_to_correct).LAT_matrix < ...
             find_value) = new_value;
 
+
 % Correct The Zero Normalization - Subtract minimum
-LAT_values.(case_to_correct).LAT_matrix(LAT_values.(case_to_correct).LAT_matrix < 0) = 0;
-min_LAT = min(LAT_values.(case_to_correct).LAT_matrix(LAT_values.(case_to_correct).LAT_matrix ~= 0));
+LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix < 0) = 0;
+min_LAT = min(LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0));
 if ~isempty(min_LAT) && ~isnan(min_LAT)
-    LAT_values.(case_to_correct).LAT_matrix(LAT_values.(case_to_correct).LAT_matrix ~= 0) = ...
-        LAT_values.(case_to_correct).LAT_matrix(LAT_values.(case_to_correct).LAT_matrix ~= 0) - min_LAT;
+    LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) = ...
+        LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) - min_LAT;
 end
 
 
 %% LAT Statistics - Electrical (with ROI Selection)
+C = parula(256); C(1,1:3) = [1 1 1]; 
 for i = 1:length(cases)
     case_name = cases{i};
-    LAT_matrix = LAT_values.(case_name).LAT_matrix;
+    LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
     
     % ROI SELECTION
     figure('color', 'white');
@@ -476,14 +583,13 @@ for i = 1:length(cases)
     colormap(C);
     axis off;
     colorbar('eastoutside');
-    title(['Case: ', case_name, ' - ROI Selection'], 'FontSize', 14);
+    title(['Case: ', case_name, ' - ROI Selection (FINAL LAT)'], 'FontSize', 14);
     roi_mask = roipoly;
     close(gcf);
     
     % APPLY ROI AND ISOLATE VALID DATA
     LAT_roi = J .* roi_mask; 
     nonzero_LATS_roi = LAT_roi(LAT_roi ~= 0 & ~isnan(LAT_roi));
-
     % CALCULATE AND STORE STATISTICS
     LAT_mean = mean(nonzero_LATS_roi);
     LAT_std = std(nonzero_LATS_roi);
@@ -491,21 +597,19 @@ for i = 1:length(cases)
     LAT_mode = mode(nonzero_LATS_roi); 
     LAT_var = var(nonzero_LATS_roi); 
     LAT_num = numel(nonzero_LATS_roi); 
-
     % Displaying results for the current case
-    fprintf('\nCase: %s (ROI Stats)\n', case_name);
+    fprintf('\nCase: %s (ROI Stats - FINAL LAT)\n', case_name);
     disp(['  Average LAT:      ', num2str(LAT_mean, '%.4f'), ' ms']);
     disp(['  Mode LAT:         ', num2str(LAT_mode, '%.4f'), ' ms']);
     disp(['  Max LAT:          ', num2str(LAT_max, '%.4f'), ' ms']);
     disp(['  Std Deviation:    ', num2str(LAT_std, '%.4f'), ' ms']);
     disp(['  Variance:         ', num2str(LAT_var, '%.4f')]);
     disp(['  Number of points: ', num2str(LAT_num)]);
-
     % Store Results
-    LAT_values.(case_name).LAT_stats = struct(...
+    LAT_values_FINAL.(case_name).LAT_stats = struct(...
         'mean', LAT_mean, 'std', LAT_std, 'max', LAT_max, ...
         'mode', LAT_mode, 'var', LAT_var, 'num_points', LAT_num);
-    LAT_values.(case_name).roi_mask = roi_mask;
+    LAT_values_FINAL.(case_name).roi_mask = roi_mask;
 end
 
 
@@ -514,11 +618,10 @@ SpaceScale.TANK = 0.75; % mm/pixel for TANK
 SpaceScale.MEA = 0.1;  % mm/pixel for MEA
 r = 3;                 % Radius (r) for the CV Circle Method
 filter_size = 0;       % Size of the spatial filter kernel
-LAT_values_new = LAT_values;
-
+LAT_values_CV = LAT_values_FINAL; % Start CV calculation from FINAL LAT
 for i = 1:length(cases)
     case_name = cases{i};
-    LAT_E_matrix = LAT_values.(case_name).LAT_matrix;
+    LAT_E_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
     
     % Determine Space Scale
     if strcmp(case_name, 'TANK')
@@ -526,7 +629,6 @@ for i = 1:length(cases)
     else
         current_space_scale = SpaceScale.MEA;
     end
-
     % Interpolation
     [X, Y] = meshgrid(1:size(LAT_E_matrix, 2), 1:size(LAT_E_matrix, 1));
     [Xq, Yq] = meshgrid(1:0.1:size(LAT_E_matrix, 2), 1:0.1:size(LAT_E_matrix, 1));
@@ -547,27 +649,23 @@ for i = 1:length(cases)
             end
         end
     end
-
     % Filtering and Storage
     AvgSpeed_E_filtered = SpatTemp_Filtering(AvgSpeed_E, filter_size, 0, 'GPU');
     
-    % Store the results in the new structure
-    LAT_values_new.(case_name).AvgSpeed_E_matrix = AvgSpeed_E_filtered;
-    LAT_values_new.(case_name).SpaceScale_mm_px = current_space_scale;
-    LAT_values_new.(case_name).CV_Radius = r;
+    % Store the results in the FINAL structure
+    LAT_values_FINAL.(case_name).AvgSpeed_E_matrix = AvgSpeed_E_filtered;
+    LAT_values_FINAL.(case_name).SpaceScale_mm_px = current_space_scale;
+    LAT_values_FINAL.(case_name).CV_Radius = r;
     
     fprintf('  -> %s CV map calculated and filtered (Size: %dx%d).\n', case_name, R_interp, C_interp);
 end
-
-% Update the main structure
-LAT_values = LAT_values_new;
 
 
 %% CV Plot - Electric
 C = jet(256);
 for i = 1:length(cases)
     case_name = cases{i};
-    AvgSpeed_E_matrix = LAT_values.(case_name).AvgSpeed_E_matrix;
+    AvgSpeed_E_matrix = LAT_values_FINAL.(case_name).AvgSpeed_E_matrix;
     J_valid = AvgSpeed_E_matrix(AvgSpeed_E_matrix ~= 0 & ~isnan(AvgSpeed_E_matrix));
     % Use percentile limits for robust visualization (e.g., 5th to 95th percentile)
     Y_limits = prctile(J_valid, [5 95], 'all');
@@ -593,7 +691,7 @@ for i = 1:length(cases)
     axis off;
     hBar = colorbar('eastoutside');
     ylabel(hBar, 'Conduction Velocity [cm/s]', 'FontSize', 14);
-    title(['Electrical ' case_name ' - Conduction Velocity Map'], 'FontSize', 16);
+    title(['Electrical ' case_name ' - Conduction Velocity Map (FINAL LAT)'], 'FontSize', 16);
     fprintf('  -> %s CV Map plotted with limits [%.2f - %.2f] cm/s.\n', case_name, CV_min, CV_max);
 end
 
@@ -603,12 +701,12 @@ for i = 1:length(cases)
     case_name = cases{i};
     
     % --- Retrieve the CV matrix directly from the struct ---
-    if ~isfield(LAT_values.(case_name), 'AvgSpeed_E_matrix')
+    if ~isfield(LAT_values_FINAL.(case_name), 'AvgSpeed_E_matrix')
         fprintf('Case %s: Warning - AvgSpeed_E_matrix field not found. Skipping CV stats.\n', case_name);
         continue; 
     end
     
-    CV_matrix = LAT_values.(case_name).AvgSpeed_E_matrix;
+    CV_matrix = LAT_values_FINAL.(case_name).AvgSpeed_E_matrix;
     
     % Check if the matrix is empty before proceeding
     if isempty(CV_matrix)
@@ -621,7 +719,7 @@ for i = 1:length(cases)
     
     if isempty(nonzero_CV)
         fprintf('Case %s: Warning - No valid non-zero CV points found. Skipping stats.\n', case_name);
-        LAT_values.(case_name).CV_stats = []; 
+        LAT_values_FINAL.(case_name).CV_stats = []; 
         continue;
     end
     
@@ -633,13 +731,13 @@ for i = 1:length(cases)
     CV_var = var(nonzero_CV); 
     CV_num = numel(nonzero_CV);
     
-    % Store Results in the LAT_values structure
-    LAT_values.(case_name).CV_stats = struct(...
+    % Store Results in the LAT_values_FINAL structure
+    LAT_values_FINAL.(case_name).CV_stats = struct(...
         'mean', CV_mean, 'std', CV_std, 'max', CV_max, ...
         'mode', CV_mode, 'var', CV_var, 'num_points', CV_num);
     
     % Displaying results for the current case
-    fprintf('\nCase: %s\n', case_name);
+    fprintf('\nCase: %s (FINAL LAT)\n', case_name);
     disp(['  Average CV:       ', num2str(CV_mean, '%.4f'), ' cm/s']);
     disp(['  Mode CV:          ', num2str(CV_mode, '%.4f'), ' cm/s']);
     disp(['  Max CV:           ', num2str(CV_max, '%.4f'), ' cm/s']);
@@ -653,9 +751,9 @@ end
 StatsTable = table();
 for i = 1:length(cases)
     case_name = cases{i};
-    % Retrieve LAT and CV statistics
-    lat_stats = LAT_values.(case_name).LAT_stats;
-    cv_stats = LAT_values.(case_name).CV_stats;
+    % Retrieve LAT and CV statistics from the FINAL structure
+    lat_stats = LAT_values_FINAL.(case_name).LAT_stats;
+    cv_stats = LAT_values_FINAL.(case_name).CV_stats;
     % Check if both sets of statistics exist before adding the row
     if isempty(lat_stats) || isempty(cv_stats)
         fprintf('Warning: Incomplete stats for %s. Skipping table entry.\n', case_name);
@@ -672,22 +770,19 @@ for i = 1:length(cases)
     % Append the new row to the main table
     StatsTable = [StatsTable; NewRow];
 end
-
 % Display the final table
 disp(' ');
-disp('--- Summary of Electrical LAT and CV Statistics ---');
+disp('--- Summary of Electrical LAT and CV Statistics (Based on FINAL Selection) ---');
 disp(StatsTable);
-
-
 % Create the master structure to hold all data from the current analysis
 AnalysisResults.Fsampling = Fsampling;
-
 % Store all electrical analysis results (maps, stats, masks, etc.)
-AnalysisResults.Electrical = LAT_values;
+AnalysisResults.Electrical_Derivative = LAT_values; % Store original DIFF results
+AnalysisResults.Electrical_COM = LAT_values_COM; % Store COM results
+AnalysisResults.Electrical_FINAL = LAT_values_FINAL; % Store the consolidated results
 
 % Store the generated summary table
 AnalysisResults.SummaryTable = StatsTable;
-
 % Store configuration variables (assuming they are defined in your workspace)
 % Add these only if they exist in your workspace
 if exist('electrical_lim1', 'var') && exist('electrical_lim2', 'var')
@@ -697,16 +792,10 @@ end
 if exist('SpaceScale', 'var')
     AnalysisResults.AnalysisParams.SpaceScale = SpaceScale;
 end
-
 disp(' ');
 disp('All results are now packaged into the structure: AnalysisResults.');
-
-
-
 % Define the filename (You might want to make this dynamic, e.g., using a timestamp)
-filename = 'E_LAT_CV_results.mat';
-
+filename = 'E_LAT_CV_results_FINAL.mat';
 % Save the main results structure to a .mat file
 save(filename, 'AnalysisResults');
-
 fprintf('\n✅ All data consolidated and saved to: %s\n', filename);
