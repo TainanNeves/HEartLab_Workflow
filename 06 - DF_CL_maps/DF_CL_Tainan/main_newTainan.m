@@ -200,7 +200,7 @@ Sffti = Sfft_O;
 % Hzf = freq_up; % Already defined above
 dfh_threshold_area = 0.8; % Threshold for dominant frequency harmonic area (0-1)
 f_mode = 2; % Frequency mode: 1 = fundamental frequency, 2 = harmonic analysis
-debug = 0; % Debug mode: 1 = show plots, 0 = no plots
+debug = 1; % Debug mode: 1 = show plots, 0 = no plots
 
 % Calculating
 OI = calculate_OI(MFFTi, Sffti, fstep, freq_down, freq_up, dfh_threshold_area, f_mode, debug);
@@ -314,7 +314,7 @@ save('O_DF_CL_OI_CAM.mat', 'freq_up', 'freq_down', 'in_sample', 'end_sample', ..
 disp(' ');
 disp('=== OPTICAL ANALYSIS COMPLETE ===');
 disp('All results have been saved to:');
-disp('- optical_analysis_results.mat (MATLAB workspace)');
+disp('CAMX - optical_analysis_results.mat (MATLAB workspace)');
 
 
 %%
