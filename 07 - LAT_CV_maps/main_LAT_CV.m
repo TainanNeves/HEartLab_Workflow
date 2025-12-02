@@ -7,19 +7,20 @@ clear; clc;
 load("F:\HEartLab\Activities\CCC06 - CBEB\analises 02\signals\data_filtered_sync_E14_F03_R09.mat"); %Filtered Sync data
 
 
-%% LAT Optic Analysis
-
-% Parameters
+%% Section Selection - Optical
 Data = D_SYNC.CAM1;
-Fs = 4000;
+ROI = D_SYNC.ROI.ROI_1;
+Fsampling = 4000;
 
 % Preview Signal
 Background = squeeze(Data(:,:,2000));
 pick_up_a_trace(Background, Data,1);
-% Selecting interval
-lim1 = 8863; % Start sample index
-lim2 = 9508; % End sample index
 
+
+%% LAT Calculation - Optical
+% Interval Input
+lim1 = 16106; % Start sample index
+lim2 = 16886; % End sample index
 % Visualize in the interval
 Background = squeeze(Data(:,:,2000));
 pick_up_a_trace(Background, Data(:,:,lim1:lim2),1);
@@ -32,12 +33,17 @@ LAT_O = Data_temp_O(:,:,1) * 0;
 for i = 1:size(Data_temp_O,1)
     for j = 1:size(Data_temp_O,2)
         if max(max(squeeze(Data_temp_O(i,j,:)))) ~= 0
-            % (y = 1D array, fr = Frame Rate, L = length of the linear fit line, PCL = 200 (not Used), debug = 1 or 0 (Plot or not point and trace))
-            [LAT_O(i,j)] = find_LAT_linearFit_1D(squeeze(Data_temp_O(i,j,:)), Fs, 15, 200, 0); 
+            % (y = 1D array, fr = Frame Rate, 
+            % L = length of the linear fit line, 
+            % PCL = 200 (not Used), 
+            % debug = 1 or 0 (Plot or not point and trace))
+            [LAT_O(i,j)] = find_LAT_linearFit_1D(squeeze(Data_temp_O(i,j,:)), Fsampling, 15, 200, 0); 
         end
     end
 end
 
+
+%% LAT Plot
 % Plot the LAT data on a colormap
 f1 = figure('color', 'white', 'Position', [40 40 600 600]);
 C = parula(256); %hsv é um colormap de arcoiris, mas não termina em purple
@@ -112,12 +118,12 @@ title('Conduction Velocity | Cam ');
 
 % Parameters
 % Data = signal_file.D_SYNC.EL;
-Fs = 4000;
+Fsampling = 4000;
 lim1 = start_index; % Start sample index
 lim2 = 18000; % End sample index
 
 % Calculate LAT for electrodes using find_LAT_diff_1D function
-LAT_E = find_LAT_diff(Data, Fs, lim1, lim2, 0);
+LAT_E = find_LAT_diff(Data, Fsampling, lim1, lim2, 0);
 
 % % Ploting maps
 % LAT_E_matrix1 = plot_electric_LAT(LAT_E, [0 30], 1, 1); % MEA 1
@@ -162,15 +168,15 @@ el_min_mea3 = el_min_mea3 + 64; % correcting the electrode number
 % Extract the estimated potentials corresponding to the vertices
 % estimated_meas = estimated_signal(vertices,:);
 
-Fs = 4000; % Sampling frequency (Hz)
+Fsampling = 4000; % Sampling frequency (Hz)
 start_time = 0.270; % Start time in seconds
 end_time = 0.289;
 % Calculate the start and end sample indices
-start_index = start_time * Fs + 1; % Start sample index
-end_index = end_time * Fs; % End sample index
+start_index = start_time * Fsampling + 1; % Start sample index
+end_index = end_time * Fsampling; % End sample index
 
 % Calculate LAT for electrodes using the find_LAT_diff function
-LAT_ECGI = find_LAT_diff(estimated_signal, Fs, start_index, end_index, 0);
+LAT_ECGI = find_LAT_diff(estimated_signal, Fsampling, start_index, end_index, 0);
 
 %% Plot LAT ECGi map
 

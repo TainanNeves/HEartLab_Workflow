@@ -1,428 +1,801 @@
-%% Main LAT CV Tainan
-%% LAT and CV Maps - Optical & Electrical
+%% LAT and CV Maps - Optical
 clear; clc;
 
-%% Loading Data
-load(""); % Load Synchronized data
-load(""); % Load Interpolated data (if needed for electrical)
 
-fprintf('=== LAT and CV Analysis Pipeline ===\n');
+%% Loading Preview Data
+% load(""); % Load Synchronized data
 
-%% Section 1: Optical LAT Analysis
-fprintf('\n--- Section 1: Optical LAT Analysis ---\n');
 
-% Parameters for optical LAT
-Fs = 4000;
-optical_lim1 = 9460;   % Start sample for optical
-optical_lim2 = 9870;   % End sample for optical
+%% Loading Parameters Select Time Windows
+Fsampling = 4000;
+Data_O = D_SYNC.CAM2;
+ROI_O = D_SYNC.ROI.ROI_2;
+optical_space_scale = 0.33; % mm per pixel
+% Preview Signal
+Background = squeeze(Data_O(:,:,2000));
+pick_up_a_trace(Background, Data_O,1);
+
+
+%% Time Selection & Preview - Optical
+optical_lim1 = 10719;
+optical_lim2 = 11343;
+Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
+Background = squeeze(Data_O(:,:,optical_lim1));
+pick_up_a_trace(Background, Data_temp_O, 1);
+
+
+%% LAT Calculation - Optical
 linear_fit_length = 15;
 PCL = 200;
 debug_LAT = 0;
 
-% Data preparation
-Data_O = D_SYNC.CAM1;
-Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
-
-% Preview signal
-fprintf('Previewing optical signal...\n');
-Background = squeeze(Data_O(:,:,2000));
-[px, py] = pick_up_a_trace(Background, Data_temp_O, 1);
-
 % Calculate LAT for each pixel
-fprintf('Calculating optical LAT...\n');
-LAT_O = Data_temp_O(:,:,1) * 0;
-
+LAT_O = zeros(size(Data_temp_O, 1), size(Data_temp_O, 2));
 for i = 1:size(Data_temp_O,1)
     for j = 1:size(Data_temp_O,2)
-        if max(squeeze(Data_temp_O(i,j,:))) ~= 0
-            signal = squeeze(Data_temp_O(i,j,:));
-            LAT_O(i,j) = find_LAT_linearFit_1D(signal, Fs, linear_fit_length, PCL, debug_LAT);
+        signal = squeeze(Data_temp_O(i,j,:));
+        if max(signal) ~= 0
+            LAT_O(i,j) = find_LAT_linearFit_1D(signal, ...
+                        Fsampling, linear_fit_length, ...
+                        PCL, debug_LAT);
         end
     end
 end
 
-% Post-processing: subtract minimum
+% Subtract minimum
 LAT_O(LAT_O < 0) = 0;
 min_LAT = min(LAT_O(LAT_O ~= 0));
-if ~isempty(min_LAT)
+if ~isempty(min_LAT) && ~isnan(min_LAT)
     LAT_O(LAT_O ~= 0) = LAT_O(LAT_O ~= 0) - min_LAT;
 end
 
 % Filter LAT data
-fprintf('Filtering optical LAT data...\n');
 LAT_O_filtered = SpatTemp_Filtering(LAT_O, 3, 0, 'GPU');
+Results.LAT = LAT_O_filtered;
 
-% Plot LAT map
-fprintf('Plotting optical LAT map...\n');
-figure('color', 'white', 'Position', [40 40 600 600]);
+
+%% LAT Map Plot - Optical
+levelStep = 50;
+Title = 'Optical - LAT';
+f1 = figure('color', 'white', 'Position', [40 40 600 600]);
 C = parula(256);
-C(1,1:3) = [1 1 1];
-C(256,1:3) = [0.5, 0.5, 0.5];
+C(1,1:3) = [1 1 1]; % White for background
+C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
 J = imrotate(LAT_O_filtered, 90);
-contourf(flipud(J));
+contourf(flipud(J), levelStep);
 colormap(C);
 
-% Ask user for color limits
-current_limits = [min(LAT_O_filtered(LAT_O_filtered ~= 0)) max(LAT_O_filtered(LAT_O_filtered ~= 0))];
-fprintf('Current LAT range: [%.2f - %.2f] ms\n', current_limits(1), current_limits(2));
-user_input = input('Enter LAT color limits as [min max] (or press Enter for auto): ');
-if isempty(user_input)
-    caxis(current_limits);
-else
-    caxis(user_input);
-end
+% Get color limits from non-zero LAT values
+nonzero_LAT_all = LAT_O_filtered(LAT_O_filtered ~= 0);
+current_limits = [min(nonzero_LAT_all) max(nonzero_LAT_all)];
+% current_limits = []; % Use to specific limits
+caxis(current_limits);
 
+axis off;
 hBar = colorbar('eastoutside');
 ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 14);
-title('Optical - Local Activation Time', 'FontSize', 16);
-axis off;
+title(Title, 'FontSize', 16);
 
-% Calculate and display LAT statistics
-fprintf('\n--- Optical LAT Statistics ---\n');
+
+%% In case of need to manual corrections - Optical
+% Histogran to evaluate distribution
 nonzero_LAT = LAT_O_filtered(LAT_O_filtered ~= 0);
-if ~isempty(nonzero_LAT)
-    fprintf('Mean LAT:      %.2f ± %.2f ms\n', mean(nonzero_LAT), std(nonzero_LAT));
-    fprintf('Min LAT:       %.2f ms\n', min(nonzero_LAT));
-    fprintf('Max LAT:       %.2f ms\n', max(nonzero_LAT));
-    fprintf('Median LAT:    %.2f ms\n', median(nonzero_LAT));
-    fprintf('Range:         %.2f ms\n', max(nonzero_LAT) - min(nonzero_LAT));
-    fprintf('Number of points: %d\n', numel(nonzero_LAT));
-else
-    fprintf('No valid LAT data found.\n');
+figure('color', 'white');
+histogram(nonzero_LAT);
+title('Histogram of LAT', 'FontSize', 14);
+xlabel('LAT [ms]', 'FontSize', 12);
+ylabel('N of Pixels', 'FontSize', 12);
+grid on;
+
+% Configuring Parameters
+find_value = 70; 
+tolerancia = 1e-10;
+new_value = 70; % NaN to exclude
+
+% Substitute exactly value
+indices = find(abs(LAT_O_filtered - find_value) < tolerancia);
+if ~isempty(indices)
+    LAT_O_filtered(indices) = new_value;
+    Results.LAT = LAT_O_filtered;
 end
 
-% Store results
-OpticalResults.LAT = LAT_O_filtered;
-OpticalResults.LAT_stats = struct(...
-    'mean', mean(nonzero_LAT), ...
-    'std', std(nonzero_LAT), ...
-    'min', min(nonzero_LAT), ...
-    'max', max(nonzero_LAT), ...
-    'median', median(nonzero_LAT), ...
-    'range', max(nonzero_LAT) - min(nonzero_LAT), ...
-    'num_points', numel(nonzero_LAT));
+% Substitute Higher or Lower than
+LAT_O_filtered(LAT_O_filtered < find_value) = new_value;
 
-fprintf('Optical LAT analysis completed.\n');
+% Correct The Zero Normalization - Subtract minimum
+LAT_O_filtered(LAT_O_filtered < 0) = 0;
+min_LAT = min(LAT_O_filtered(LAT_O_filtered ~= 0));
+if ~isempty(min_LAT) && ~isnan(min_LAT)
+    LAT_O_filtered(LAT_O_filtered ~= 0) = ...
+        LAT_O_filtered(LAT_O_filtered ~= 0) - min_LAT;
+end
 
 
-%% Section 2: Optical CV Analysis
-fprintf('\n--- Section 2: Optical CV Analysis ---\n');
+%% LAT Statistics - Optical
+% Display the image and let the user define the ROI
+figure();
+imshow(LAT_O_filtered, C);
+% imshow(Data_temp_O(:,:,1));
+title('Select ROI for DF Analysis');
+roi_lat_O = roipoly;
 
-% Parameters for optical CV
-cv_radius_optical = 5;
-optical_space_scale = 0.33; % mm per pixel
+% Apply the ROI
+LAT_O_roi = LAT_O_filtered .* roi_lat_O;
+nonzero_LAT_O = LAT_O_roi(LAT_O_roi ~= 0 & ~isnan(LAT_O_roi));
+Results.roi_lat = roi_lat_O;
 
-% Calculate conduction velocity
-fprintf('Calculating optical conduction velocity...\n');
+% Calculate and store LAT Statistics
+LAT_mean_O = mean(nonzero_LAT_O);
+LAT_std_O = std(nonzero_LAT_O);
+LAT_max_O = max(nonzero_LAT_O);
+LAT_mode_O = mode(nonzero_LAT_O); 
+LAT_var_O = var(nonzero_LAT_O); 
+LAT_num_O = numel(nonzero_LAT_O);
+% Displaying results
+fprintf('\n=== Optical LAT Statistics (in ROI) ===\n');
+disp(['Average LAT:      ', num2str(LAT_mean_O, '%.4f'), ' ms']);
+disp(['Mode LAT:         ', num2str(LAT_mode_O, '%.4f'), ' ms']);
+disp(['Max LAT:          ', num2str(LAT_max_O, '%.4f'), ' ms']);
+disp(['Std Deviation:    ', num2str(LAT_std_O, '%.4f'), ' ms']);
+disp(['Variance:         ', num2str(LAT_var_O, '%.4f')]);
+disp(['Number of pixels: ', num2str(LAT_num_O)]);
+% Creating Struct
+Results.LAT_stats = struct(...
+    'mean', LAT_mean_O, 'std', LAT_std_O, 'max', LAT_max_O, ...
+    'mode', LAT_mode_O, 'var', LAT_var_O, 'num_points', LAT_num_O);
+
+
+%% Specific ROI Plot with Min Subtraction - Optical
+levelStep = 25;
+% ROI selection
+    % Same as the statistics
+        roi_specific = roi_lat_O;
+    % Select new ROI
+        % figure();
+        % imagesc(LAT_O_filtered);
+        % colormap(parula); colorbar;
+        % title('Select ROI');
+        % roi_specific = roipoly; 
+
+% Apply the specific ROI
+LAT_specific = LAT_O_filtered .* roi_specific;
+% Subtract the minimum LAT *within* this specific ROI
+nonzero_specific = LAT_specific(LAT_specific ~= 0 & ~isnan(LAT_specific));
+min_LAT_specific = min(nonzero_specific);
+% Create the re-normalized map
+LAT_renormalized = LAT_specific;
+% Perform the normalization (zeroing)
+LAT_renormalized(LAT_renormalized ~= 0) = LAT_renormalized(LAT_renormalized ~= 0) - min_LAT_specific;
+LAT_renormalized(LAT_renormalized < 0) = 0; % Ensure no negative values after subtraction
+
+% Plot
+figure('color', 'white', 'Position', [1250 40 600 600]);
+Title_spec = ['Optical - Specific ROI (Min Subtracted: ' num2str(min_LAT_specific, '%.2f') 'ms)'];
+C = parula(256); C(1,1:3) = [1 1 1]; 
+J_spec = imrotate(LAT_renormalized, 90);
+contourf(flipud(J_spec), levelStep); 
+colormap(C);
+% Set color limits based on the new range
+new_max = max(LAT_renormalized(:));
+caxis([0 new_max]);
+axis off;
+hBar_spec = colorbar('eastoutside');
+ylabel(hBar_spec, 'Local Activation Time [ms]', 'FontSize', 14);
+title(Title_spec, 'FontSize', 16);
+fprintf('Re-normalized LAT map plotted. New range: [0 - %.2f] ms\n', new_max);
+
+
+%% CV Calculation - Optical
+cv_radius_optical = 5; % in pixels
+
 AvgSpeed_O = zeros(size(LAT_O_filtered));
-StdSpeed_O = zeros(size(LAT_O_filtered));
-Angle_O = zeros(size(LAT_O_filtered));
-
 for i = 1:size(LAT_O_filtered,1)
     for j = 1:size(LAT_O_filtered,2)
-        if max(max(squeeze(LAT_O_filtered(i,j,:)))) ~= 0
-            [AvgSpeed_O(i,j), StdSpeed_O(i,j), Angle_O(i,j)] = ...
-                CV_CircleMethod(LAT_O_filtered, cv_radius_optical, i, j, optical_space_scale);
+        if roi_lat_O(i,j) == 1 && LAT_O_filtered(i,j) ~= 0 && ~isnan(LAT_O_filtered(i,j))
+            [AvgSpeed_O(i,j), ~, ~] = ...
+                CV_CircleMethod(LAT_O_filtered, cv_radius_optical, ...
+                                    i, j, optical_space_scale);
         end
     end
 end
 
 % Filter CV data
 AvgSpeed_O_filtered = SpatTemp_Filtering(AvgSpeed_O, 5, 0, 'GPU');
+Results.CV = AvgSpeed_O_filtered;
 
-% Plot CV map
-fprintf('Plotting optical CV map...\n');
-figure('color', 'white', 'Position', [40 40 600 600]);
+
+%% CV Map Plot - Optical
+Title = 'Optical - CV';
+f2 = figure('color', 'white', 'Position', [650 40 600 600]);
 C = jet(256);
 C(1,1:3) = [1 1 1];
 J = imrotate(AvgSpeed_O_filtered, 90);
-
-% Ask user for color limits
-current_cv_limits = [min(AvgSpeed_O_filtered(AvgSpeed_O_filtered ~= 0)) max(AvgSpeed_O_filtered(AvgSpeed_O_filtered ~= 0))];
-fprintf('Current CV range: [%.2f - %.2f] cm/s\n', current_cv_limits(1), current_cv_limits(2));
-user_input = input('Enter CV color limits as [min max] (or press Enter for auto): ');
-if isempty(user_input)
-    imagesc(J, current_cv_limits);
-else
-    imagesc(J, user_input);
-end
-
+imagesc(J);
 colormap(C);
+
+% Calculate color limits from non-zero and non-NaN CV values
+nonzero_CV_all = AvgSpeed_O_filtered(AvgSpeed_O_filtered ~= 0 & ~isnan(AvgSpeed_O_filtered));
+current_cv_limits = [min(nonzero_CV_all) max(nonzero_CV_all)];
+% current_cv_limits = []; % Specific limits
+caxis(current_cv_limits);
+
+axis off;
 hBar = colorbar('eastoutside');
 ylabel(hBar, 'Conduction Velocity [cm/s]', 'FontSize', 14);
-title('Optical - Conduction Velocity', 'FontSize', 16);
-axis off;
+title(Title, 'FontSize', 16);
 
-% Calculate and display CV statistics
-fprintf('\n--- Optical CV Statistics ---\n');
-nonzero_CV = AvgSpeed_O_filtered(AvgSpeed_O_filtered ~= 0);
-if ~isempty(nonzero_CV)
-    fprintf('Mean CV:       %.2f ± %.2f cm/s\n', mean(nonzero_CV), std(nonzero_CV));
-    fprintf('Min CV:        %.2f cm/s\n', min(nonzero_CV));
-    fprintf('Max CV:        %.2f cm/s\n', max(nonzero_CV));
-    fprintf('Median CV:     %.2f cm/s\n', median(nonzero_CV));
-    fprintf('Range:         %.2f cm/s\n', max(nonzero_CV) - min(nonzero_CV));
-    fprintf('Number of points: %d\n', numel(nonzero_CV));
-else
-    fprintf('No valid CV data found.\n');
+
+%% CV Statistics - Optical
+% Apply the same ROI used for LAT statistics
+CV_O_roi = AvgSpeed_O_filtered .* roi_lat_O;
+nonzero_CV_O = CV_O_roi(CV_O_roi ~= 0 & ~isnan(CV_O_roi) & ~isinf(CV_O_roi));
+
+% Calculate CV Statistics
+CV_mean_O = mean(nonzero_CV_O);
+CV_std_O = std(nonzero_CV_O);
+CV_max_O = max(nonzero_CV_O);
+CV_mode_O = mode(nonzero_CV_O);
+CV_var_O = var(nonzero_CV_O); 
+CV_num_O = numel(nonzero_CV_O);
+% Display CV Statistics
+fprintf('\n=== Optical CV Statistics (in LAT ROI) ===\n');
+disp(['Average CV:      ', num2str(CV_mean_O, '%.2f'), ' cm/s']);
+disp(['Mode CV:         ', num2str(CV_mode_O, '%.2f'), ' cm/s']);
+disp(['Max CV:          ', num2str(CV_max_O, '%.2f'), ' cm/s']);
+disp(['Std Deviation:   ', num2str(CV_std_O, '%.2f'), ' cm/s']);
+disp(['Variance:        ', num2str(CV_var_O, '%.2f')]);
+disp(['Number of pixels: ', num2str(CV_num_O)]);
+% Store CV Statistics
+Results.CV_stats = struct(...
+    'mean', CV_mean_O, 'std', CV_std_O, 'max', CV_max_O, ...
+    'mode', CV_mode_O, 'var', CV_var_O, 'num_points', CV_num_O);
+
+
+%% Optical Results Table
+% Create table with all optical statistics
+Parameter_O = {'LAT (ms)'; 'CV (cm/s)'};
+Max_Value_O = [LAT_max_O; CV_max_O];
+Mean_Value_O = [LAT_mean_O; CV_mean_O];
+Mode_Value_O = [LAT_mode_O; CV_mode_O];
+Std_Deviation_O = [LAT_std_O; CV_std_O];
+Variance_O = [LAT_var_O; CV_var_O];
+Number_Points_O = [LAT_num_O; CV_num_O];
+Results.ResultsTable = table(Parameter_O, Max_Value_O, Mean_Value_O, Mode_Value_O, Std_Deviation_O, Variance_O, Number_Points_O, ...
+    'RowNames', {'LAT_O', 'CV_O'});
+
+disp(' ');
+disp('=== OPTICAL RESULTS TABLE ===');
+disp(Results.ResultsTable);
+
+
+%% Summary Visualizations - Optical
+figure('Position', [100 100 1200 400]);
+
+% Subplot 1: LAT Histogram
+subplot(1,2,1);
+if ~isempty(nonzero_LAT_O)
+    histogram(nonzero_LAT_O, 20, 'FaceColor', 'blue', 'FaceAlpha', 0.7);
+    xlabel('Local Activation Time (ms)');
+    ylabel('Count');
+    title('Optical LAT Distribution');
+    grid on;
 end
 
-% Store results
-OpticalResults.CV = AvgSpeed_O_filtered;
-OpticalResults.CV_stats = struct(...
-    'mean', mean(nonzero_CV), ...
-    'std', std(nonzero_CV), ...
-    'min', min(nonzero_CV), ...
-    'max', max(nonzero_CV), ...
-    'median', median(nonzero_CV), ...
-    'range', max(nonzero_CV) - min(nonzero_CV), ...
-    'num_points', numel(nonzero_CV));
+% Subplot 2: CV Histogram
+subplot(1,2,2);
+if ~isempty(nonzero_CV_O)
+    histogram(nonzero_CV_O, 40, 'FaceColor', 'red', 'FaceAlpha', 0.7);
+    xlabel('Conduction Velocity (cm/s)');
+    ylabel('Count');
+    title('Optical CV Distribution');
+    grid on;
+end
+sgtitle('Optical Analysis Histograms');
 
-fprintf('Optical CV analysis completed.\n');
 
-%% Section 3: Electrical LAT Analysis
-fprintf('\n--- Section 3: Electrical LAT Analysis ---\n');
+%% Save workspace variables for future use - Optical
+% Joining Struct
+Results.Fsampling = Fsampling;
+Results.optical_lim1 = optical_lim1;
+Results.optical_lim2 = optical_lim2;
+Results.optical_space_scale = optical_space_scale;
+Results.LAT_O_filtered = LAT_O_filtered;
+Results.AvgSpeed_O_filtered = AvgSpeed_O_filtered;
 
-% Parameters for electrical LAT
-electrical_lim1 = 1;   % Start sample for electrical  
-electrical_lim2 = 18000; % End sample for electrical
-debug_electrical = 0;
+% Save Struct
+save('O_LAT_CV_CAM_results.mat', 'Results', '-v7.3');
 
-% Data preparation
-Data_E = D_SYNC.EL; % Adjust based on your data structure
+disp(' ');
+disp('=== OPTICAL ANALYSIS COMPLETE ===');
+disp('All results have been saved to "O_LAT_CV_CAM.mat".');
 
-% Calculate LAT for electrodes
-fprintf('Calculating electrical LAT...\n');
-LAT_E_raw = find_LAT_diff(Data_E, Fs, electrical_lim1, electrical_lim2, debug_electrical);
 
-% Plot LAT maps for each configuration
+%% 
+%% 
+%%
+
+
+%% LAT and CV Maps - Electrical
+clear; clc;
+
+
+%% Loading Data
+load(""); % Load Interpolated data
+
+
+%% Configuring
+Data_E_Structure = InterpSignal.Data; 
+electrical_space_scale = 2;  % mm per pixel (MEA)
+tank_space_scale = 3;       % mm per pixel (TANK)
 cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
 ElectricalResults = struct();
+Fsampling = 4000;
+
+
+%% Selecting Time Window
+% Preview Signal
+case_name = 'MEA1';
+data_temp = Data_E_Structure.(case_name);
+Background = squeeze(data_temp(:,:,2000));
+pick_up_a_trace(Background, data_temp,1);
+clear data_temp case_name Background;
+
+
+%% LAT Calculation - Electrical
+electrical_lim1 = 36534;
+electrical_lim2 = 37252;
+debug_LAT = 0; % Use 0, 1 or 2
+LAT_values = struct();
 
 for i = 1:length(cases)
     case_name = cases{i};
-    fprintf('Processing %s...\n', case_name);
-    
-    % Plot and get LAT matrix
-    LAT_matrix = plot_electric_LAT(LAT_E_raw, [0 40], 1, i);
-    ElectricalResults.(case_name).LAT_matrix = LAT_matrix;
-    
-    % Calculate statistics
-    nonzero_LAT = LAT_matrix(LAT_matrix ~= 0);
-    if ~isempty(nonzero_LAT)
-        ElectricalResults.(case_name).LAT_stats = struct(...
-            'mean', mean(nonzero_LAT), ...
-            'std', std(nonzero_LAT), ...
-            'min', min(nonzero_LAT), ...
-            'max', max(nonzero_LAT), ...
-            'median', median(nonzero_LAT), ...
-            'range', max(nonzero_LAT) - min(nonzero_LAT), ...
-            'num_points', numel(nonzero_LAT));
-        
-        % Display statistics
-        fprintf('\n--- %s LAT Statistics ---\n', case_name);
-        fprintf('Mean LAT:      %.2f ± %.2f ms\n', mean(nonzero_LAT), std(nonzero_LAT));
-        fprintf('Min LAT:       %.2f ms\n', min(nonzero_LAT));
-        fprintf('Max LAT:       %.2f ms\n', max(nonzero_LAT));
-        fprintf('Median LAT:    %.2f ms\n', median(nonzero_LAT));
-        fprintf('Range:         %.2f ms\n', max(nonzero_LAT) - min(nonzero_LAT));
-        fprintf('Number of points: %d\n', numel(nonzero_LAT));
-    else
-        fprintf('No valid LAT data found for %s.\n', case_name);
-    end
-end
-
-% Find minimum LAT values for each MEA
-fprintf('\n--- Minimum LAT Values ---\n');
-% MEA1
-mea1_id = [1:11, 14:16];
-min_mea1 = min(LAT_E_raw(mea1_id));
-el_min_mea1 = mea1_id(LAT_E_raw(mea1_id) == min_mea1);
-fprintf('MEA1 - Min LAT: %.2f ms at electrode(s): %s\n', min_mea1, mat2str(el_min_mea1));
-
-% MEA2
-mea2_id = [17:32];
-min_mea2 = min(LAT_E_raw(mea2_id));
-el_min_mea2 = mea2_id(LAT_E_raw(mea2_id) == min_mea2);
-fprintf('MEA2 - Min LAT: %.2f ms at electrode(s): %s\n', min_mea2, mat2str(el_min_mea2));
-
-% MEA3
-mea3_id = [65:79];
-min_mea3 = min(LAT_E_raw(mea3_id));
-el_min_mea3 = mea3_id(LAT_E_raw(mea3_id) == min_mea3);
-fprintf('MEA3 - Min LAT: %.2f ms at electrode(s): %s\n', min_mea3, mat2str(el_min_mea3));
-
-fprintf('Electrical LAT analysis completed.\n');
-
-%% Section 4: Electrical CV Analysis
-fprintf('\n--- Section 4: Electrical CV Analysis ---\n');
-
-% Parameters for electrical CV
-cv_radius_electrical = 3;
-electrical_space_scale = 0.1;  % mm per pixel (MEA)
-tank_space_scale = 0.75;       % mm per pixel (TANK)
-interp_factor = 0.1;
-
-for i = 1:length(cases)
-    case_name = cases{i};
-    fprintf('Calculating CV for %s...\n', case_name);
-    
-    LAT_matrix = ElectricalResults.(case_name).LAT_matrix;
-    
-    % Determine space scale based on case
-    if strcmp(case_name, 'TANK')
-        space_scale = tank_space_scale;
-    else
-        space_scale = electrical_space_scale;
-    end
-    
-    % Interpolate for better CV calculation
-    [X, Y] = meshgrid(1:size(LAT_matrix, 2), 1:size(LAT_matrix, 1));
-    [Xq, Yq] = meshgrid(1:interp_factor:size(LAT_matrix, 2), 1:interp_factor:size(LAT_matrix, 1));
-    LAT_interp = interp2(X, Y, LAT_matrix, Xq, Yq, 'linear');
-    
-    % Calculate CV
-    AvgSpeed_E = zeros(size(LAT_interp));
-    r = cv_radius_electrical;
-    
-    for ii = (r + 1):(size(LAT_interp, 1) - (r + 1))
-        for jj = (r + 1):(size(LAT_interp, 2) - (r + 1))
-            if max(max(squeeze(LAT_interp(ii, jj, :)))) ~= 0
-                [AvgSpeed_E(ii, jj), ~, ~] = CV_CircleMethod(LAT_interp, r, ii, jj, space_scale);
+    Data_current_E = Data_E_Structure.(case_name);
+    Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
+    % Calculate LAT map (pixel by pixel)
+    LAT_map = zeros(size(Data_temp_E, 1), size(Data_temp_E, 2));
+    for x = 1:size(Data_temp_E, 1) % X-coordinate
+        for y = 1:size(Data_temp_E, 2) % Y-coordinate
+            signal = squeeze(Data_temp_E(x,y,:));
+            if max(signal) ~= 0
+                signal = signal'; 
+                LAT_map(x,y) = find_LAT_diff(signal, ...
+                                    Fsampling, ...
+                                    case_name, x, y, ...
+                                    debug_LAT);
             end
         end
     end
     
-    % Filter CV data
-    AvgSpeed_E_filtered = SpatTemp_Filtering(AvgSpeed_E, 5, 0, 'GPU');
-    ElectricalResults.(case_name).CV_matrix = AvgSpeed_E_filtered;
-    
-    % Plot CV map
-    figure('color', 'white', 'Position', [40 40 600 600]);
-    C = jet(256);
-    C(1,1:3) = [1 1 1];
-    J = imrotate(AvgSpeed_E_filtered, 90);
-    
-    % Ask user for color limits
-    current_cv_limits = [min(AvgSpeed_E_filtered(AvgSpeed_E_filtered ~= 0)) max(AvgSpeed_E_filtered(AvgSpeed_E_filtered ~= 0))];
-    fprintf('Current CV range for %s: [%.2f - %.2f] cm/s\n', case_name, current_cv_limits(1), current_cv_limits(2));
-    user_input = input(['Enter CV color limits for ' case_name ' as [min max] (or press Enter for auto): ']);
-    if isempty(user_input)
-        imagesc(J, current_cv_limits);
-    else
-        imagesc(J, user_input);
+    % Normalization and Filtering
+    LAT_map(LAT_map < 0) = 0;
+    % Subtract minimum LAT for re-normalization
+    min_LAT = min(LAT_map(LAT_map ~= 0));
+    if ~isempty(min_LAT) && ~isnan(min_LAT)
+        LAT_map(LAT_map ~= 0) = LAT_map(LAT_map ~= 0) - min_LAT;
     end
+    % Spatial Filtering (Using S=1 | T=0 because of ...
+    % the size of pixels in electrical mapping)
+    LAT_map_filtered = SpatTemp_Filtering(LAT_map, 1, 0, 'GPU'); 
     
-    colormap(C);
-    hBar = colorbar('eastoutside');
-    ylabel(hBar, 'Conduction Velocity [cm/s]', 'FontSize', 14);
-    title(['Electrical ' case_name ' - Conduction Velocity'], 'FontSize', 16);
-    axis off;
-    
-    % Calculate and display CV statistics
-    nonzero_CV = AvgSpeed_E_filtered(AvgSpeed_E_filtered ~= 0);
-    if ~isempty(nonzero_CV)
-        ElectricalResults.(case_name).CV_stats = struct(...
-            'mean', mean(nonzero_CV), ...
-            'std', std(nonzero_CV), ...
-            'min', min(nonzero_CV), ...
-            'max', max(nonzero_CV), ...
-            'median', median(nonzero_CV), ...
-            'range', max(nonzero_CV) - min(nonzero_CV), ...
-            'num_points', numel(nonzero_CV));
-        
-        fprintf('\n--- %s CV Statistics ---\n', case_name);
-        fprintf('Mean CV:       %.2f ± %.2f cm/s\n', mean(nonzero_CV), std(nonzero_CV));
-        fprintf('Min CV:        %.2f cm/s\n', min(nonzero_CV));
-        fprintf('Max CV:        %.2f cm/s\n', max(nonzero_CV));
-        fprintf('Median CV:     %.2f cm/s\n', median(nonzero_CV));
-        fprintf('Range:         %.2f cm/s\n', max(nonzero_CV) - min(nonzero_CV));
-        fprintf('Number of points: %d\n', numel(nonzero_CV));
-    else
-        fprintf('No valid CV data found for %s.\n', case_name);
-    end
+    % Store the final, filtered 2D LAT map
+    LAT_values.(case_name).LAT_matrix = LAT_map_filtered;
+    fprintf('  -> %s LAT matrix (Size: %dx%d) stored.\n', case_name, size(LAT_map_filtered, 1), size(LAT_map_filtered, 2));
 end
 
-fprintf('Electrical CV analysis completed.\n');
 
-%% Section 5: Summary and Results Export
-fprintf('\n--- Section 5: Summary and Results Export ---\n');
+%% LAT Calculation COM - Electrical
+debug_COM = 0; % 1 for debugging plots 
+LAT_values_COM = struct();
 
-% Create comprehensive results table
-fprintf('Creating results table...\n');
-
-% Optical results
-if exist('OpticalResults', 'var')
-    OpticalTable = table(...
-        {'Optical'}, ...
-        OpticalResults.LAT_stats.mean, ...
-        OpticalResults.LAT_stats.std, ...
-        OpticalResults.LAT_stats.min, ...
-        OpticalResults.LAT_stats.max, ...
-        OpticalResults.LAT_stats.range, ...
-        OpticalResults.CV_stats.mean, ...
-        OpticalResults.CV_stats.std, ...
-        OpticalResults.CV_stats.min, ...
-        OpticalResults.CV_stats.max, ...
-        OpticalResults.LAT_stats.num_points, ...
-        'VariableNames', {'Analysis_Type', 'LAT_Mean_ms', 'LAT_Std_ms', 'LAT_Min_ms', 'LAT_Max_ms', 'LAT_Range_ms', ...
-        'CV_Mean_cm_s', 'CV_Std_cm_s', 'CV_Min_cm_s', 'CV_Max_cm_s', 'Number_Points'});
-end
-
-% Electrical results
-ElectricalTables = [];
 for i = 1:length(cases)
     case_name = cases{i};
-    if isfield(ElectricalResults, case_name) && isfield(ElectricalResults.(case_name), 'LAT_stats')
-        case_table = table(...
-            {['Electrical ' case_name]}, ...
-            ElectricalResults.(case_name).LAT_stats.mean, ...
-            ElectricalResults.(case_name).LAT_stats.std, ...
-            ElectricalResults.(case_name).LAT_stats.min, ...
-            ElectricalResults.(case_name).LAT_stats.max, ...
-            ElectricalResults.(case_name).LAT_stats.range, ...
-            ElectricalResults.(case_name).CV_stats.mean, ...
-            ElectricalResults.(case_name).CV_stats.std, ...
-            ElectricalResults.(case_name).CV_stats.min, ...
-            ElectricalResults.(case_name).CV_stats.max, ...
-            ElectricalResults.(case_name).LAT_stats.num_points, ...
-            'VariableNames', {'Analysis_Type', 'LAT_Mean_ms', 'LAT_Std_ms', 'LAT_Min_ms', 'LAT_Max_ms', 'LAT_Range_ms', ...
-            'CV_Mean_cm_s', 'CV_Std_cm_s', 'CV_Min_cm_s', 'CV_Max_cm_s', 'Number_Points'});
-        
-        if isempty(ElectricalTables)
-            ElectricalTables = case_table;
-        else
-            ElectricalTables = [ElectricalTables; case_table];
+    Data_current_E = Data_E_Structure.(case_name);
+    Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
+    % Get the size of the segment
+    [num_x, num_y, segment_length] = size(Data_temp_E);
+    % Inicialize matrix
+    LAT_map_COM = zeros(num_x, num_y);
+    for x = 1:num_x % X-coordinate
+        for y = 1:num_y % Y-coordinate
+            signal_segment = squeeze(Data_temp_E(x,y,:))'; % Ensure it's a row vector
+            if max(abs(signal_segment)) ~= 0
+                % Calculate LAT map (pixel by pixel)
+                LAT_map_COM(x,y) = find_LAT_com(signal_segment, ...
+                                    Fsampling, x, y, ...
+                                    debug_COM, case_name);
+            end
         end
     end
+    % Normalization and Filtering
+    LAT_map_COM(LAT_map_COM < 0) = 0;
+    min_LAT_COM = min(LAT_map_COM(LAT_map_COM ~= 0));
+    if ~isempty(min_LAT_COM) && ~isnan(min_LAT_COM)
+        LAT_map_COM(LAT_map_COM ~= 0) = LAT_map_COM(LAT_map_COM ~= 0) - min_LAT_COM;
+    end
+    % Spatial Filtering (Using S=1 | T=0)
+    LAT_map_filtered_COM = SpatTemp_Filtering(LAT_map_COM, 1, 0, 'GPU'); 
+    
+    % Store
+    LAT_values_COM.(case_name).LAT_matrix = LAT_map_filtered_COM;
+    fprintf('  -> %s LAT matrix (COM Method) (Size: %dx%d) stored.\n', case_name, size(LAT_map_filtered_COM, 1), size(LAT_map_filtered_COM, 2));
 end
 
-% Combine all results
-if exist('OpticalTable', 'var') && ~isempty(ElectricalTables)
-    FinalResultsTable = [OpticalTable; ElectricalTables];
-elseif exist('OpticalTable', 'var')
-    FinalResultsTable = OpticalTable;
-else
-    FinalResultsTable = ElectricalTables;
+
+%% LAT MAP PLOTTING - Electrical
+C = parula(256); C(1,1:3) = [1 1 1]; % White for background (0 LAT)
+for i = 1:length(cases)
+    case_name = cases{i};
+    LAT_matrix_DIFF = LAT_values.(case_name).LAT_matrix;
+    LAT_matrix_COM = LAT_values_COM.(case_name).LAT_matrix;
+    % Create a figure to show both methods
+    figure('color', 'white', 'Position', [40 + i*20 40 + i*20 1200 600]);
+    % Determine the common color limits
+    all_LATS = [LAT_matrix_DIFF(LAT_matrix_DIFF ~= 0); LAT_matrix_COM(LAT_matrix_COM ~= 0)];
+    if ~isempty(all_LATS)
+        max_LAT = max(all_LATS);
+    else
+        max_LAT = 1; % Default max
+    end
+
+    % --- Subplot 1: Derivative Method ---
+    subplot(1, 2, 1);
+    if strcmp(case_name, 'TANK')
+        J = LAT_matrix_DIFF;
+        imagesc(J);
+        pbaspect([2 1 1]);
+    else
+        J = imrotate(LAT_matrix_DIFF, 90);
+        imagesc(J);
+        axis equal;
+    end
+    colormap(gca, C);
+    caxis([0 max_LAT]);
+    axis off;
+    title(['Derivative Method - ' case_name], 'FontSize', 16);
+    
+    % --- Subplot 2: COM Method ---
+    subplot(1, 2, 2);
+    if strcmp(case_name, 'TANK')
+        J = LAT_matrix_COM;
+        imagesc(J);
+        pbaspect([2 1 1]);
+    else
+        J = imrotate(LAT_matrix_COM, 90);
+        imagesc(J);
+        axis equal;
+    end
+    colormap(gca, C);
+    caxis([0 max_LAT]);
+    axis off;
+    hBar = colorbar('eastoutside');
+    ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 14);
+    title(['COM Method - ' case_name], 'FontSize', 16);
+    
+    sgtitle(['Electrical ' case_name ' - LAT Map Comparison'], 'FontSize', 18, 'FontWeight', 'bold');
 end
 
-% Display final table
-fprintf('\n=== FINAL RESULTS SUMMARY ===\n');
-disp(FinalResultsTable);
 
-% Save results
-save_choice = input('Save results to Excel? (y/n): ', 's');
-if strcmpi(save_choice, 'y') || strcmpi(save_choice, 'yes')
-    filename = 'LAT_CV_Analysis_Results.xlsx';
-    writetable(FinalResultsTable, filename);
-    fprintf('Results saved to: %s\n', filename);
+%% LAT METHOD CONSOLIDATION - Electrical
+% Choose the preferred LAT detection method for each case:
+% 1. 'DIFF' (Derivative Method: LAT_values)
+% 2. 'COM' (Center of Mass Method: LAT_values_COM)
+
+% --- Define Method Selection ---
+MethodSelection = struct();
+MethodSelection.MEA1 = 'DIFF';
+MethodSelection.MEA2 = 'DIFF';
+MethodSelection.MEA3 = 'DIFF';
+MethodSelection.TANK = 'COM';
+
+LAT_values_FINAL = struct();
+
+for i = 1:length(cases)
+    case_name = cases{i};
+    % Get the selected method for the current case
+    if isfield(MethodSelection, case_name)
+        method = MethodSelection.(case_name);
+    else
+        method = 'DIFF'; % Default to DIFF if not specified
+    end
+    
+    % Select the matrix based on the method
+    if strcmp(method, 'COM')
+        LAT_matrix_final = LAT_values_COM.(case_name).LAT_matrix;
+        fprintf('  -> %s: Using COM Method (LAT_values_COM)\n', case_name);
+    elseif strcmp(method, 'DIFF')
+        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
+        fprintf('  -> %s: Using Derivative Method (LAT_values)\n', case_name);
+    else
+        warning('Unknown method "%s" specified for case %s. Defaulting to DIFF.', method, case_name);
+        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
+    end
+    
+    LAT_values_FINAL.(case_name).LAT_matrix = LAT_matrix_final;
 end
 
-% Save workspace
-save_choice = input('Save workspace? (y/n): ', 's');
-if strcmpi(save_choice, 'y') || strcmpi(save_choice, 'yes')
-    save('LAT_CV_Analysis_Workspace.mat', 'OpticalResults', 'ElectricalResults', 'FinalResultsTable');
-    fprintf('Workspace saved to: LAT_CV_Analysis_Workspace.mat\n');
+
+%% In case of need to manual corrections - Electrical
+% Histogram plots
+num_bins = 50;
+for i = 1:length(cases)
+    case_name = cases{i};
+    LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
+    valid_LATS = LAT_matrix(LAT_matrix ~= 0);
+    figure();
+    set(gcf, 'color', 'white', 'Position', [600 50 600 400]);
+    h = histogram(valid_LATS, num_bins);
+    title(['LAT Distribution: Electrical ', case_name, ' (FINAL)'], 'FontSize', 14);
+    xlabel('Local Activation Time [ms]', 'FontSize', 12);
+    ylabel('Count (Number of Electrodes/Pixels)', 'FontSize', 12);
+    grid on;
+    mean_lat = mean(valid_LATS);
+    std_lat = std(valid_LATS);
+    fprintf('  -> %s LAT Stats: Mean = %.2f ms, STD = %.2f ms\n', ...
+            case_name, mean_lat, std_lat);
 end
 
-fprintf('\n=== ANALYSIS COMPLETE ===\n');
+
+% Substitute specific value
+case_to_correct = 'MEA1';
+LAT_temp = LAT_values_FINAL.(case_to_correct).LAT_matrix;
+find_value = 9; % Value to replace
+tolerancia = 1;
+indices = find(abs(LAT_temp - find_value) < tolerancia);
+LAT_temp(indices) = 3; % Value to include
+LAT_values_FINAL.(case_to_correct).LAT_matrix = LAT_temp;
+
+
+% Substitute Higher or lower than
+case_to_correct = 'MEA1';
+find_value = 9; % Value to replace
+new_value = 0;
+LAT_values_FINAL.(case_to_correct).LAT_matrix( ...
+            LAT_values_FINAL.(case_to_correct).LAT_matrix < ...
+            find_value) = new_value;
+
+
+% Correct The Zero Normalization - Subtract minimum
+LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix < 0) = 0;
+min_LAT = min(LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0));
+if ~isempty(min_LAT) && ~isnan(min_LAT)
+    LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) = ...
+        LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) - min_LAT;
+end
+
+
+%% LAT Statistics - Electrical (with ROI Selection)
+C = parula(256); C(1,1:3) = [1 1 1]; 
+for i = 1:length(cases)
+    case_name = cases{i};
+    LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
+    
+    % ROI SELECTION
+    figure('color', 'white');
+    if strcmp(case_name, 'TANK')
+        J = LAT_matrix;
+        imagesc(J);
+        pbaspect([2 1 1]); % 2:1 aspect ratio
+    else
+        J = LAT_matrix;
+        imagesc(J);
+        axis equal;
+    end
+    colormap(C);
+    axis off;
+    colorbar('eastoutside');
+    title(['Case: ', case_name, ' - ROI Selection (FINAL LAT)'], 'FontSize', 14);
+    roi_mask = roipoly;
+    close(gcf);
+    
+    % APPLY ROI AND ISOLATE VALID DATA
+    LAT_roi = J .* roi_mask; 
+    nonzero_LATS_roi = LAT_roi(LAT_roi ~= 0 & ~isnan(LAT_roi));
+    % CALCULATE AND STORE STATISTICS
+    LAT_mean = mean(nonzero_LATS_roi);
+    LAT_std = std(nonzero_LATS_roi);
+    LAT_max = max(nonzero_LATS_roi);
+    LAT_mode = mode(nonzero_LATS_roi); 
+    LAT_var = var(nonzero_LATS_roi); 
+    LAT_num = numel(nonzero_LATS_roi); 
+    % Displaying results for the current case
+    fprintf('\nCase: %s (ROI Stats - FINAL LAT)\n', case_name);
+    disp(['  Average LAT:      ', num2str(LAT_mean, '%.4f'), ' ms']);
+    disp(['  Mode LAT:         ', num2str(LAT_mode, '%.4f'), ' ms']);
+    disp(['  Max LAT:          ', num2str(LAT_max, '%.4f'), ' ms']);
+    disp(['  Std Deviation:    ', num2str(LAT_std, '%.4f'), ' ms']);
+    disp(['  Variance:         ', num2str(LAT_var, '%.4f')]);
+    disp(['  Number of points: ', num2str(LAT_num)]);
+    % Store Results
+    LAT_values_FINAL.(case_name).LAT_stats = struct(...
+        'mean', LAT_mean, 'std', LAT_std, 'max', LAT_max, ...
+        'mode', LAT_mode, 'var', LAT_var, 'num_points', LAT_num);
+    LAT_values_FINAL.(case_name).roi_mask = roi_mask;
+end
+
+
+%% CV Calculation - Electrical
+SpaceScale.TANK = 0.75; % mm/pixel for TANK
+SpaceScale.MEA = 0.1;  % mm/pixel for MEA
+r = 3;                 % Radius (r) for the CV Circle Method
+filter_size = 0;       % Size of the spatial filter kernel
+LAT_values_CV = LAT_values_FINAL; % Start CV calculation from FINAL LAT
+for i = 1:length(cases)
+    case_name = cases{i};
+    LAT_E_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
+    
+    % Determine Space Scale
+    if strcmp(case_name, 'TANK')
+        current_space_scale = SpaceScale.TANK;
+    else
+        current_space_scale = SpaceScale.MEA;
+    end
+    % Interpolation
+    [X, Y] = meshgrid(1:size(LAT_E_matrix, 2), 1:size(LAT_E_matrix, 1));
+    [Xq, Yq] = meshgrid(1:0.1:size(LAT_E_matrix, 2), 1:0.1:size(LAT_E_matrix, 1));
+    % Perform bilinear interpolation
+    LAT_E_matrix_interp = interp2(X, Y, LAT_E_matrix, Xq, Yq, 'linear');
+    
+    % Initialize matrices for CV results
+    [R_interp, C_interp] = size(LAT_E_matrix_interp);
+    AvgSpeed_E = zeros(R_interp, C_interp);
+    StdSpeed_E = zeros(R_interp, C_interp);
+    Angle_E = zeros(R_interp, C_interp);
+    % CV Circle Method Calculation
+    for row = (r + 1):(R_interp - (r + 1))
+        for col = (r + 1):(C_interp - (r + 1))
+            if LAT_E_matrix_interp(row, col) ~= 0 
+                [AvgSpeed_E(row, col), StdSpeed_E(row, col), Angle_E(row, col)] = ...
+                    CV_CircleMethod(LAT_E_matrix_interp, r, row, col, current_space_scale);
+            end
+        end
+    end
+    % Filtering and Storage
+    AvgSpeed_E_filtered = SpatTemp_Filtering(AvgSpeed_E, filter_size, 0, 'GPU');
+    
+    % Store the results in the FINAL structure
+    LAT_values_FINAL.(case_name).AvgSpeed_E_matrix = AvgSpeed_E_filtered;
+    LAT_values_FINAL.(case_name).SpaceScale_mm_px = current_space_scale;
+    LAT_values_FINAL.(case_name).CV_Radius = r;
+    
+    fprintf('  -> %s CV map calculated and filtered (Size: %dx%d).\n', case_name, R_interp, C_interp);
+end
+
+
+%% CV Plot - Electric
+C = jet(256);
+for i = 1:length(cases)
+    case_name = cases{i};
+    AvgSpeed_E_matrix = LAT_values_FINAL.(case_name).AvgSpeed_E_matrix;
+    J_valid = AvgSpeed_E_matrix(AvgSpeed_E_matrix ~= 0 & ~isnan(AvgSpeed_E_matrix));
+    % Use percentile limits for robust visualization (e.g., 5th to 95th percentile)
+    Y_limits = prctile(J_valid, [5 95], 'all');
+    CV_min = Y_limits(1);
+    CV_max = Y_limits(2);
+    
+    % --- Plotting ---
+    figure('color', 'white', 'Position', [40 + i*20 40 + i*20 600 600]);
+    if strcmp(case_name, 'TANK')
+        % TANK case: Rectangular aspect ratio, no rotation
+        J_plot = AvgSpeed_E_matrix;
+        imagesc(J_plot);
+        pbaspect([2 1 1]); % 2:1 aspect ratio
+    else
+        % MEA cases: Square aspect ratio, rotate 90 degrees
+        J_plot = imrotate(AvgSpeed_E_matrix, 90);
+        imagesc(J_plot);
+        axis equal; % Ensures square aspect ratio
+    end
+    % Apply the calculated color limits
+    caxis([CV_min CV_max]); 
+    colormap(C);
+    axis off;
+    hBar = colorbar('eastoutside');
+    ylabel(hBar, 'Conduction Velocity [cm/s]', 'FontSize', 14);
+    title(['Electrical ' case_name ' - Conduction Velocity Map (FINAL LAT)'], 'FontSize', 16);
+    fprintf('  -> %s CV Map plotted with limits [%.2f - %.2f] cm/s.\n', case_name, CV_min, CV_max);
+end
+
+
+%% CV Statistics - Electrical
+for i = 1:length(cases)
+    case_name = cases{i};
+    
+    % --- Retrieve the CV matrix directly from the struct ---
+    if ~isfield(LAT_values_FINAL.(case_name), 'AvgSpeed_E_matrix')
+        fprintf('Case %s: Warning - AvgSpeed_E_matrix field not found. Skipping CV stats.\n', case_name);
+        continue; 
+    end
+    
+    CV_matrix = LAT_values_FINAL.(case_name).AvgSpeed_E_matrix;
+    
+    % Check if the matrix is empty before proceeding
+    if isempty(CV_matrix)
+        fprintf('Case %s: Warning - CV matrix is empty. Skipping CV stats.\n', case_name);
+        continue;
+    end
+    
+    % Isolate valid CV points (non-zero and non-NaN)
+    nonzero_CV = CV_matrix(CV_matrix ~= 0 & ~isnan(CV_matrix) & ~isinf(CV_matrix));
+    
+    if isempty(nonzero_CV)
+        fprintf('Case %s: Warning - No valid non-zero CV points found. Skipping stats.\n', case_name);
+        LAT_values_FINAL.(case_name).CV_stats = []; 
+        continue;
+    end
+    
+    % Calculate Statistics
+    CV_mean = mean(nonzero_CV);
+    CV_std = std(nonzero_CV);
+    CV_max = max(nonzero_CV);
+    CV_mode = mode(nonzero_CV); 
+    CV_var = var(nonzero_CV); 
+    CV_num = numel(nonzero_CV);
+    
+    % Store Results in the LAT_values_FINAL structure
+    LAT_values_FINAL.(case_name).CV_stats = struct(...
+        'mean', CV_mean, 'std', CV_std, 'max', CV_max, ...
+        'mode', CV_mode, 'var', CV_var, 'num_points', CV_num);
+    
+    % Displaying results for the current case
+    fprintf('\nCase: %s (FINAL LAT)\n', case_name);
+    disp(['  Average CV:       ', num2str(CV_mean, '%.4f'), ' cm/s']);
+    disp(['  Mode CV:          ', num2str(CV_mode, '%.4f'), ' cm/s']);
+    disp(['  Max CV:           ', num2str(CV_max, '%.4f'), ' cm/s']);
+    disp(['  Std Deviation:    ', num2str(CV_std, '%.4f'), ' cm/s']);
+    disp(['  Variance:         ', num2str(CV_var, '%.4f')]);
+    disp(['  Number of points: ', num2str(CV_num)]);
+end
+
+
+%% RESULTS CONSOLIDATION AND STORAGE AND SAVING
+StatsTable = table();
+for i = 1:length(cases)
+    case_name = cases{i};
+    % Retrieve LAT and CV statistics from the FINAL structure
+    lat_stats = LAT_values_FINAL.(case_name).LAT_stats;
+    cv_stats = LAT_values_FINAL.(case_name).CV_stats;
+    % Check if both sets of statistics exist before adding the row
+    if isempty(lat_stats) || isempty(cv_stats)
+        fprintf('Warning: Incomplete stats for %s. Skipping table entry.\n', case_name);
+        continue;
+    end
+    % Create a temporary table row with all statistics
+    NewRow = table(...
+        {case_name}, ...
+        lat_stats.mean, lat_stats.std, lat_stats.max, lat_stats.num_points, ...
+        cv_stats.mean, cv_stats.std, cv_stats.max, cv_stats.num_points, ...
+        'VariableNames', {'Case', 'LAT_Mean_ms', 'LAT_STD_ms', 'LAT_Max_ms', 'LAT_N_Pixels', ...
+                         'CV_Mean_cms', 'CV_STD_cms', 'CV_Max_cms', 'CV_N_Points'});
+                     
+    % Append the new row to the main table
+    StatsTable = [StatsTable; NewRow];
+end
+% Display the final table
+disp(' ');
+disp('--- Summary of Electrical LAT and CV Statistics (Based on FINAL Selection) ---');
+disp(StatsTable);
+% Create the master structure to hold all data from the current analysis
+AnalysisResults.Fsampling = Fsampling;
+% Store all electrical analysis results (maps, stats, masks, etc.)
+AnalysisResults.Electrical_Derivative = LAT_values; % Store original DIFF results
+AnalysisResults.Electrical_COM = LAT_values_COM; % Store COM results
+AnalysisResults.Electrical_FINAL = LAT_values_FINAL; % Store the consolidated results
+
+% Store the generated summary table
+AnalysisResults.SummaryTable = StatsTable;
+% Store configuration variables (assuming they are defined in your workspace)
+% Add these only if they exist in your workspace
+if exist('electrical_lim1', 'var') && exist('electrical_lim2', 'var')
+    AnalysisResults.AnalysisParams.electrical_lim1 = electrical_lim1;
+    AnalysisResults.AnalysisParams.electrical_lim2 = electrical_lim2;
+end
+if exist('SpaceScale', 'var')
+    AnalysisResults.AnalysisParams.SpaceScale = SpaceScale;
+end
+disp(' ');
+disp('All results are now packaged into the structure: AnalysisResults.');
+% Define the filename (You might want to make this dynamic, e.g., using a timestamp)
+filename = 'E_LAT_CV_results_FINAL.mat';
+% Save the main results structure to a .mat file
+save(filename, 'AnalysisResults');
+fprintf('\n✅ All data consolidated and saved to: %s\n', filename);

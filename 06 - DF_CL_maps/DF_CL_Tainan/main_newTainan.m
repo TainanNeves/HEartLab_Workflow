@@ -62,7 +62,7 @@ end
 % Add plot formatting
 legend('show', 'FontSize', 10, 'Location', 'best');
 xlabel('Frequency [Hz]', 'FontSize', 12);
-ylabel('Power Spectral Density', 'FontSize', 12);
+ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
 title(['Frequency Spectrum - ' num2str(n_points) ' Selected Points'], 'FontSize', 14);
 set(gca, 'fontsize', 12);
 xlim([freq_down freq_up]);
@@ -101,7 +101,7 @@ if n_points > 1
             
             title([point_names{i} ' (DF=' num2str(dominant_freq, '%.2f') 'Hz)'], 'FontSize', 10);
             xlabel('Frequency [Hz]');
-            ylabel('Power');
+            ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
             xlim([freq_down freq_up]);
             grid on;
         end
@@ -138,11 +138,17 @@ title(Title);
 
 
 %% In case of need to manual corrections
-% Susbstitude values
-find_value = 0.5; % Value to replace
+% Susbstitude exactly values
+find_value = 0.5; 
 tolerancia = 1e-10;
+new_value = 0.5;
 indices = find(abs(DF_O - find_value) < tolerancia);
-DF_O(indices) = 0; % Value to include
+DF_O(indices) = new_value; % Value to include
+
+% Substitute Highew or Lower Values
+find_value = 0.5;
+new_value = 0.5;
+DF_O(DF_O < find_value) = new_value;
 
 
 %% DF CL Statistics - Optical
@@ -198,7 +204,7 @@ Sffti = Sfft_O;
 % fstep = fstep; % Already defined above
 % Hzi = freq_down; % Already defined above
 % Hzf = freq_up; % Already defined above
-dfh_threshold_area = 0.8; % Threshold for dominant frequency harmonic area (0-1)
+dfh_threshold_area = 0.6; % Threshold for dominant frequency harmonic area (0-1)
 f_mode = 2; % Frequency mode: 1 = fundamental frequency, 2 = harmonic analysis
 debug = 1; % Debug mode: 1 = show plots, 0 = no plots
 
@@ -359,7 +365,7 @@ DF_values.fstep = fstep;
 
 %% Spectrum of multiple electrodes - Electrical
 % Select which case to analyze
-current_case = 'MEA2'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
+current_case = 'TANK'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
 Data = InterpSignal.Sync.(current_case);
 Background = squeeze(Data(:,:,2000));
 
@@ -405,7 +411,7 @@ end
 % Add plot formatting
 legend('show', 'FontSize', 10, 'Location', 'best');
 xlabel('Frequency [Hz]', 'FontSize', 12);
-ylabel('Power Spectral Density', 'FontSize', 12);
+ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
 title(['Frequency Spectrum - ' current_case ' - ' num2str(n_points) ' Selected Points'], 'FontSize', 14);
 set(gca, 'fontsize', 12);
 xlim([freq_down freq_up]);
@@ -446,7 +452,7 @@ if n_points > 1
             
             title([point_names{i} ' (DF=' num2str(dominant_freq, '%.2f') 'Hz)'], 'FontSize', 10);
             xlabel('Frequency [Hz]');
-            ylabel('Power');
+            ylabel('Power Spectral Density [mV^2/Hz]', 'FontSize', 12);
             xlim([freq_down freq_up]);
             grid on;
         end
@@ -628,7 +634,7 @@ end
 %% Electrical Organization Index - OI
 % Calculate OI for each case
 OI_values = struct();
-dfh_threshold_area = 0.8;
+dfh_threshold_area = 0.6;
 f_mode = 2;
 debug = 1;
 
