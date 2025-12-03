@@ -107,7 +107,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E30_F02_R26';
+FileName = 'E32_F02_R25';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;

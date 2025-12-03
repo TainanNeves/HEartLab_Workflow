@@ -9,7 +9,7 @@ clear all; close all; clc;
 % Run the code with F9 part by part
 
 % Load data and region of interest (ROI)
-load("E:\experiment_data\E30\Optical Mapping to MATLAB\Rec_14-36-47_Bin=8_Cam3.mat"); % Optical Data Binned
+load("E:\experiment_data\E32\Optical Mapping to MATLAB\Rec_16-52-48_Bin=8_Cam3.mat"); % Optical Data Binned
 ROI_3 = roipoly(DATA(:,:,50)); % If you want to create a ROI / Double click in the center to finish
 
 % If you already have the ROIs
@@ -66,7 +66,7 @@ less = 500; % Samples eliminated at the beginning and final (1 second each)
 DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
 DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
 % DATA1 = SpatTemp_Filtering(DATA1, 3, 500, 'GPU');
-% DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
+DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
 % DATA1 = SpatTemp_Filtering(DATA1, 7, 500, 'GPU');
 
 % Apply the mask to the filtered data
@@ -87,7 +87,7 @@ clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
 clear i I J less n p p2 R row_pixel ROI ans Background;
 
 %% Exporting the Optical data
-identification = 'E30_F02_R23';
+identification = 'E32_F02_R25';
 fileName = ['optic_data_', identification, '_filtered.mat'];
 % Creating variables
 D_OP.D_CAM1_filtered = D_CAM1_filtered;
