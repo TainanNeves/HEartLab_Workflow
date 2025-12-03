@@ -12,8 +12,8 @@ load("F:\HEartLab\experiment_analyses\exp28_analysis\data_processed\data_filtere
 data = D_SYNC.EL;
 Fs = 4000;
 % Limb leads (Derivacoes de membros)
-D1 = data(129, :) - data(145, :);
-D2 = data(138, :) - data(145, :);
+D1 = data(129, :) - data(147, :);
+D2 = data(138, :) - data(147, :);
 D3 = data(138, :) - data(129, :);
 aVR = -(D1 + D2)/2;
 aVL = (D1 - D2)/2;
@@ -24,19 +24,19 @@ V2 = data(159, :);
 V3 = data(168, :);
 V4 = data(171, :);
 V5 = data(134, :);
-V6 = data(135, :);
+V6 = data(144, :);
 
 
 %% Saving ECG leads
-filename = 'E14_F03_R04';
+filename = 'E32F02R01';
 variables = {'aVF', 'aVL', 'aVR', 'D1', 'D2', 'D3', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'Fs'};
 save([filename, ' - ECG leads.mat'], variables{:});
 clear filename variables;
 
 
 %% Plotting clinical sheet
-start_sample = 1;
-time_length = 2.5;     % normally 2.5s or 5s
+start_sample = 2;
+time_length = 4;     % normally 2.5s or 5s
 N = time_length * Fs;  % Number of samples to display
 
 % Figure
@@ -79,11 +79,11 @@ grid on;
 
 
 %% QRS detection + Alignment
-ecg_signal = D2;  % Your ECG signal lead
+ecg_signal = -D2;  % Your ECG signal lead
 t = (0:length(ecg_signal)-1) / Fs;
 
 % Plot the ECG signal for visual inspection
-figure;
+figure();
 plot(t, ecg_signal, 'b'); hold on;
 title('ECG Signal');
 xlabel('Time (s)');

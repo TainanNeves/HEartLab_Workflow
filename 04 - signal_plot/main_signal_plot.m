@@ -54,46 +54,47 @@ title(str_title);
 
 %% Electric signal plot
 % Define electrode to use
-el = [151];
-Data = D_SYNC.EL(el,:);
-% Frame Sampling
+el = [22];
+Data = D_SYNC.EL(el,:); 
 Fsampling = 4000;
 % Title for the plots
-str_title = ["Electrical Signal - Ventricle"];
+str_title = "Electrical Signal";
+To = linspace(0, length(Data)/Fsampling, size(Data, 2));
 
-% Full electric time plot
-% Create a time vector
-To = linspace(0, length(Data)/Fsampling, length(Data));
-% Plot the electrical signal for a specific electrode
-f2 = figure('color', 'white', 'Position', [40 40 600 200]);
-plot(To, squeeze(Data), 'k', 'LineWidth', 2, 'DisplayName', ['Electrode ' num2str(el)]); % Black line, size 2, legend by electrode
-hold on
-ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
-set(gca, 'fontsize', 14);
-xlim([0 8]);
-title(str_title);
-legend('show', 'Location', 'northeast'); % Show legend
-grid on; % Adicionado para melhor visualização
+% Fultime Plot
+for i = 1:length(el)
+    f_full = figure('color', 'white', 'Position', [40 40 600 200]);
+    plot(To, squeeze(Data(i,:)), 'k', 'LineWidth', 2, 'DisplayName', ['Electrode ' num2str(el(i))]); 
+    hold on
+    ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
+    set(gca, 'fontsize', 14);
+    xlabel('Time (s)');
+    xlim([0 length(Data)/Fsampling]);
+    title([str_title ' - El' num2str(el(i))]);
+    legend('show', 'Location', 'northeast');
+    grid on;
+    hold off 
+end
 
-% Specific electric time plot
-% Define the time range for the plot
+% Specific Time Plot
 t_in = 2;
 t_out = 4;
-start_sample = t_in*Fsampling; % Adjust the start sample according to your data
-end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
-% Create a time vector for the specific range
+start_sample = t_in*Fsampling + 1;
+end_sample = t_out*Fsampling;   
 To_specific = linspace(t_in, t_out, end_sample - start_sample + 1);
-% Plot the electrical signal for a specific electrode within the defined time range
-f3 = figure('color', 'white', 'Position', [40 40 600 200]);
-plot(To_specific, squeeze(Data(start_sample:end_sample)), 'k', 'LineWidth', 2, 'DisplayName', ['Electrode ' num2str(el)]); % Black line, size 2, legend by electrode
-hold on
-ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
-set(gca, 'fontsize', 14);
-xlabel('Time (s)');
-xlim([t_in t_out]);
-title(str_title);
-legend('show', 'Location', 'northeast'); % Show legend
-grid on; % Adicionado para melhor visualização
+for i = 1:length(el)
+    f_spec = figure('color', 'white', 'Position', [40 40 600 200]);
+    plot(To_specific, squeeze(Data(i, start_sample:end_sample)), 'k', 'LineWidth', 2, 'DisplayName', ['Electrode ' num2str(el(i))]); 
+    hold on
+    ylabel('Potential ($\mu$V)', 'Interpreter', 'latex');
+    set(gca, 'fontsize', 14);
+    xlabel('Time (s)');
+    xlim([t_in t_out]);
+    title([str_title '- El' num2str(el(i))]);
+    legend('show', 'Location', 'northeast'); 
+    grid on; 
+    hold off
+end
 
 
 %% MULTIPLOT 1 (1 Cam (2 points) + 5 Electrodes)
@@ -196,13 +197,13 @@ linkaxes([subplot(7, 1, 1), subplot(7, 1, 2), subplot(7, 1, 3), ...
 
 %% MULTIPLOT 2 (3 Cam + 5 Electrodes)
 % Define Cameras to use
-Data_OV = D_SYNC.CAM3;
+Data_OV = D_SYNC.CAM1;
 Background = squeeze(Data_OV(:,:,2000));
 [xV, yV] = pick_up_a_trace(Background, Data_OV,1);
-Data_ORA = D_SYNC.CAM2;
+Data_ORA = D_SYNC.CAM3;
 Background = squeeze(Data_ORA(:,:,2000));
 [xRA, yRA] = pick_up_a_trace(Background, Data_ORA,1);
-Data_OLA = D_SYNC.CAM1;
+Data_OLA = D_SYNC.CAM2;
 Background = squeeze(Data_OLA(:,:,2000));
 [xLA, yLA] = pick_up_a_trace(Background, Data_OLA,1);
 
@@ -213,10 +214,10 @@ pLA = [xLA yLA];
 
 % Electric electrodes
 el1 = 7; % RA
-el2 = 78; % LA
-el3 = 25; % V
-el4 = 183; % Tank 1
-el5 = 172; % Tank 2
+el2 = 22; % LA
+el3 = 90; % V
+el4 = 142; % Tank 1
+el5 = 178; % Tank 2
 
 % Parameters
 Fsampling = 4000;
@@ -304,17 +305,17 @@ linkaxes([subplot(8, 1, 1), subplot(8, 1, 2), subplot(8, 1, 3), ...
     subplot(8, 1, 7), subplot(8, 1, 8)], 'x');
 
 
-%% All plots (Optic + MEAs) - 3 Figures
+%% All plots (Optic + MEAs) - 3 Figures ()
 %Frequency Sampling
 Fsampling = 4000;
-time = [2, 2.6]; % s
+time = [2.27, 2.66]; % s
 Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
 
 
 % MEA 1
-Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-% Background = single(D_SYNC.IMG.CAM1); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
+Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2));
+Background = single(D_SYNC.IMG.CAM3); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1);  
 p13 = [x(13), y(13)]; p14 = [x(14), y(14)]; p15 = [x(15), y(15)]; p16 = [x(16), y(16)];
 p9 = [x(9), y(9)]; p10 = [x(10), y(10)]; p11 = [x(11), y(11)]; p12 = [x(12), y(12)];
@@ -323,9 +324,9 @@ p1 = [x(1), y(1)]; p2 = [x(2), y(2)]; p3 = [x(3), y(3)]; p4 = [x(4), y(4)];
 plotar_pontos_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
 
 % MEA 2
-Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-% Background = single(D_SYNC.IMG.CAM2); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
+Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2));
+Background = single(D_SYNC.IMG.CAM2); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1); 
 p17 = [x(1), y(1)]; p21 = [x(5), y(5)]; p25 = [x(9), y(9)]; p29 = [x(13), y(13)];
 p18 = [x(2), y(2)]; p22 = [x(6), y(6)]; p26 = [x(10), y(10)]; p30 = [x(14), y(14)];
@@ -335,8 +336,8 @@ plotar_pontos_2(Data_O, Data_E, Fsampling, p17, p18, p19, p20, p21, p22, p23, p2
 
 % MEA 3
 Data_O = D_SYNC.CAM1(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-% Background = single(D_SYNC.IMG.CAM3); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
+Background = squeeze(Data_O(:,:,2));
+Background = single(D_SYNC.IMG.CAM1); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
 [x, y] = pick_up_a_trace(Background, Data_O,1); 
 p77 = [x(13), y(13)]; p78 = [x(14), y(14)]; p79 = [x(15), y(15)]; p80 = [x(16), y(16)];
 p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(12)];
@@ -355,10 +356,10 @@ Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
 Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2000));
 [x, y] = pick_up_a_trace(Background, Data_O,1);  
-p13 = [x(13), y(13)]; p14 = [x(14), y(14)]; p15 = [x(15), y(15)]; p16 = [x(16), y(16)];
-p9 = [x(9), y(9)]; p10 = [x(10), y(10)]; p11 = [x(11), y(11)]; p12 = [x(12), y(12)];
-p5 = [x(5), y(5)]; p6 = [x(6), y(6)]; p7 = [x(7), y(7)]; p8 = [x(8), y(8)];
-p1 = [x(1), y(1)]; p2 = [x(2), y(2)]; p3 = [x(3), y(3)]; p4 = [x(4), y(4)];
+p4 = [x(13), y(13)]; p3 = [x(3), y(3)]; p5 = [x(2), y(2)]; p1 = [x(1), y(1)];
+p8 = [x(9), y(9)]; p7 = [x(10), y(10)]; p6 = [x(11), y(11)]; p5 = [x(12), y(12)];
+p12 = [x(5), y(5)]; p11 = [x(6), y(6)]; p10 = [x(7), y(7)]; p9 = [x(8), y(8)];
+p16 = []; p15 = [x(2), y(2)]; p14 = []; p13 = [x(4), y(4)];
 plotar_pontos_mix_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
 
 % MEA 2
@@ -384,8 +385,8 @@ plotar_pontos_mix_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71
 
 %% All plots (TANK)
 Fsampling = 4000;
-start_time = 2; % s
-end_time = 2.3;   % s
+start_time = 2.27; % s
+end_time = 2.66;   % s
 
 % Ensure Data_E is loaded (assuming D_SYNC is available from previous sections)
 Data_E = D_SYNC.EL;
