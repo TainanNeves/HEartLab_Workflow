@@ -320,7 +320,7 @@ save('O_DF_CL_OI_CAM.mat', 'freq_up', 'freq_down', 'in_sample', 'end_sample', ..
 disp(' ');
 disp('=== OPTICAL ANALYSIS COMPLETE ===');
 disp('All results have been saved to:');
-disp('- optical_analysis_results.mat (MATLAB workspace)');
+disp('CAMX - optical_analysis_results.mat (MATLAB workspace)');
 
 
 %%

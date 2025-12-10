@@ -4,8 +4,15 @@ clear; clc;
 
 
 %% Reads the Open Ephys files
+
+<<<<<<< HEAD
 % fulfilename is the path to the structure.oebin file contained in one of the experiments
-fullfilename = "D:\experiment_data\E32\electric\02\no_filter\2025-11-25_12-32-43\Record Node 108\experiment1\recording2\structure.oebin"; % Put the .oebin path
+fullfilename = "E:\experiment_data\E30\Electrical\02\noFilter\2025-07-15_12-45-13\Record Node 108\experiment1\recording23\structure.oebin"; % Put the .oebin path
+=======
+% fulfilename is the path to the structure.oebin file contained in one of
+% the experiments
+fullfilename = "F:\HEartLab\experiment_data\E28\Electric\1\No filter\2025-06-05_11-18-50\Record Node 108\experiment1\recording7\structure.oebin"; % Put the .oebin path
+>>>>>>> eb962a20ac6026441ffe7e93607257d67e63760b
 
 % Channels to save
 channels = [1:192];
@@ -43,7 +50,7 @@ if isempty(TTL)
     disp('Warning, the TTL is empty!');
 else
     % Prints a confirmation message if TTL is not empty
-    disp('The TTL is not empty.');
+    disp('The TTL is OK.');
 end
 
 
@@ -64,9 +71,9 @@ else
 end
 time = linspace(ti, tf, (tf - ti) * Fs + 1);
 % Electrodes selection
-el1 = 22;  % RA
-el2 = 6; % LA
-el3 = 87; % V
+el1 = 7;  % RA
+el2 = 22; % LA
+el3 = 90; % V
 el4 = 142; % Tank
 Index = {'RA', 'LA', 'V','TANK'};
 % Filter range (Butterworth)
@@ -202,7 +209,7 @@ linkaxes(h,'x');
 
 %% Save file to .mat
 % Filename to save
-FileName = 'E30_F02_R23';
+FileName = 'E32_F02_R25';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
