@@ -86,7 +86,7 @@ linkaxes(findobj(gcf, 'Type', 'axes'), 'x');
 
 
 %% Save Variables
-save('03_52_37_D2 - vcg_data.mat', 'vcg', 'speed');
+save('E32F02R01 - vcg_data.mat', 'vcg', 'speed');
 
 
 %%

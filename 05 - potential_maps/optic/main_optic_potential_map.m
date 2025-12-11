@@ -12,8 +12,8 @@ load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat
 
 %% Potential Map - Individual Figures
 % Select sample and camera to plot
-sample = round(2.3058*4000):50:round(2.6388*4000);
-Data_O = D_SYNC.CAM1;
+sample = round(2.3*4000):100:round(2.6*4000);
+Data_O = D_SYNC.CAM3;
 
 % Initialize color map and adjust first color to white
 C = jet(256);
@@ -30,7 +30,7 @@ for i = 1:length(sample)
     
     % Create a figure for each sample
     f1 = figure('color', 'white', 'Position', [50 50 500 500]);
-    imagesc(J, [0 10]);
+    imagesc(J, [0 15]);
     colormap(C);
     
     % Add a colorbar and adjust labels
@@ -49,7 +49,7 @@ end
 
 %% Potential Map - Multiplot
 % Potential map - Subplot version
-sample = 9580:20:10100;
+sample = round(2.3*4000):80:round(2.6*4000);
 Data_O = D_SYNC.CAM3;
 
 % Initialize color map
@@ -85,8 +85,8 @@ ylabel(hBar1, 'Fluorescence [%]', 'FontSize', 18);
 %% Potential Map - Video
 Data_O = D_SYNC.CAM1;
 % Define the start and end samples for the video
-start_sample = 9580;  % Adjust the start sample according to your data
-end_sample = 10100;  % Adjust the end sample according to your data
+start_sample = round(2.3*4000);  % Adjust the start sample according to your data
+end_sample = round(2.6*4000);  % Adjust the end sample according to your data
 Fsampling = 4000;
 
 % Define the frames per second (fps) for the video

@@ -36,7 +36,7 @@ clear filename variables;
 
 %% Plotting clinical sheet
 start_sample = 2;
-time_length = 4;     % normally 2.5s or 5s
+time_length = 2.5;     % normally 2.5s or 5s
 N = time_length * Fs;  % Number of samples to display
 
 % Figure
@@ -93,7 +93,7 @@ grid on;
 % Detect QRS peaks
 % Ask user for threshold
 threshold = input('Enter QRS detection threshold: ');
-[qrs_peaks, qrs_locs] = findpeaks(ecg_signal, 'MinPeakHeight', threshold, 'MinPeakDistance', round(0.4*Fs));
+[qrs_peaks, qrs_locs] = findpeaks(ecg_signal, 'MinPeakHeight', threshold, 'MinPeakDistance', round(0.1*Fs));
 
 % Overlay detected peaks on the ECG signal
 plot(t(qrs_locs), qrs_peaks, 'ro', 'MarkerFaceColor', 'r');
@@ -215,7 +215,7 @@ grid on;
 
 
 %% Save aligned qrs
-filename = 'E28_F01_R09';
+filename = 'E32F02R01';
 variables = {'Fs', 'qrs_locs', 'qrs_matrix'};
 save([filename, ' - aligned peaks.mat'], variables{:});
 clear filename variables;

@@ -9,9 +9,9 @@ load(""); % Load the interpolated data
 
 %% Potential Map - Indivudual Figures
 % Select parameters to plot
-sample = round(2.3058*4000):50:round(2.6388*4000);
-Data_E = InterpSignal.Data.TANK;
-lim = [];
+sample = round(2.3*4000):40:round(2.6*4000);
+Data_E = InterpSignal.Data.MEA1;
+lim = [-3000 3000];
 Title = 'Potential Plot';
 
 % Loop through each sample point
@@ -27,10 +27,10 @@ end
 
 %% Potential Map - Multiplot
 % Select parameters to plot
-sample = 9580:20:10200;
+sample = round(2.3*4000):26:round(2.4*4000);
 Data_E = InterpSignal.Sync.TANK;
-lim = [];
-Title = 'Potential Plot';
+lim = [-100 100];
+Title = 'Potential Plot - TANK';
 
 % Plot
 plot_potential_map(Data_E, sample, ...
@@ -38,20 +38,20 @@ plot_potential_map(Data_E, sample, ...
 
 
 %% Potential Map - Video
-Data_E = InterpSignal.Data.MEA1;
+Data_E = InterpSignal.Data.TANK;
 % Define plot parameters
-lim = [-300, 500]; % Set to [] for auto-scaling or specific limits like [-100 100]
+lim = [-100 100]; % Set to [] for auto-scaling or specific limits like [-100 100]
 Title = 'Potential Map'; % Custom title for the video frames
-video_title = 'electric_potential_map_video';
+video_title = 'E_potential_map_video_';
 % Define the start and end samples for the video
-start_sample = round(2.3058*4000);  % Adjust according to your data
-end_sample = round(2.6388*4000);    % Adjust according to your data
+start_sample = round(2.3*4000);
+end_sample = round(2.4*4000);
 Fsampling = 4000;
 
 % Define the frames per second (fps) for the video
 fps = 30;  % 30 fps is a standard value for video codec
 % Define the step for plot
-step = 2; 
+step = 1; 
 
 % Calculate the time duration of the video
 duration = length(start_sample:step:end_sample) / fps;
