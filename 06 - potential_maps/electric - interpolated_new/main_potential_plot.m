@@ -9,9 +9,9 @@ load(""); % Load the interpolated data
 
 %% Potential Map - Indivudual Figures
 % Select parameters to plot
-sample = round(2.3*4000):40:round(2.6*4000);
-Data_E = InterpSignal.Data.MEA1;
-lim = [-3000 3000];
+sample = round(2.23*4000):20:round(2.62*4000);
+Data_E = InterpSignal.Sync.TANK;
+lim = [-400 400];
 Title = 'Potential Plot';
 
 % Loop through each sample point
@@ -27,10 +27,10 @@ end
 
 %% Potential Map - Multiplot
 % Select parameters to plot
-sample = round(2.3*4000):26:round(2.4*4000);
-Data_E = InterpSignal.Sync.TANK;
-lim = [-100 100];
-Title = 'Potential Plot - TANK';
+sample = round(2.23*4000):20:round(2.62*4000);
+Data_E = InterpSignal.Sync.MEA3;
+lim = [-3000 3000];
+Title = 'Potential Plot - MEA3';
 
 % Plot
 plot_potential_map(Data_E, sample, ...
@@ -38,14 +38,14 @@ plot_potential_map(Data_E, sample, ...
 
 
 %% Potential Map - Video
-Data_E = InterpSignal.Data.TANK;
+Data_E = InterpSignal.Data.MEA1;
 % Define plot parameters
-lim = [-100 100]; % Set to [] for auto-scaling or specific limits like [-100 100]
+lim = [-3000 3000]; % Set to [] for auto-scaling
 Title = 'Potential Map'; % Custom title for the video frames
 video_title = 'E_potential_map_video_';
 % Define the start and end samples for the video
-start_sample = round(2.3*4000);
-end_sample = round(2.4*4000);
+start_sample = round(2.23*4000);
+end_sample = round(2.62*4000);
 Fsampling = 4000;
 
 % Define the frames per second (fps) for the video

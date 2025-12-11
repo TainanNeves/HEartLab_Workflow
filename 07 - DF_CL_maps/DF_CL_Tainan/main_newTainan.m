@@ -3,12 +3,12 @@ clear; clc;
 
 
 %% Loading Data
-load(""); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
 
 
 %% DF Calculation - Optical
-Data = D_SYNC.CAM1;
-ROI = D_SYNC.ROI.ROI_1;
+Data = D_SYNC.CAM3;
+ROI = D_SYNC.ROI.ROI_3;
 Fsampling = 4000;
 
 % Set upper and lower frequency bounds for the Dominant Frequency calculation
@@ -112,7 +112,7 @@ end
 
 %% DF Map - Optical
 lim = [freq_down freq_up]; % Default [freq_down freq_up]
-Title = 'Cam1 V';
+Title = 'Cam3 RA';
 C = jet(256);
 C(1,1:3) = [1 1 1]; % White for background
 C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
@@ -320,7 +320,7 @@ save('O_DF_CL_OI_CAM.mat', 'freq_up', 'freq_down', 'in_sample', 'end_sample', ..
 disp(' ');
 disp('=== OPTICAL ANALYSIS COMPLETE ===');
 disp('All results have been saved to:');
-disp('CAMX - optical_analysis_results.mat (MATLAB workspace)');
+disp('O_DF_CL_OI_CAM.mat (MATLAB workspace)');
 
 
 %%

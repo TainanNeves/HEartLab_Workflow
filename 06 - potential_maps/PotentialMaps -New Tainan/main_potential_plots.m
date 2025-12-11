@@ -3,7 +3,7 @@ clear; clc;
 
 
 %% Loading Variables
-load('E:\HEartLab\TAINAN WORKFLOW\00 - examples\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
+load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Synchronized data
 
 
 %% Overview Optical plot
@@ -14,12 +14,12 @@ data_o3 = D_SYNC.CAM3;
 data_e = D_SYNC.EL;
 
 % Plot time
-timepoint_seconds = 3.0; 
+timepoint_seconds = 2.46; 
 % Plot window
-plot_window_seconds = 2.0; 
+plot_window_seconds = 1; 
 
 % Select 6 electrodes
-electrodes = [14 8 49 55 33 60]; 
+electrodes = [7 22 90 142 178 172]; 
 
 % Selecting Colorbar limits
 vmin_cam1 = 0; 
@@ -175,11 +175,11 @@ data_o3 = D_SYNC.CAM3;
 data_e = D_SYNC.EL;
 
 % Select 6 electrodes
-electrodes = [14 8 49 55 33 60]; 
+electrodes = [7 22 90 142 178 172]; 
 
 % Time parameters
-ti = 1; % Start time [s]
-to = 1.3; % End time [s]
+ti = 2.274; % Start time [s]
+to = 2.635; % End time [s]
 step = 0.001; % Step size [s]
 frame_rate = 30; % Video frame rate (FPS)
 
@@ -187,7 +187,7 @@ frame_rate = 30; % Video frame rate (FPS)
 plot_window_seconds = 1; % The total duration shown in the time plots
 
 % Video Output filename
-videoFile = 'overview_optical_video.mp4';
+videoFile = 'O_overview_video.mp4';
 
 % Colorbar limits for image frames
 clim_cam1 = [0 10]; 
@@ -497,35 +497,376 @@ clear; clc;
 
 
 %% Loading Variables
-load(""); % Load the interpolated data
+load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Sync data
+load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_filtered.mat"); % Load the interpolated data
 
 
 %% Overview electrical plot
+% Loading variables
+data_o1 = D_SYNC.CAM1;
+data_o2 = D_SYNC.CAM2;
+data_o3 = D_SYNC.CAM3;
+data_e = D_SYNC.EL;
+data_e1 = InterpSignal.Sync.MEA1;
+data_e2 = InterpSignal.Sync.MEA2;
+data_e3 = InterpSignal.Sync.MEA3;
+data_e4 = InterpSignal.Sync.TANK;
 
+% Plot time
+timepoint_seconds = 2.46; 
+% Plot window
+plot_window_seconds = 1; 
 
+% Select 6 electrodes
+electrodes = [7 22 90 142 178 172]; 
 
+% Selecting Colorbar limits
+vmin_MEA1 = -4000; 
+vmax_MEA1 = 4000; 
+vmin_MEA2 = -4000; 
+vmax_MEA2 = 4000;
+vmin_MEA3 = -4000;
+vmax_MEA3 = 4000;
+vmin_TANK = -600;
+vmax_TANK = 600;
+
+% Defining Fixed parameters
+Fs = 4000;
+sample = round(timepoint_seconds * Fs);
+total_time = size(data_o1, 3) / Fs;
+
+% --- CALCULATE PLOT WINDOW LIMITS ---
+% Calculate the desired start and end times
+t_start_desired = timepoint_seconds - (plot_window_seconds / 2);
+t_end_desired = timepoint_seconds + (plot_window_seconds / 2);
+% Apply boundary checks
+t_start_plot = max(0, t_start_desired);
+t_end_plot = min(total_time, t_end_desired);
+
+% Selecting Optical points
+Background_CAM1 = squeeze(imrotate(D_SYNC.IMG.CAM1(:,:,1), -90));
+Background_CAM2 = squeeze(imrotate(D_SYNC.IMG.CAM2(:,:,1), -90));
+Background_CAM3 = squeeze(imrotate(D_SYNC.IMG.CAM3(:,:,1), -90));
+disp('Select 2 points for CAM1');
+[x1, y1] = pick_up_a_trace(Background_CAM1, data_o1, 1);
+disp('Select 2 points for CAM2');
+[x2, y2] = pick_up_a_trace(Background_CAM2, data_o2, 1);
+disp('Select 2 points for CAM3');
+[x3, y3] = pick_up_a_trace(Background_CAM3, data_o3, 1);
+
+% Define the subplot grid
+rows = 6;
+cols = 6;
+% Create a figure
+figure('color', 'white');
+time_axis = (0:size(data_o1, 3)-1) / Fs;
+
+% --- TIME PLOTS ---
+
+% CAM1 Point 1
+subplot(rows, cols, 1);
+plot(time_axis, squeeze(data_o1(x1(1), y1(1), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM1 Pt 1\n(x=%d, y=%d)', x1(1), y1(1))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% CAM1 Point 2
+subplot(rows, cols, 2);
+plot(time_axis, squeeze(data_o1(x1(2), y1(2), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM1 Pt 2\n(x=%d, y=%d)', x1(2), y1(2))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% CAM2 Point 1
+subplot(rows, cols, 3);
+plot(time_axis, squeeze(data_o2(x2(1), y2(1), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM2 Pt 1\n(x=%d, y=%d)', x2(1), y2(1))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% CAM2 Point 2
+subplot(rows, cols, 4);
+plot(time_axis, squeeze(data_o2(x2(2), y2(2), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM2 Pt 2\n(x=%d, y=%d)', x2(2), y2(2))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% CAM3 Point 1
+subplot(rows, cols, 5); 
+plot(time_axis, squeeze(data_o3(x3(1), y3(1), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM3 Pt 1\n(x=%d, y=%d)', x3(1), y3(1))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% CAM3 Point 2
+subplot(rows, cols, 6); 
+plot(time_axis, squeeze(data_o3(x3(2), y3(2), :))); 
+hold on; 
+xline(timepoint_seconds, 'r', 'LineWidth', 2);
+xlim([t_start_plot t_end_plot]);
+title(sprintf('CAM3 Pt 2\n(x=%d, y=%d)', x3(2), y3(2))); 
+xlabel('Time (s)'); ylabel('%F'); 
+
+% Electrical Plots
+for k = 1:6 % Loop through all 6 electrodes
+    subplot_index = k + 6; 
+    subplot(rows, cols, subplot_index);
+    plot(time_axis, data_e(electrodes(k), :), 'k');
+    hold on; 
+    xline(timepoint_seconds, 'r', 'LineWidth', 2);
+    xlim([t_start_plot t_end_plot]);
+    title(sprintf('Electrode %d', electrodes(k))); 
+    xlabel('Time (s)'); ylabel('\muV'); 
+end
+
+% --- ELECTRICAL FRAME PLOTS ---
+
+% MEA1 Frame
+subplot(rows, cols, [13 14 19 20]); 
+imagesc(data_e1(:, :, sample), [vmin_MEA1 vmax_MEA1]);
+colormap(jet(256));
+hold on;
+title('MEA1');
+colorbar;
+
+% MEA2 Frame
+subplot(rows, cols, [15 16 21 22]); 
+imagesc(data_e2(:, :, sample), [vmin_MEA2 vmax_MEA2]);
+colormap(jet(256));
+hold on;
+title('MEA2');
+colorbar;
+
+% MEA3 Frame
+subplot(rows, cols, [17 18 23 24]);
+imagesc(data_e3(:, :, sample), [vmin_MEA3 vmax_MEA3]);
+colormap(jet(256));
+hold on;
+title('MEA3');
+colorbar;
+
+% TANK Frame
+subplot(rows, cols, [26 27 28 29 32 33 34 35]);
+imagesc(data_e4(:, :, sample), [vmin_TANK vmax_TANK]);
+colormap(jet(256));
+hold on;
+title('TANK');
+colorbar;
+
+% Adjust overall figure appearance
+sgtitle(['Synchronized Signals at t = ' num2str(timepoint_seconds) ' s '], ...
+            'FontSize', 16, 'FontWeight', 'bold', 'Interpreter', 'latex');
 
 
 %% Overview Electrical Video
+% Loading variables
+data_o1 = D_SYNC.CAM1;
+data_o2 = D_SYNC.CAM2;
+data_o3 = D_SYNC.CAM3;
+data_e = D_SYNC.EL;
+data_e1 = InterpSignal.Sync.MEA1;
+data_e2 = InterpSignal.Sync.MEA2;
+data_e3 = InterpSignal.Sync.MEA3;
+data_e4 = InterpSignal.Sync.TANK;
+% Parâmetros Elétricos/Ópticos
+electrodes = [7 22 90 142 178 172]; % 6 Eletrodos
 
+% Parâmetros de Tempo do Vídeo
+ti = 2.28; % Tempo inicial [s]
+to = 2.62; % Tempo final [s]
+step = 0.002; % [s]
+frame_rate = 30; % Taxa de quadros (FPS)
+% Parâmetro de Janela
+plot_window_seconds = 0.5; 
 
+% Limites da Colorbar para os Mapas Elétricos (do seu código)
+vmin_MEA1 = -4000; 
+vmax_MEA1 = 4000; 
+vmin_MEA2 = -4000; 
+vmax_MEA2 = 4000;
+vmin_MEA3 = -4000; 
+vmax_MEA3 = 4000;
+vmin_TANK = -500; 
+vmax_TANK = 500;
 
+% Saída de Vídeo
+videoFile = 'E_overview_video.mp4';
 
+% Parâmetros Fixos
+Fs = 4000;
+time_axis = (0:size(data_o1, 3)-1) / Fs;
+total_time = size(data_o1, 3) / Fs;
+rows = 6;
+cols = 6;
 
+% --- Calcular e Confirmar Duração ---
+total_frames = length(ti:step:to);
+predicted_video_duration = total_frames / frame_rate;
+disp(['Total de Quadros a processar: ', num2str(total_frames)]);
+disp(['Duração Prevista do Vídeo a ' num2str(frame_rate) ' FPS: ', num2str(predicted_video_duration), ' s']);
+% Prompt user to confirm
+user_input = input('Deseja prosseguir com estes valores? (y/n): ', 's');
+if lower(user_input) ~= 's' && lower(user_input) ~= 'y' 
+    fprintf('Por favor, modifique os valores de ti, to, step e frame_rate no código e execute a seção novamente.\n');
+    return;
+end
 
+% --- Selecionar Pontos Ópticos e Inicializar Figura ---
+Background_CAM1 = squeeze(imrotate(D_SYNC.IMG.CAM1(:,:,1), -90));
+Background_CAM2 = squeeze(imrotate(D_SYNC.IMG.CAM2(:,:,1), -90));
+Background_CAM3 = squeeze(imrotate(D_SYNC.IMG.CAM3(:,:,1), -90));
+disp('Selecione 2 pontos para CAM1');
+[x1, y1] = pick_up_a_trace(Background_CAM1, data_o1, 1);
+disp('Selecione 2 pontos para CAM2');
+[x2, y2] = pick_up_a_trace(Background_CAM2, data_o2, 1);
+disp('Selecione 2 pontos para CAM3');
+[x3, y3] = pick_up_a_trace(Background_CAM3, data_o3, 1);
 
+figure('color', 'white', 'Name', 'Optical/Electric Maps Video');
+set(gcf, 'Position', get(0, 'Screensize')); % Maximizar figura
 
+% --- Inicializar Gravador de Vídeo (MP4) ---
+v = VideoWriter(videoFile, 'MPEG-4'); 
+v.FrameRate = frame_rate; 
+open(v);
 
+% --- Loop Principal de Geração de Vídeo ---
+for timepoint_seconds = ti:step:to
+    sample = round(timepoint_seconds * Fs);
+    
+    % --- CALCULAR LIMITES DA JANELA DE PLOTAGEM ---
+    t_start_desired = timepoint_seconds - (plot_window_seconds / 2);
+    t_end_desired = timepoint_seconds + (plot_window_seconds / 2);
+    
+    % Aplicar verificação de limites
+    t_start_plot = max(0, t_start_desired);
+    t_end_plot = min(total_time, t_end_desired);
+    
 
+    % CAM1 Point 1
+    subplot(rows, cols, 1);
+    plot(time_axis, squeeze(data_o1(x1(1), y1(1), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM1 Pt 1\n(x=%d, y=%d)', x1(1), y1(1))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % CAM1 Point 2
+    subplot(rows, cols, 2);
+    plot(time_axis, squeeze(data_o1(x1(2), y1(2), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM1 Pt 2\n(x=%d, y=%d)', x1(2), y1(2))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % CAM2 Point 1
+    subplot(rows, cols, 3);
+    plot(time_axis, squeeze(data_o2(x2(1), y2(1), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM2 Pt 1\n(x=%d, y=%d)', x2(1), y2(1))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % CAM2 Point 2
+    subplot(rows, cols, 4);
+    plot(time_axis, squeeze(data_o2(x2(2), y2(2), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM2 Pt 2\n(x=%d, y=%d)', x2(2), y2(2))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % CAM3 Point 1
+    subplot(rows, cols, 5);
+    plot(time_axis, squeeze(data_o3(x3(1), y3(1), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM3 Pt 1\n(x=%d, y=%d)', x3(1), y3(1))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % CAM3 Point 2
+    subplot(rows, cols, 6);
+    plot(time_axis, squeeze(data_o3(x3(2), y3(2), :)));
+    hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+    xlim([t_start_plot t_end_plot]); 
+    title(sprintf('CAM3 Pt 2\n(x=%d, y=%d)', x3(2), y3(2))); 
+    xlabel('Time (s)'); ylabel('%F');
+    
+    % Electric Electrodes
+    for k = 1:6 
+        subplot_index = k + 6; 
+        subplot(rows, cols, subplot_index);
+        plot(time_axis, data_e(electrodes(k), :), 'k');
+        hold on; xline(timepoint_seconds, 'r', 'LineWidth', 2); hold off;
+        xlim([t_start_plot t_end_plot]); 
+        title(sprintf('Electrode %d', electrodes(k))); 
+        xlabel('Time (s)'); ylabel('\muV'); 
+    end
+    
+    
+    % MEA1 Frame
+    subplot(rows, cols, [13 14 19 20]); 
+    I_e1 = squeeze(data_e1(:, :, sample)); 
+    imagesc(I_e1, [vmin_MEA1 vmax_MEA1]);
+    colormap(jet(256));
+    title(sprintf('MEA1'));
+    colorbar;
+    axis off; 
+    
+    % MEA2 Frame
+    subplot(rows, cols, [15 16 21 22]); 
+    I_e2 = squeeze(data_e2(:, :, sample)); 
+    imagesc(I_e2, [vmin_MEA2 vmax_MEA2]);
+    colormap(jet(256));
+    title(sprintf('MEA2'));
+    colorbar;
+    axis off; 
+    
+    % MEA3 Frame
+    subplot(rows, cols, [17 18 23 24]);
+    I_e3 = squeeze(data_e3(:, :, sample)); 
+    imagesc(I_e3, [vmin_MEA3 vmax_MEA3]);
+    colormap(jet(256));
+    title(sprintf('MEA3'));
+    colorbar;
+    axis off;
+    
+    % TANK Frame
+    subplot(rows, cols, [26 27 28 29 32 33 34 35]);
+    I_e4 = squeeze(data_e4(:, :, sample)); 
+    imagesc(I_e4, [vmin_TANK vmax_TANK]);
+    colormap(jet(256));
+    title(sprintf('TANK'));
+    colorbar;
+    axis off;
+    
+    sgtitle(['Overview Electric Video | t=' num2str(timepoint_seconds, '%.3f') ' s'], ...
+                'FontSize', 16, 'FontWeight', 'bold', 'Interpreter', 'latex');
+    
+    % Capturar o frame
+    frame = getframe(gcf);
+    writeVideo(v, frame);
+end
 
-
-
+% Fechar o gravador de vídeo
+close(v);
+close(gcf); 
+fprintf('Vídeo MP4 salvo como: %s\n', videoFile);
 
 
 %% Potential Map - Indivudual Figures
 % Select parameters to plot
 sample = round(2.3*4000):40:round(2.6*4000);
-Data_E = InterpSignal.Data.MEA1;
+Data_E = InterpSignal.Sync.MEA1;
 lim = [-3000 3000];
 Title = 'Potential Plot';
 
@@ -626,18 +967,3 @@ disp(['Video duration: ', num2str(duration), ' seconds']);
 
 
 
-
-
-
-
-
-
-
-
-
-
-%% NEW CODES TO TEST
-%% LOADING DATA
-load("D:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Synchronized data
-
-%%
