@@ -131,10 +131,18 @@ end
 % --- OPTICAL FRAME PLOTS ---
 
 % CAM1 Frame
-subplot(rows, cols, [13 14 19 20 25 26 31 32]); 
+subplot(rows, cols, [13 14 19 20 25 26 31 32]);
+data_o1 = imrotate(data_o1, 90);
 imagesc(data_o1(:, :, sample), [vmin_cam1 vmax_cam1]);
 colormap(jet(256));
 hold on;
+% Rotatinf the markers position
+x1_temp = x1;
+y1_temp = y1;
+y1 = x1_temp;
+x1 = size(data_o1, 1) - y1_temp + 1;
+clear x1_temp y1_temp;
+% Ploting markers
 plot(y1, x1, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
 text(y1(1)+1, x1(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
 text(y1(2)+1, x1(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -142,10 +150,18 @@ title('CAM1');
 colorbar;
 
 % CAM2 Frame
-subplot(rows, cols, [15 16 21 22 27 28 33 34]); 
+subplot(rows, cols, [15 16 21 22 27 28 33 34]);
+data_o2 = imrotate(data_o2, 90);
 imagesc(data_o2(:, :, sample), [vmin_cam2 vmax_cam2]);
 colormap(jet(256));
 hold on;
+% Rotatinf the markers position
+x2_temp = x2;
+y2_temp = y2;
+y2 = x2_temp;
+x2 = size(data_o2, 1) - y2_temp + 1;
+clear x2_temp y2_temp;
+% Ploting markers
 plot(y2, x2, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
 text(y2(1)+1, x2(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
 text(y2(2)+1, x2(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -154,9 +170,17 @@ colorbar;
 
 % CAM3 Frame
 subplot(rows, cols, [17 18 23 24 29 30 35 36]);
+data_o3 = imrotate(data_o3, 90);
 imagesc(data_o3(:, :, sample), [vmin_cam3 vmax_cam3]);
 colormap(jet(256));
 hold on;
+% Rotatinf the markers position
+x3_temp = x3;
+y3_temp = y3;
+y3 = x3_temp;
+x3 = size(data_o3, 1) - y3_temp + 1;
+clear x3_temp y3_temp;
+% Ploting markers
 plot(y3, x3, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
 text(y3(1)+1, x3(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
 text(y3(2)+1, x3(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -311,38 +335,62 @@ for timepoint_seconds = ti:step:to
     
     % --- Optical Frames ---
     % CAM1 Frame
-    subplot(rows, cols, [13 14 19 20 25 26 31 32]); 
-    imagesc(I1, clim_cam1); 
+    subplot(rows, cols, [13 14 19 20 25 26 31 32]);
+    data_o1 = imrotate(data_o1, 90);
+    imagesc(data_o1(:, :, sample), [vmin_cam1 vmax_cam1]);
     colormap(jet(256));
     hold on;
+    % Rotatinf the markers position
+    x1_temp = x1;
+    y1_temp = y1;
+    y1 = x1_temp;
+    x1 = size(data_o1, 1) - y1_temp + 1;
+    clear x1_temp y1_temp;
+    % Ploting markers
     plot(y1, x1, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y1(1)+1, x1(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y1(2)+1, x1(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
-    title(sprintf('CAM1'));
+    title('CAM1');
     colorbar;
     hold off;
     
     % CAM2 Frame
-    subplot(rows, cols, [15 16 21 22 27 28 33 34]); 
-    imagesc(I2, clim_cam2); 
+    subplot(rows, cols, [15 16 21 22 27 28 33 34]);
+    data_o2 = imrotate(data_o2, 90);
+    imagesc(data_o2(:, :, sample), [vmin_cam2 vmax_cam2]);
     colormap(jet(256));
     hold on;
+    % Rotatinf the markers position
+    x2_temp = x2;
+    y2_temp = y2;
+    y2 = x2_temp;
+    x2 = size(data_o2, 1) - y2_temp + 1;
+    clear x2_temp y2_temp;
+    % Ploting markers
     plot(y2, x2, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y2(1)+1, x2(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y2(2)+1, x2(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
-    title(sprintf('CAM2'));
+    title('CAM2');
     colorbar;
     hold off;
     
     % CAM3 Frame
     subplot(rows, cols, [17 18 23 24 29 30 35 36]);
-    imagesc(I3, clim_cam3); 
+    data_o3 = imrotate(data_o3, 90);
+    imagesc(data_o3(:, :, sample), [vmin_cam3 vmax_cam3]);
     colormap(jet(256));
     hold on;
+    % Rotatinf the markers position
+    x3_temp = x3;
+    y3_temp = y3;
+    y3 = x3_temp;
+    x3 = size(data_o3, 1) - y3_temp + 1;
+    clear x3_temp y3_temp;
+    % Ploting markers
     plot(y3, x3, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y3(1)+1, x3(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y3(2)+1, x3(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
-    title(sprintf('CAM3'));
+    title('CAM3');
     colorbar;
     hold off;
     
@@ -521,14 +569,14 @@ plot_window_seconds = 1;
 electrodes = [7 22 90 142 178 172]; 
 
 % Selecting Colorbar limits
-vmin_MEA1 = -4000; 
-vmax_MEA1 = 4000; 
-vmin_MEA2 = -4000; 
-vmax_MEA2 = 4000;
-vmin_MEA3 = -4000;
-vmax_MEA3 = 4000;
-vmin_TANK = -600;
-vmax_TANK = 600;
+vmin_MEA1 = 0;
+vmax_MEA1 = 5;
+vmin_MEA2 = 0;
+vmax_MEA2 = 5;
+vmin_MEA3 = 0;
+vmax_MEA3 = 5;
+vmin_TANK = 0;
+vmax_TANK = 5;
 
 % Defining Fixed parameters
 Fs = 4000;
@@ -690,14 +738,14 @@ frame_rate = 30; % Taxa de quadros (FPS)
 plot_window_seconds = 0.5; 
 
 % Limites da Colorbar para os Mapas Elétricos (do seu código)
-vmin_MEA1 = -4000; 
-vmax_MEA1 = 4000; 
-vmin_MEA2 = -4000; 
-vmax_MEA2 = 4000;
-vmin_MEA3 = -4000; 
-vmax_MEA3 = 4000;
-vmin_TANK = -500; 
-vmax_TANK = 500;
+vmin_MEA1 = 0; 
+vmax_MEA1 = 5; 
+vmin_MEA2 = 0; 
+vmax_MEA2 = 5;
+vmin_MEA3 = 0; 
+vmax_MEA3 = 5;
+vmin_TANK = 0; 
+vmax_TANK = 5;
 
 % Saída de Vídeo
 videoFile = 'E_overview_video.mp4';
@@ -866,8 +914,8 @@ fprintf('Vídeo MP4 salvo como: %s\n', videoFile);
 %% Potential Map - Indivudual Figures
 % Select parameters to plot
 sample = round(2.3*4000):40:round(2.6*4000);
-Data_E = InterpSignal.Sync.MEA1;
-lim = [-3000 3000];
+Data_E = InterpSignal.Sync.TANK;
+lim = [0 5];
 Title = 'Potential Plot';
 
 % Loop through each sample point
@@ -885,7 +933,7 @@ end
 % Select parameters to plot
 sample = round(2.3*4000):26:round(2.4*4000);
 Data_E = InterpSignal.Sync.TANK;
-lim = [-100 100];
+lim = [0 5];
 Title = 'Potential Plot - TANK';
 
 % Plot
@@ -896,7 +944,7 @@ plot_potential_map(Data_E, sample, ...
 %% Potential Map - Video
 Data_E = InterpSignal.Data.TANK;
 % Define plot parameters
-lim = [-100 100]; % Set to [] for auto-scaling or specific limits like [-100 100]
+lim = [0 5]; % Set to [] for auto-scaling or specific limits like [-100 100]
 Title = 'Potential Map'; % Custom title for the video frames
 video_title = 'E_potential_map_video_';
 % Define the start and end samples for the video
@@ -925,10 +973,11 @@ for current_sample = start_sample:step:end_sample
     % Create figure using our plot_potential_map function
     f1 = figure('color', 'white', 'Position', [50 50 500 400], 'Visible', 'off');
     
-    % Extract single frame and transpose for correct orientation
-    I = squeeze(Data_E(:,:,current_sample))';
+    % Extract single frame
+    I = squeeze(Data_E(:,:,current_sample));
     
     % Create 2D surface plot
+    I = flipud(I); % Vertical Flip because surf() invert the y-axis
     surf(I, 'EdgeColor', 'none', 'FaceColor', 'interp');
     view(2); % 2D view from above
     axis equal;

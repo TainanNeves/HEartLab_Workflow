@@ -82,6 +82,7 @@ f1 = figure('color','white','Position', fig_size);
 I = squeeze(data(:,:,sample));
 
 % Create 2D surface plot
+I = flipud(I); % Vertical Flip because surf() invert the y-axis
 surf(I, 'EdgeColor', 'none', 'FaceColor', 'interp');
 view(2); % 2D view from above
 
@@ -147,6 +148,7 @@ for i = 1:num_samples
     I = squeeze(data(:,:,samples(i)));
     
     % Create 2D surface plot
+    I = flipud(I); % Vertical Flip because surf() invert the y-axis
     surf(I, 'EdgeColor', 'none', 'FaceColor', 'interp');
     view(2);
     
@@ -183,3 +185,9 @@ end
 % Main title
 sgtitle([title_str, ' | Multiple Samples'], 'FontSize', 16, 'Interpreter', 'none');
 end
+
+
+
+
+
+
