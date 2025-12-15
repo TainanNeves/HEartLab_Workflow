@@ -333,16 +333,16 @@ clear; clc;
 
 
 %% Loading Data
-load(""); % Load Interpolated data
+load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_filtered.mat"); % Load Interpolated data
 
 
 %% DF Calculation - Electrical
 % Parameters
 Fsampling = 4000;
-freq_up = 20;
+freq_up = 10;
 freq_down = 0.5;
 in_sample = 2*4000;
-end_sample = 4*4000;
+end_sample = 6*4000;
 
 % Loading Data
 cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
@@ -365,7 +365,7 @@ DF_values.fstep = fstep;
 
 %% Spectrum of multiple electrodes - Electrical
 % Select which case to analyze
-current_case = 'TANK'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
+current_case = 'MEA1'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
 Data = InterpSignal.Sync.(current_case);
 Background = squeeze(Data(:,:,2000));
 
@@ -463,7 +463,7 @@ end
 
 %% In case of need to manual corrections
 % Apply corrections to specific case BEFORE CL calculation
-case_to_correct = 'MEA1'; % Change as needed
+case_to_correct = 'TANK'; % Change as needed
 DF_E = DF_values.(case_to_correct).MFFTi;
 
 % Substitute specific value in DF
@@ -494,7 +494,7 @@ for i = 1:length(cases)
         pbaspect([2 1 1]); % 2:1 aspect ratio
     else
         % Square for MEAs
-        J = imrotate(DF_E, 90);
+        J = imrotate(DF_E, 0); % no need to rotate the image
         imagesc(J);
         axis equal;
     end
@@ -530,7 +530,7 @@ end
 
 %% CL Map - Electrical
 % Create CL maps for all cases using CL_values
-cl_lim = [0 300]; % Typical CL range in ms
+cl_lim = [200 400]; % Typical CL range in ms
 C_cl = jet(256);
 C_cl(1,1:3) = [1 1 1]; % White for background
 
@@ -634,7 +634,7 @@ end
 %% Electrical Organization Index - OI
 % Calculate OI for each case
 OI_values = struct();
-dfh_threshold_area = 0.6;
+dfh_threshold_area = 0.3;
 f_mode = 2;
 debug = 1;
 
@@ -817,3 +817,111 @@ disp('=== ELECTRICAL ANALYSIS COMPLETE ===');
 disp('All results have been saved to:');
 disp('- E_DF_CL_OI_Analysis.mat (MATLAB workspace)');
 disp('- Electrical_Analysis_Results_*.xlsx (Excel tables)');
+
+
+%%
+%%
+%%
+%%
+%%
+%% Statistical BoxPlots
+clear; clc;
+CAM1 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM1.mat");
+CAM2 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM2.mat");
+CAM3 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM3.mat");
+EL = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\E_DF_CL_OI.mat");
+
+
+% --- DEFINE SOURCES AND PARAMETERS ---
+optical_sources = {'CAM1', 'CAM2', 'CAM3'};
+electrical_sources = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
+% Dominant Frequency (DF) Data Consolidation
+DF_data_cells = {};
+DF_source_labels = {};
+
+
+% Load Optical DF Data
+for i = 1:length(optical_sources)
+    source = optical_sources{i};
+    data_matrix = eval([source, '.DF_O']);
+    DF_data_cells = [DF_data_cells, {data_matrix(:)}]; % Reshape and store
+    DF_source_labels = [DF_source_labels, {[source, ' (Opt)']}];
+end
+% Load Electrical DF Data
+for i = 1:length(electrical_sources)
+    source = electrical_sources{i};
+    data_matrix = EL.DF_values.(source).MFFTi;
+    DF_data_cells = [DF_data_cells, {data_matrix(:)}];
+    DF_source_labels = [DF_source_labels, {[source, ' (Elec)']}];
+end
+
+
+% Organization Index (OI) Data Consolidation
+OI_data_cells = {};
+OI_source_labels = {};
+% Load Optical OI Data
+for i = 1:length(optical_sources)
+    source = optical_sources{i};
+    data_matrix = eval([source, '.OI']);
+    OI_data_cells = [OI_data_cells, {data_matrix(:)}];
+    OI_source_labels = [OI_source_labels, {[source, ' (Opt)']}];
+end
+% Load Electrical OI Data
+for i = 1:length(electrical_sources)
+    source = electrical_sources{i};
+    data_matrix = EL.OI_values.(source);
+    OI_data_cells = [OI_data_cells, {data_matrix(:)}];
+    OI_source_labels = [OI_source_labels, {[source, ' (Elec)']}];
+end
+
+
+% --- Box Plot Generation ---
+% Combine all individual data vectors into one long vector and a grouping vector
+DF_grouping = cellfun(@(x,y) repmat({y}, length(x), 1), DF_data_cells, DF_source_labels, 'UniformOutput', false);
+DF_data_combined = vertcat(DF_data_cells{:});
+DF_grouping_combined = vertcat(DF_grouping{:});
+
+OI_grouping = cellfun(@(x,y) repmat({y}, length(x), 1), OI_data_cells, OI_source_labels, 'UniformOutput', false);
+OI_data_combined = vertcat(OI_data_cells{:});
+OI_grouping_combined = vertcat(OI_grouping{:});
+
+% --- PLOT 1: Dominant Frequency (DF) ---
+figure('Name', 'Box Plot: Dominant Frequency', 'Position', [100 100 1000 600]);
+boxplot(DF_data_combined, DF_grouping_combined);
+
+title('Dominant Frequency (Hz) Distribution by Source', 'FontSize', 16);
+xlabel('Measurement Source', 'FontSize', 12);
+ylabel('Dominant Frequency (Hz)', 'FontSize', 12);
+grid on;
+
+
+% --- PLOT 2: Organization Index (OI) ---
+figure('Name', 'Box Plot: Organization Index', 'Position', [100 100 1000 600]);
+boxplot(OI_data_combined, OI_grouping_combined);
+
+title('Organization Index Distribution by Source', 'FontSize', 16);
+xlabel('Measurement Source', 'FontSize', 12);
+ylabel('Organization Index', 'FontSize', 12);
+grid on;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
