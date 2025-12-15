@@ -3,13 +3,13 @@ clear; clc;
 
 
 %% Loading Preview Data
-% load(""); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
 
 
 %% Loading Parameters Select Time Windows
 Fsampling = 4000;
-Data_O = D_SYNC.CAM2;
-ROI_O = D_SYNC.ROI.ROI_2;
+Data_O = D_SYNC.CAM3;
+ROI_O = D_SYNC.ROI.ROI_3;
 optical_space_scale = 0.33; % mm per pixel
 % Preview Signal
 Background = squeeze(Data_O(:,:,2000));
@@ -17,8 +17,8 @@ pick_up_a_trace(Background, Data_O,1);
 
 
 %% Time Selection & Preview - Optical
-optical_lim1 = 10719;
-optical_lim2 = 11343;
+optical_lim1 = 7790;
+optical_lim2 = 8247;
 Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
 Background = squeeze(Data_O(:,:,optical_lim1));
 pick_up_a_trace(Background, Data_temp_O, 1);
@@ -27,7 +27,7 @@ pick_up_a_trace(Background, Data_temp_O, 1);
 %% LAT Calculation - Optical
 linear_fit_length = 15;
 PCL = 200;
-debug_LAT = 0;
+debug_LAT = 1;
 
 % Calculate LAT for each pixel
 LAT_O = zeros(size(Data_temp_O, 1), size(Data_temp_O, 2));
@@ -55,7 +55,7 @@ Results.LAT = LAT_O_filtered;
 
 
 %% LAT Map Plot - Optical
-levelStep = 50;
+levelStep = 20;
 Title = 'Optical - LAT';
 f1 = figure('color', 'white', 'Position', [40 40 600 600]);
 C = parula(256);
@@ -146,7 +146,7 @@ Results.LAT_stats = struct(...
 
 
 %% Specific ROI Plot with Min Subtraction - Optical
-levelStep = 25;
+levelStep = 10;
 % ROI selection
     % Same as the statistics
         roi_specific = roi_lat_O;
@@ -303,11 +303,11 @@ Results.LAT_O_filtered = LAT_O_filtered;
 Results.AvgSpeed_O_filtered = AvgSpeed_O_filtered;
 
 % Save Struct
-save('O_LAT_CV_CAM_results.mat', 'Results', '-v7.3');
+save('O_LAT_CV_CAM_.mat', 'Results', '-v7.3');
 
 disp(' ');
 disp('=== OPTICAL ANALYSIS COMPLETE ===');
-disp('All results have been saved to "O_LAT_CV_CAM.mat".');
+disp('All results have been saved to "O_LAT_CV_CAM_.mat".');
 
 
 %% 
@@ -320,7 +320,7 @@ clear; clc;
 
 
 %% Loading Data
-load(""); % Load Interpolated data
+load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_filtered.mat"); % Load Interpolated data
 
 
 %% Configuring
@@ -341,16 +341,51 @@ pick_up_a_trace(Background, data_temp,1);
 clear data_temp case_name Background;
 
 
+%% Defining Sample Limits
+sample_limits = struct();
+% MEA1
+sample_limits.MEA1.lim1 = 22032; 
+sample_limits.MEA1.lim2 = 22541; 
+% MEA2
+sample_limits.MEA2.lim1 = round(2.1*4000); 
+sample_limits.MEA2.lim2 = round(2.5*4000); 
+% MEA3
+sample_limits.MEA3.lim1 = round(2*4000);
+sample_limits.MEA3.lim2 = round(2.6*4000);
+% TANK
+sample_limits.TANK.lim1 = round(2*4000); 
+sample_limits.TANK.lim2 = round(2.6*4000); 
+
+
 %% LAT Calculation - Electrical
-electrical_lim1 = 36534;
-electrical_lim2 = 37252;
-debug_LAT = 0; % Use 0, 1 or 2
+debug_LAT = 1; % Use 0, 1 or 2
 LAT_values = struct();
 
 for i = 1:length(cases)
     case_name = cases{i};
+    % --- DYNAMICALLY DETERMINE LIMITS ---
+    electrical_lim1 = sample_limits.(case_name).lim1;
+    electrical_lim2 = sample_limits.(case_name).lim2;
+    
+    % Optional: Boundary and Order Checks
+    total_samples = size(Data_E_Structure.(case_name), 3);
+    electrical_lim1 = max(1, min(electrical_lim1, total_samples));
+    electrical_lim2 = min(total_samples, max(electrical_lim2, 1));
+    % Ensure lim1 is before lim2
+    if electrical_lim1 > electrical_lim2
+        temp = electrical_lim1;
+        electrical_lim1 = electrical_lim2;
+        electrical_lim2 = temp;
+    end
+    
+    fprintf('  -> Processing %s with window: Samples [%d, %d] | Time [%.3f, %.3f]s.\n', case_name, electrical_lim1, electrical_lim2, electrical_lim1/Fsampling, electrical_lim2/Fsampling);
+    % ------------------------------------
+    
     Data_current_E = Data_E_Structure.(case_name);
-    Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
+    Data_temp_E = Data_current_E(:,:,:);
+    WinStartIdx = electrical_lim1;
+    WinEndIdx = electrical_lim2;
+    
     % Calculate LAT map (pixel by pixel)
     LAT_map = zeros(size(Data_temp_E, 1), size(Data_temp_E, 2));
     for x = 1:size(Data_temp_E, 1) % X-coordinate
@@ -358,8 +393,10 @@ for i = 1:length(cases)
             signal = squeeze(Data_temp_E(x,y,:));
             if max(signal) ~= 0
                 signal = signal'; 
-                LAT_map(x,y) = find_LAT_diff(signal, ...
+                LAT_map(x,y) = find_LAT_diff_Tainan(signal, ...
                                     Fsampling, ...
+                                    WinStartIdx, ...
+                                    WinEndIdx, ...
                                     case_name, x, y, ...
                                     debug_LAT);
             end
@@ -386,11 +423,30 @@ end
 %% LAT Calculation COM - Electrical
 debug_COM = 0; % 1 for debugging plots 
 LAT_values_COM = struct();
-
 for i = 1:length(cases)
     case_name = cases{i};
+    
+    % Use the specific sample limits defined in the structure
+    electrical_lim1 = sample_limits.(case_name).lim1;
+    electrical_lim2 = sample_limits.(case_name).lim2;
+    
+    % Optional: Boundary and Order Checks
+    total_samples = size(Data_E_Structure.(case_name), 3);
+    electrical_lim1 = max(1, min(electrical_lim1, total_samples));
+    electrical_lim2 = min(total_samples, max(electrical_lim2, 1));
+    % Ensure lim1 is before lim2
+    if electrical_lim1 > electrical_lim2
+        temp = electrical_lim1;
+        electrical_lim1 = electrical_lim2;
+        electrical_lim2 = temp;
+    end
+    
+    fprintf('  -> Processing %s (COM Method) with window: Samples [%d, %d] | Time [%.3f, %.3f]s.\n', case_name, electrical_lim1, electrical_lim2, electrical_lim1/Fsampling, electrical_lim2/Fsampling);
+    % -------------------------------------------------------------------
+    
     Data_current_E = Data_E_Structure.(case_name);
     Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
+    
     % Get the size of the segment
     [num_x, num_y, segment_length] = size(Data_temp_E);
     % Inicialize matrix
@@ -573,7 +629,7 @@ for i = 1:length(cases)
     figure('color', 'white');
     if strcmp(case_name, 'TANK')
         J = LAT_matrix;
-        imagesc(J);
+        imagesc(J, 'Interpolation', 'bilinear');
         pbaspect([2 1 1]); % 2:1 aspect ratio
     else
         J = LAT_matrix;
