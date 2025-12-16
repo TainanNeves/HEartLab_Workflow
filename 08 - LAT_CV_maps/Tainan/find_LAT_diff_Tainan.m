@@ -31,8 +31,8 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
     % --- Stage A: Filtering and Differentiation on ContextData (Large Window) ---
     
     % 1. Zero-Phase Butterworth Filter (Standard for EGM signals)
-    f_low = 1;      % High-pass cutoff (1 Hz, removes baseline drift)
-    f_high = 40;   % Low-pass cutoff (50 Hz, removes high-freq noise)
+    f_low = 1;      % High-pass cutoff
+    f_high = 100;   % Low-pass cutoff
     order = 3;      
     Wn = [f_low f_high] / (Fsampling/2); 
 

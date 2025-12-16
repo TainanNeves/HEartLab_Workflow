@@ -334,7 +334,7 @@ Fsampling = 4000;
 
 %% Selecting Time Window
 % Preview Signal
-case_name = 'TANK';
+case_name = 'MEA1';
 data_temp = Data_E_Structure.(case_name);
 Background = squeeze(data_temp(:,:,2000));
 pick_up_a_trace(Background, data_temp,1);
@@ -344,21 +344,21 @@ clear data_temp case_name Background;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = 13276; 
-sample_limits.MEA1.lim2 = 13490; 
+sample_limits.MEA1.lim1 = round(2.30407*4000); 
+sample_limits.MEA1.lim2 = round(2.37507*4000); 
 % MEA2
-sample_limits.MEA2.lim1 = 13468; 
-sample_limits.MEA2.lim2 = 13647; 
+sample_limits.MEA2.lim1 = round(2.34382*4000); 
+sample_limits.MEA2.lim2 = round(2.38832*4000); 
 % MEA3
-sample_limits.MEA3.lim1 = 13748;
-sample_limits.MEA3.lim2 = 13936;
+sample_limits.MEA3.lim1 = round(2.39882*4000);
+sample_limits.MEA3.lim2 = round(2.44858*4000);
 % TANK
-sample_limits.TANK.lim1 = 13729;
-sample_limits.TANK.lim2 = 13933;
+sample_limits.TANK.lim1 = round(2.39707*4000);
+sample_limits.TANK.lim2 = round(2.43233*4000);
 
 
 %% Fignal Plot in the selected limits
-case_name = 'MEA1';
+case_name = 'TANK';
 data_temp = Data_E_Structure.(case_name)(:,:, sample_limits.(case_name).lim1:sample_limits.(case_name).lim2);
 Background = squeeze(data_temp(:,:,1));
 pick_up_a_trace(Background, data_temp,1);
@@ -650,7 +650,7 @@ for i = 1:length(cases)
     fig.Name = ['LAT Map - ' case_name];
     
     % INTERPOLATION: Upsample the matrix for smoother visualization
-    interpolation_factor = 10; % Increase this for smoother images
+    interpolation_factor = 5; % Increase this for smoother images
     [rows, cols] = size(LAT_matrix_final);
     % Create interpolation grid
     [X, Y] = meshgrid(1:cols, 1:rows);
@@ -741,7 +741,7 @@ if length(cases) <= 6
         subplot(nrows, ncols, i);
         
         % INTERPOLATION for comparison figure too
-        interpolation_factor = 10;
+        interpolation_factor = 3;
         [rows, cols] = size(LAT_matrix_final);
         % Create interpolation grid
         [X, Y] = meshgrid(1:cols, 1:rows);
@@ -1086,7 +1086,7 @@ save_vars.Metadata = struct();
 save_vars.Metadata.analysis_date = datestr(now, 'yyyy-mm-dd HH:MM:SS');
 
 % 4. DEFINE FILENAME
-filename = sprintf('E_LAT_CV.mat', timestamp);
+filename = sprintf('E_LAT_CV.mat');
 
 % 5. SAVE ALL VARIABLES
 save(filename, 'save_vars', '-v7.3'); % Use -v7.3 for large files
