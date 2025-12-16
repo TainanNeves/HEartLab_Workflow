@@ -334,7 +334,7 @@ Fsampling = 4000;
 
 %% Selecting Time Window
 % Preview Signal
-case_name = 'MEA2';
+case_name = 'TANK';
 data_temp = Data_E_Structure.(case_name);
 Background = squeeze(data_temp(:,:,2000));
 pick_up_a_trace(Background, data_temp,1);
@@ -344,21 +344,29 @@ clear data_temp case_name Background;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = round(2.29482*4000); 
-sample_limits.MEA1.lim2 = round(2.35107*4000); 
+sample_limits.MEA1.lim1 = 13276; 
+sample_limits.MEA1.lim2 = 13490; 
 % MEA2
-sample_limits.MEA2.lim1 = round(2.34407*4000); 
-sample_limits.MEA2.lim2 = round(2.38507*4000); 
+sample_limits.MEA2.lim1 = 13468; 
+sample_limits.MEA2.lim2 = 13647; 
 % MEA3
-sample_limits.MEA3.lim1 = round(2.39807*4000);
-sample_limits.MEA3.lim2 = round(2.46983*4000);
+sample_limits.MEA3.lim1 = 13748;
+sample_limits.MEA3.lim2 = 13936;
 % TANK
-sample_limits.TANK.lim1 = round(2.39807*4000);
-sample_limits.TANK.lim2 = round(2.46983*4000);
+sample_limits.TANK.lim1 = 13729;
+sample_limits.TANK.lim2 = 13933;
+
+
+%% Fignal Plot in the selected limits
+case_name = 'MEA1';
+data_temp = Data_E_Structure.(case_name)(:,:, sample_limits.(case_name).lim1:sample_limits.(case_name).lim2);
+Background = squeeze(data_temp(:,:,1));
+pick_up_a_trace(Background, data_temp,1);
+clear data_temp case_name Background;
 
 
 %% LAT Calculation - Electrical
-debug_LAT = 0; % Use 0, 1 or 2
+debug_LAT = 1; % Use 0, 1 or 2
 LAT_values = struct();
 
 for i = 1:length(cases)
@@ -421,7 +429,7 @@ end
 
 
 %% LAT Calculation COM - Electrical
-debug_COM = 0; % 1 for debugging plots 
+debug_COM = 1; % 1 for debugging plots 
 LAT_values_COM = struct();
 for i = 1:length(cases)
     case_name = cases{i};
@@ -478,7 +486,8 @@ end
 
 
 %% LAT MAP PLOTTING - Electrical
-C = parula(256); C(1,1:3) = [1 1 1]; % White for background (0 LAT)
+C = parula(256); 
+% C(1,1:3) = [1 1 1]; % White for background (0 LAT)
 for i = 1:length(cases)
     case_name = cases{i};
     LAT_matrix_DIFF = LAT_values.(case_name).LAT_matrix;
