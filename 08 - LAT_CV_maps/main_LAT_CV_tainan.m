@@ -324,7 +324,7 @@ load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_fi
 
 
 %% Configuring
-Data_E_Structure = InterpSignal.Data; 
+Data_E_Structure = InterpSignal.Sync; 
 electrical_space_scale = 2;  % mm per pixel (MEA)
 tank_space_scale = 3;       % mm per pixel (TANK)
 cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
@@ -334,7 +334,7 @@ Fsampling = 4000;
 
 %% Selecting Time Window
 % Preview Signal
-case_name = 'MEA1';
+case_name = 'MEA2';
 data_temp = Data_E_Structure.(case_name);
 Background = squeeze(data_temp(:,:,2000));
 pick_up_a_trace(Background, data_temp,1);
@@ -344,21 +344,21 @@ clear data_temp case_name Background;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = 22032; 
-sample_limits.MEA1.lim2 = 22541; 
+sample_limits.MEA1.lim1 = round(2.29482*4000); 
+sample_limits.MEA1.lim2 = round(2.35107*4000); 
 % MEA2
-sample_limits.MEA2.lim1 = round(2.1*4000); 
-sample_limits.MEA2.lim2 = round(2.5*4000); 
+sample_limits.MEA2.lim1 = round(2.34407*4000); 
+sample_limits.MEA2.lim2 = round(2.38507*4000); 
 % MEA3
-sample_limits.MEA3.lim1 = round(2*4000);
-sample_limits.MEA3.lim2 = round(2.6*4000);
+sample_limits.MEA3.lim1 = round(2.39807*4000);
+sample_limits.MEA3.lim2 = round(2.46983*4000);
 % TANK
-sample_limits.TANK.lim1 = round(2*4000); 
-sample_limits.TANK.lim2 = round(2.6*4000); 
+sample_limits.TANK.lim1 = round(2.39807*4000);
+sample_limits.TANK.lim2 = round(2.46983*4000);
 
 
 %% LAT Calculation - Electrical
-debug_LAT = 1; % Use 0, 1 or 2
+debug_LAT = 2; % Use 0, 1 or 2
 LAT_values = struct();
 
 for i = 1:length(cases)
