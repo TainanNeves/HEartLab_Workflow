@@ -5,7 +5,7 @@ clear; clc;
 
 
 %% Loading Data
-load("F:\HEartLab\experiment_analyses\exp28_analysis\data_processed\data_filtered_sync_E28_F01_R09.mat");
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat");
 
 
 %% Creating leads
@@ -28,7 +28,7 @@ V6 = data(144, :);
 
 
 %% Saving ECG leads
-filename = 'E32F02R01';
+filename = 'E32F02R08';
 variables = {'aVF', 'aVL', 'aVR', 'D1', 'D2', 'D3', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'Fs'};
 save([filename, ' - ECG leads.mat'], variables{:});
 clear filename variables;
@@ -83,8 +83,9 @@ ecg_signal = -D2;  % Your ECG signal lead
 t = (0:length(ecg_signal)-1) / Fs;
 
 % Plot the ECG signal for visual inspection
-figure();
-plot(t, ecg_signal, 'b'); hold on;
+figure(100);
+plot(t, ecg_signal, 'b'); 
+hold on;
 title('ECG Signal');
 xlabel('Time (s)');
 ylabel('Amplitude');
@@ -215,7 +216,7 @@ grid on;
 
 
 %% Save aligned qrs
-filename = 'E32F02R01';
+filename = 'E32F02R08';
 variables = {'Fs', 'qrs_locs', 'qrs_matrix'};
 save([filename, ' - aligned peaks.mat'], variables{:});
 clear filename variables;

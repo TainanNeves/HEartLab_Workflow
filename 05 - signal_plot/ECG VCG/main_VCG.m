@@ -5,7 +5,7 @@ clear; clc;
 
 
 %% Loading Data
-load("F:\HEartLab\experiment_analyses\exp28_analysis\data_processed\data_filtered_sync_E28_F01_R09.mat");
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat");
 
 
 %% Organizing data
@@ -86,7 +86,7 @@ linkaxes(findobj(gcf, 'Type', 'axes'), 'x');
 
 
 %% Save Variables
-save('E32F02R01 - vcg_data.mat', 'vcg', 'speed');
+save('E32F02R08 - vcg_data.mat', 'vcg', 'speed');
 
 
 %%

@@ -5,8 +5,8 @@ clear; clc;
 %% Loading data
 
 % Loading variables
-load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\data_filtered_sync_E14_F3_R4.mat'); % Synchronized data
-load('C:\Users\HEartLab\Downloads\Pasta de Trabalho\Subpasta 2 - Desenvolvimento\Dados Aprendizagem\1 - Analisados\InterpolatedSignalsE18_F02_R02_filtered'); % Interpolate data
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Synchronized data
+load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Interpolate data
 
 %% Optical signals plot
 % Define a Camera to use
@@ -19,7 +19,7 @@ p = [x(length(x)), y(length(y))];
 Fsampling = 4000;
 
 % Title
-str_title = ['Optical Signal - Ventricle'];
+str_title = ['Optical Signal - Right Atria'];
 
 % Full optical time plot
 % Create a time vector
@@ -54,7 +54,7 @@ title(str_title);
 
 %% Electric signal plot
 % Define electrode to use
-el = [22];
+el = [4 2 6 11 14 15];
 Data = D_SYNC.EL(el,:); 
 Fsampling = 4000;
 % Title for the plots
@@ -385,8 +385,8 @@ plotar_pontos_mix_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71
 
 %% All plots (TANK)
 Fsampling = 4000;
-start_time = 2.27; % s
-end_time = 2.66;   % s
+start_time = 2.25; % s
+end_time = 2.85;   % s
 
 % Ensure Data_E is loaded (assuming D_SYNC is available from previous sections)
 Data_E = D_SYNC.EL;
