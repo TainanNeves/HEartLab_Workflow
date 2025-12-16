@@ -358,7 +358,7 @@ sample_limits.TANK.lim2 = round(2.46983*4000);
 
 
 %% LAT Calculation - Electrical
-debug_LAT = 2; % Use 0, 1 or 2
+debug_LAT = 0; % Use 0, 1 or 2
 LAT_values = struct();
 
 for i = 1:length(cases)
@@ -383,8 +383,8 @@ for i = 1:length(cases)
     
     Data_current_E = Data_E_Structure.(case_name);
     Data_temp_E = Data_current_E(:,:,:);
-    WinStartIdx = electrical_lim1;
-    WinEndIdx = electrical_lim2;
+    WinStartIdx = electrical_lim1 + 200;
+    WinEndIdx = electrical_lim2 + 100;
     
     % Calculate LAT map (pixel by pixel)
     LAT_map = zeros(size(Data_temp_E, 1), size(Data_temp_E, 2));
@@ -551,7 +551,7 @@ for i = 1:length(cases)
     if isfield(MethodSelection, case_name)
         method = MethodSelection.(case_name);
     else
-        method = 'DIFF'; % Default to DIFF if not specified
+        method = 'DIFF'; % Default to DIFF
     end
     
     % Select the matrix based on the method
@@ -619,8 +619,156 @@ if ~isempty(min_LAT) && ~isnan(min_LAT)
 end
 
 
+%% FINAL LAT MAPS - Electrical
+C = parula(256); 
+% C(1,1:3) = [1 1 1]; % White for background
+
+for i = 1:length(cases)
+    case_name = cases{i};
+    LAT_matrix_final = LAT_values_FINAL.(case_name).LAT_matrix;
+    
+    % Determine which method was used
+    if isfield(MethodSelection, case_name)
+        method = MethodSelection.(case_name);
+        method_text = method;
+    else
+        method = 'DIFF';
+        method_text = 'DIFF (default)';
+    end
+    
+    % Create figure
+    fig = figure('color', 'white', 'Position', [50 + i*30 50 + i*30 800 600]);
+    fig.Name = ['LAT Map - ' case_name];
+    
+    % INTERPOLATION: Upsample the matrix for smoother visualization
+    interpolation_factor = 10; % Increase this for smoother images
+    [rows, cols] = size(LAT_matrix_final);
+    % Create interpolation grid
+    [X, Y] = meshgrid(1:cols, 1:rows);
+    [Xq, Yq] = meshgrid(linspace(1, cols, cols*interpolation_factor), ...
+                       linspace(1, rows, rows*interpolation_factor));
+    % Interpolate the data
+    LAT_interp = interp2(X, Y, LAT_matrix_final, Xq, Yq, 'cubic');
+    
+    % Handle different case geometries
+    if strcmp(case_name, 'TANK')
+        J = LAT_interp;
+        imagesc(J);
+        pbaspect([2 1 1]);
+    else
+        J = imrotate(LAT_interp, 90);
+        imagesc(J);
+        axis equal;
+    end
+    
+    % Apply colormap
+    colormap(C);
+    caxis([0 max(LAT_matrix_final(:))]); % Use original max for axis limits
+    axis off;
+    
+    % Add colorbar
+    hBar = colorbar('eastoutside');
+    ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 12);
+    
+    % Add main title
+    title_str = sprintf('%s - LAT Map\n[Method: %s] (Interpolated)', case_name, method_text);
+    title(title_str, 'FontSize', 16, 'FontWeight', 'bold');
+    
+    % Add LAT statistics as text annotation
+    valid_LATS = LAT_matrix_final(LAT_matrix_final ~= 0);
+    if ~isempty(valid_LATS)
+        stats_str = sprintf('Min: %.1f ms\nMax: %.1f ms\nMean: %.1f ms\nStd: %.1f ms', ...
+            min(valid_LATS), max(valid_LATS), mean(valid_LATS), std(valid_LATS));
+        
+        % Add text box with statistics
+        annotation('textbox', [0.02, 0.03, 0.2, 0.15], ...
+            'String', stats_str, ...
+            'FontSize', 10, ...
+            'BackgroundColor', 'white', ...
+            'EdgeColor', 'black', ...
+            'Margin', 5);
+    end    
+    fprintf('Created final LAT map for %s using %s method (interpolated)\n', case_name, method_text);
+end
+
+
+%% COMPARISON FIGURE WITH ALL CASES
+if length(cases) <= 6
+    fig_all = figure('color', 'white', 'Position', [100 100 1400 800]);
+    fig_all.Name = 'LAT Maps - Comparison';
+    
+    % Determine subplot arrangement
+    if length(cases) <= 4
+        nrows = 2; ncols = 2;
+    else
+        nrows = 2; ncols = 3;
+    end
+    
+    % Find global max for consistent color scaling
+    all_LATS_global = [];
+    for i = 1:length(cases)
+        case_name = cases{i};
+        LAT_matrix_final = LAT_values_FINAL.(case_name).LAT_matrix;
+        valid_LATS = LAT_matrix_final(LAT_matrix_final ~= 0);
+        all_LATS_global = [all_LATS_global; valid_LATS];
+    end
+    if ~isempty(all_LATS_global)
+        max_LAT_global = max(all_LATS_global);
+    else
+        max_LAT_global = 1;
+    end
+    
+    % Plot all cases in subplots
+    for i = 1:length(cases)
+        case_name = cases{i};
+        LAT_matrix_final = LAT_values_FINAL.(case_name).LAT_matrix;
+        
+        if isfield(MethodSelection, case_name)
+            method = MethodSelection.(case_name);
+        else
+            method = 'DIFF';
+        end
+        
+        subplot(nrows, ncols, i);
+        
+        % INTERPOLATION for comparison figure too
+        interpolation_factor = 10;
+        [rows, cols] = size(LAT_matrix_final);
+        % Create interpolation grid
+        [X, Y] = meshgrid(1:cols, 1:rows);
+        [Xq, Yq] = meshgrid(linspace(1, cols, cols*interpolation_factor), ...
+                           linspace(1, rows, rows*interpolation_factor));
+        % Interpolate the data
+        LAT_interp = interp2(X, Y, LAT_matrix_final, Xq, Yq, 'cubic');
+        if strcmp(case_name, 'TANK')
+            J = LAT_interp;
+            imagesc(J);
+            pbaspect([2 1 1]);
+        else
+            J = imrotate(LAT_interp, 90);
+            imagesc(J);
+            axis equal;
+        end
+        
+        colormap(gca, C);
+        caxis([0 max_LAT_global]);
+        axis off;
+        
+        title_str = sprintf('%s\n%s', case_name, method);
+        title(title_str, 'FontSize', 12, 'FontWeight', 'bold');
+    end
+    
+    % Add overall colorbar
+    hBar = colorbar('Position', [0.93 0.15 0.02 0.7]);
+    ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 12);
+    
+    sgtitle('LAT Maps Comparison (Interpolated)', 'FontSize', 16, 'FontWeight', 'bold');
+end
+
+
 %% LAT Statistics - Electrical (with ROI Selection)
-C = parula(256); C(1,1:3) = [1 1 1]; 
+C = parula(256); 
+% C(1,1:3) = [1 1 1]; White Background
 for i = 1:length(cases)
     case_name = cases{i};
     LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
@@ -803,55 +951,141 @@ for i = 1:length(cases)
 end
 
 
-%% RESULTS CONSOLIDATION AND STORAGE AND SAVING
-StatsTable = table();
+%% FINAL SAVING OF ALL RESULTS
+% Save ALL essential variables for complete reproducibility
+
+% 1. CORE RESULTS STRUCTURES
+save_vars = struct();
+
+% 1.1 Original Data and Configuration
+save_vars.Data_E_Structure = Data_E_Structure;
+save_vars.Fsampling = Fsampling;
+save_vars.cases = cases;
+save_vars.electrical_space_scale = electrical_space_scale;
+save_vars.tank_space_scale = tank_space_scale;
+
+% 1.2 Analysis Windows
+save_vars.sample_limits = sample_limits;
+
+% 1.3 Method Selection
+save_vars.MethodSelection = MethodSelection;
+
+% 1.4 All LAT Results (Raw, COM, Final)
+save_vars.LAT_values = LAT_values;          % Derivative method results
+save_vars.LAT_values_COM = LAT_values_COM;  % COM method results  
+save_vars.LAT_values_FINAL = LAT_values_FINAL; % Consolidated final results
+
+% 1.5 CV Results (already in LAT_values_FINAL, but keep separate for clarity)
+if isfield(LAT_values_FINAL.(cases{1}), 'AvgSpeed_E_matrix')
+    save_vars.CV_results = struct();
+    for i = 1:length(cases)
+        case_name = cases{i};
+        save_vars.CV_results.(case_name).CV_matrix = LAT_values_FINAL.(case_name).AvgSpeed_E_matrix;
+        if isfield(LAT_values_FINAL.(case_name), 'CV_stats')
+            save_vars.CV_results.(case_name).CV_stats = LAT_values_FINAL.(case_name).CV_stats;
+        end
+        save_vars.CV_results.(case_name).SpaceScale = LAT_values_FINAL.(case_name).SpaceScale_mm_px;
+        save_vars.CV_results.(case_name).CV_Radius = LAT_values_FINAL.(case_name).CV_Radius;
+    end
+end
+
+% 1.6 Statistics Table - CREATE IF IT DOESN'T EXIST
+if ~exist('StatsTable', 'var')
+    % Create the statistics table from LAT_values_FINAL
+    StatsTable = table();
+    for i = 1:length(cases)
+        case_name = cases{i};
+        
+        % Get LAT statistics
+        if isfield(LAT_values_FINAL.(case_name), 'LAT_stats')
+            lat_stats = LAT_values_FINAL.(case_name).LAT_stats;
+            lat_mean = lat_stats.mean;
+            lat_std = lat_stats.std;
+            lat_max = lat_stats.max;
+            lat_num = lat_stats.num_points;
+        else
+            % Calculate from matrix if stats don't exist
+            LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
+            valid_LATS = LAT_matrix(LAT_matrix ~= 0);
+            if ~isempty(valid_LATS)
+                lat_mean = mean(valid_LATS);
+                lat_std = std(valid_LATS);
+                lat_max = max(valid_LATS);
+                lat_num = numel(valid_LATS);
+            else
+                lat_mean = NaN;
+                lat_std = NaN;
+                lat_max = NaN;
+                lat_num = 0;
+            end
+        end
+        
+        % Get CV statistics
+        if isfield(LAT_values_FINAL.(case_name), 'CV_stats')
+            cv_stats = LAT_values_FINAL.(case_name).CV_stats;
+            cv_mean = cv_stats.mean;
+            cv_std = cv_stats.std;
+            cv_max = cv_stats.max;
+            cv_num = cv_stats.num_points;
+        else
+            % Set to NaN if CV stats don't exist
+            cv_mean = NaN;
+            cv_std = NaN;
+            cv_max = NaN;
+            cv_num = 0;
+        end
+        
+        % Create table row
+        NewRow = table(...
+            {case_name}, ...
+            lat_mean, lat_std, lat_max, lat_num, ...
+            cv_mean, cv_std, cv_max, cv_num, ...
+            'VariableNames', {'Case', 'LAT_Mean_ms', 'LAT_STD_ms', 'LAT_Max_ms', 'LAT_N_Pixels', ...
+                             'CV_Mean_cms', 'CV_STD_cms', 'CV_Max_cms', 'CV_N_Points'});
+        
+        StatsTable = [StatsTable; NewRow];
+    end
+    fprintf('Created StatsTable from LAT_values_FINAL data.\n');
+end
+save_vars.StatsTable = StatsTable;
+
+% 1.7 ROI Masks (if they exist)
+save_vars.roi_masks = struct();
 for i = 1:length(cases)
     case_name = cases{i};
-    % Retrieve LAT and CV statistics from the FINAL structure
-    lat_stats = LAT_values_FINAL.(case_name).LAT_stats;
-    cv_stats = LAT_values_FINAL.(case_name).CV_stats;
-    % Check if both sets of statistics exist before adding the row
-    if isempty(lat_stats) || isempty(cv_stats)
-        fprintf('Warning: Incomplete stats for %s. Skipping table entry.\n', case_name);
-        continue;
+    if isfield(LAT_values_FINAL.(case_name), 'roi_mask')
+        save_vars.roi_masks.(case_name) = LAT_values_FINAL.(case_name).roi_mask;
     end
-    % Create a temporary table row with all statistics
-    NewRow = table(...
-        {case_name}, ...
-        lat_stats.mean, lat_stats.std, lat_stats.max, lat_stats.num_points, ...
-        cv_stats.mean, cv_stats.std, cv_stats.max, cv_stats.num_points, ...
-        'VariableNames', {'Case', 'LAT_Mean_ms', 'LAT_STD_ms', 'LAT_Max_ms', 'LAT_N_Pixels', ...
-                         'CV_Mean_cms', 'CV_STD_cms', 'CV_Max_cms', 'CV_N_Points'});
-                     
-    % Append the new row to the main table
-    StatsTable = [StatsTable; NewRow];
 end
-% Display the final table
-disp(' ');
-disp('--- Summary of Electrical LAT and CV Statistics (Based on FINAL Selection) ---');
-disp(StatsTable);
-% Create the master structure to hold all data from the current analysis
-AnalysisResults.Fsampling = Fsampling;
-% Store all electrical analysis results (maps, stats, masks, etc.)
-AnalysisResults.Electrical_Derivative = LAT_values; % Store original DIFF results
-AnalysisResults.Electrical_COM = LAT_values_COM; % Store COM results
-AnalysisResults.Electrical_FINAL = LAT_values_FINAL; % Store the consolidated results
 
-% Store the generated summary table
-AnalysisResults.SummaryTable = StatsTable;
-% Store configuration variables (assuming they are defined in your workspace)
-% Add these only if they exist in your workspace
-if exist('electrical_lim1', 'var') && exist('electrical_lim2', 'var')
-    AnalysisResults.AnalysisParams.electrical_lim1 = electrical_lim1;
-    AnalysisResults.AnalysisParams.electrical_lim2 = electrical_lim2;
-end
+% 2. ADD ANALYSIS PARAMETERS (important for reproducibility)
+save_vars.AnalysisParams = struct();
 if exist('SpaceScale', 'var')
-    AnalysisResults.AnalysisParams.SpaceScale = SpaceScale;
+    save_vars.AnalysisParams.SpaceScale = SpaceScale;
 end
-disp(' ');
-disp('All results are now packaged into the structure: AnalysisResults.');
-% Define the filename (You might want to make this dynamic, e.g., using a timestamp)
-filename = 'E_LAT_CV_results_FINAL.mat';
-% Save the main results structure to a .mat file
-save(filename, 'AnalysisResults');
-fprintf('\n✅ All data consolidated and saved to: %s\n', filename);
+% Add other parameters that exist in your workspace
+vars_to_check = {'debug_LAT', 'debug_COM'};
+for var_idx = 1:length(vars_to_check)
+    var_name = vars_to_check{var_idx};
+    if exist(var_name, 'var')
+        save_vars.AnalysisParams.(var_name) = eval(var_name);
+    end
+end
+
+% 3. ADD METADATA
+save_vars.Metadata = struct();
+save_vars.Metadata.analysis_date = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+
+% 4. DEFINE FILENAME
+filename = sprintf('E_LAT_CV.mat', timestamp);
+
+% 5. SAVE ALL VARIABLES
+save(filename, 'save_vars', '-v7.3'); % Use -v7.3 for large files
+fprintf('\n✅ COMPLETE ANALYSIS SAVED TO: %s\n', filename);
+
+% 6. EXPORT STATISTICS TO CSV
+if ~isempty(StatsTable)
+    csv_filename = sprintf('E_Statistics.csv');
+    writetable(StatsTable, csv_filename);
+    fprintf('✅ STATISTICS EXPORTED TO CSV: %s\n', csv_filename);
+end
