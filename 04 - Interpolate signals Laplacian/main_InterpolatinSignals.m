@@ -8,10 +8,93 @@ clear; clc;
 load(""); % Load the filtered electrical signals
 
 
-%% Laplacian Interpolation
+%% Configuring
 data = D_EL.Data;
 Fsampling = D_EL.Header.sample_rate;
 
+
+%% Check electrodes quality
+lim1 = 3*4000;
+lim2 = 5*4000;
+
+
+% Plot MEA1 (electrodes 1:16)
+figure('Name', 'MEA1 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 1:16
+    subplot(4, 4, i);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA1 (Electrodes 1-16)');
+
+% Plot MEA2 (electrodes 17:32)
+figure('Name', 'MEA2 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 17:32
+    subplot(4, 4, i-16);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA2 (Electrodes 17-32)');
+
+% Plot MEA3 (electrodes 81:96)
+figure('Name', 'MEA3 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 81:96
+    subplot(4, 4, i-80);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA3 (Electrodes 81-96)');
+
+% Plot TANK electrodes
+figure('Name', 'TANK Electrodes Quality Check', 'Position', [100, 100, 1400, 800]);
+tank_electrodes = [129:174, 177:190];
+num_tank_elec = length(tank_electrodes);
+num_rows = 6;
+num_cols = ceil(num_tank_elec / num_rows);
+
+for i = 1:num_tank_elec
+    subplot(num_rows, num_cols, i);
+    elec_num = tank_electrodes(i);
+    plot(data(elec_num, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', elec_num));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('TANK Electrodes');
+
+
+%% Substituting values
+% Define replacement map in format [target_electrode, source_electrode]
+Replace_Map = [4, 8;
+                82, 81;
+                86, 85;
+                91, 92;
+                94, 93;
+                130, 139;
+                131, 133;
+                135, 144;
+                136, 138;
+                145, 146;
+                154, 153;
+                157, 156;
+                163, 164;
+                165, 166;
+                180, 189;
+                182, 183];
+data(Replace_Map(:,1), :) = data(Replace_Map(:,2), :);
+
+
+%% Laplacian Interpolation
 interpolated = struct();
 for i = 1:4
     % interpolated_signals = electric_interp(data, i);
@@ -107,7 +190,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E32_F02_R25';
+FileName = 'E32_F02_R01_new';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;
@@ -127,17 +210,10 @@ InterpSignal.Sync.TANK = D_SYNC.case4;
 save(['InterpolatedSignals', FileName, '_filtered'], 'InterpSignal', '-v7.3');
 
 
-
-
-
-
-
-
-
-
 %% 
-%%
-%%
+%% Checking Interpolation Results
+clear; clc;
+
 %% Loading
 load(); % Optical Filtered
 load(); % Electrical Filtered

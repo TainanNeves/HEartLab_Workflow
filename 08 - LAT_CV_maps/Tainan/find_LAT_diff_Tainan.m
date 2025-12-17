@@ -29,19 +29,16 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
     end
     
     % --- Stage A: Filtering and Differentiation on ContextData (Large Window) ---
-    
     % 1. Zero-Phase Butterworth Filter (Standard for EGM signals)
     f_low = 1;      % High-pass cutoff
-    f_high = 100;   % Low-pass cutoff
+    f_high = 250;   % Low-pass cutoff
     order = 3;      
     Wn = [f_low f_high] / (Fsampling/2); 
-
     [b, a] = butter(order, Wn, 'bandpass');
     xs_filtered = filtfilt(b, a, Data); 
-    
     % 2. Savitzky-Golay Derivative (Robust parameters for large window)
-    windowLength = 15; 
-    polyOrder = 3; 
+    windowLength = 9; % 15
+    polyOrder = 3; % 3
     
     % FIX: Ensure windowLength is odd and less than ContextLength
     if mod(windowLength, 2) == 0
@@ -222,6 +219,7 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
         % Subplot 1: Full Signal Trace (Context Length)
         subplot(3,1,1);
         plot(xs_filtered);
+        xlim([WinStartIdx-(Fsampling/2) WinEndIdx+(Fsampling/2)]);
         hold on;
         % Plot the detected point
         plot(position_final, xs_filtered(position_final), 'o', 'markersize', 10, 'color', 'red');

@@ -3,7 +3,7 @@ clear; clc;
 
 
 %% Loading Preview Data
-load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
 
 
 %% Loading Parameters Select Time Windows
@@ -17,8 +17,8 @@ pick_up_a_trace(Background, Data_O,1);
 
 
 %% Time Selection & Preview - Optical
-optical_lim1 = 7790;
-optical_lim2 = 8247;
+optical_lim1 = 9642;
+optical_lim2 = 10177;
 Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
 Background = squeeze(Data_O(:,:,optical_lim1));
 pick_up_a_trace(Background, Data_temp_O, 1);
@@ -59,7 +59,7 @@ levelStep = 20;
 Title = 'Optical - LAT';
 f1 = figure('color', 'white', 'Position', [40 40 600 600]);
 C = parula(256);
-C(1,1:3) = [1 1 1]; % White for background
+% C(1,1:3) = [1 1 1]; % White for background
 C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
 J = imrotate(LAT_O_filtered, 90);
 contourf(flipud(J), levelStep);
@@ -88,9 +88,9 @@ ylabel('N of Pixels', 'FontSize', 12);
 grid on;
 
 % Configuring Parameters
-find_value = 70; 
-tolerancia = 1e-10;
-new_value = 70; % NaN to exclude
+find_value = 0.1; 
+tolerancia = 0.1;
+new_value = 0.5; % NaN to exclude
 
 % Substitute exactly value
 indices = find(abs(LAT_O_filtered - find_value) < tolerancia);
@@ -274,7 +274,7 @@ figure('Position', [100 100 1200 400]);
 % Subplot 1: LAT Histogram
 subplot(1,2,1);
 if ~isempty(nonzero_LAT_O)
-    histogram(nonzero_LAT_O, 20, 'FaceColor', 'blue', 'FaceAlpha', 0.7);
+    histogram(nonzero_LAT_O, 30, 'FaceColor', 'blue', 'FaceAlpha', 0.7);
     xlabel('Local Activation Time (ms)');
     ylabel('Count');
     title('Optical LAT Distribution');
@@ -320,7 +320,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_filtered.mat"); % Load Interpolated data
+load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Load Interpolated data
 
 
 %% Configuring
@@ -344,21 +344,21 @@ clear data_temp case_name Background;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = round(2.30407*4000); 
-sample_limits.MEA1.lim2 = round(2.37507*4000); 
+sample_limits.MEA1.lim1 = 10300; 
+sample_limits.MEA1.lim2 = 10850; 
 % MEA2
-sample_limits.MEA2.lim1 = round(2.34382*4000); 
-sample_limits.MEA2.lim2 = round(2.38832*4000); 
+sample_limits.MEA2.lim1 = 9200;
+sample_limits.MEA2.lim2 = 9600;
 % MEA3
-sample_limits.MEA3.lim1 = round(2.39882*4000);
-sample_limits.MEA3.lim2 = round(2.44858*4000);
+sample_limits.MEA3.lim1 = 9400;
+sample_limits.MEA3.lim2 = 10000;
 % TANK
-sample_limits.TANK.lim1 = round(2.39707*4000);
-sample_limits.TANK.lim2 = round(2.43233*4000);
+sample_limits.TANK.lim1 = 9500;
+sample_limits.TANK.lim2 = 10000;
 
 
 %% Fignal Plot in the selected limits
-case_name = 'TANK';
+case_name = 'MEA1';
 data_temp = Data_E_Structure.(case_name)(:,:, sample_limits.(case_name).lim1:sample_limits.(case_name).lim2);
 Background = squeeze(data_temp(:,:,1));
 pick_up_a_trace(Background, data_temp,1);
@@ -400,6 +400,9 @@ for i = 1:length(cases)
         for y = 1:size(Data_temp_E, 2) % Y-coordinate
             signal = squeeze(Data_temp_E(x,y,:));
             if max(signal) ~= 0
+                figure(88);
+                plot(signal(WinStartIdx:WinEndIdx));
+
                 signal = signal'; 
                 LAT_map(x,y) = find_LAT_diff_Tainan(signal, ...
                                     Fsampling, ...
@@ -429,7 +432,7 @@ end
 
 
 %% LAT Calculation COM - Electrical
-debug_COM = 1; % 1 for debugging plots 
+debug_COM = 0; % 1 for debugging plots 
 LAT_values_COM = struct();
 for i = 1:length(cases)
     case_name = cases{i};

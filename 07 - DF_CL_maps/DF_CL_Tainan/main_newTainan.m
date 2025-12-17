@@ -3,7 +3,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
 
 
 %% DF Calculation - Optical
@@ -17,7 +17,7 @@ freq_down = 0.5;
 
 % Extract a subset of the optical data for analysis (adjust the sample range accordingly)
 in_sample = 2*4000;
-end_sample = 4*4000;
+end_sample = 6*4000;
 Data_temp = Data(:,:,in_sample:end_sample);
 
 % Perform Dominant Frequency analysis on the subset
@@ -139,9 +139,9 @@ title(Title);
 
 %% In case of need to manual corrections
 % Susbstitude exactly values
-find_value = 0.5; 
-tolerancia = 1e-10;
-new_value = 0.5;
+find_value = 6.6; 
+tolerancia = 0.1;
+new_value = 3.39;
 indices = find(abs(DF_O - find_value) < tolerancia);
 DF_O(indices) = new_value; % Value to include
 
@@ -333,13 +333,13 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R01\data\InterpolatedSignalsE32_F02_R01_filtered.mat"); % Load Interpolated data
+load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Load Interpolated data
 
 
 %% DF Calculation - Electrical
 % Parameters
 Fsampling = 4000;
-freq_up = 10;
+freq_up = 20;
 freq_down = 0.5;
 in_sample = 2*4000;
 end_sample = 6*4000;
@@ -365,7 +365,7 @@ DF_values.fstep = fstep;
 
 %% Spectrum of multiple electrodes - Electrical
 % Select which case to analyze
-current_case = 'MEA1'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
+current_case = 'MEA2'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
 Data = InterpSignal.Sync.(current_case);
 Background = squeeze(Data(:,:,2000));
 
@@ -463,15 +463,21 @@ end
 
 %% In case of need to manual corrections
 % Apply corrections to specific case BEFORE CL calculation
-case_to_correct = 'TANK'; % Change as needed
+case_to_correct = 'MEA2'; % Change as needed
 DF_E = DF_values.(case_to_correct).MFFTi;
 
 % Substitute specific value in DF
-find_value = 9; % Value to replace
+find_value = 0; % Value to replace
 tolerancia = 1;
 indices = find(abs(DF_E - find_value) < tolerancia);
-DF_E(indices) = 3; % Value to include
+DF_E(indices) = 3.29; % Value to include
+% Update the DF values (CL will be calculated from this corrected DF)
+DF_values.(case_to_correct).MFFTi = DF_E;
 
+% Substitute lower or higer values in DF
+find_value = 0; % Values to replace
+indices = find(DF_E < find_value);
+DF_E(indices) = 3.399; % Value to include
 % Update the DF values (CL will be calculated from this corrected DF)
 DF_values.(case_to_correct).MFFTi = DF_E;
 
@@ -530,7 +536,7 @@ end
 
 %% CL Map - Electrical
 % Create CL maps for all cases using CL_values
-cl_lim = [200 400]; % Typical CL range in ms
+cl_lim = [0 500]; % Typical CL range in ms
 C_cl = jet(256);
 C_cl(1,1:3) = [1 1 1]; % White for background
 
@@ -546,7 +552,7 @@ for i = 1:length(cases)
         pbaspect([2 1 1]); % 2:1 aspect ratio
     else
         % Square for MEAs
-        J = imrotate(CL_E, 90);
+        J = imrotate(CL_E, 0);
         imagesc(J);
         axis equal;
     end
@@ -578,7 +584,7 @@ for i = 1:length(cases)
     
     % Display the image and let the user define the ROI
     figure();
-    imshow(DF_E);
+    imshow(DF_E, 'InitialMagnification', 'fit');
     title(['Select ROI for DF Analysis - ' case_name]);
     roi_df = roipoly;
 
@@ -634,7 +640,7 @@ end
 %% Electrical Organization Index - OI
 % Calculate OI for each case
 OI_values = struct();
-dfh_threshold_area = 0.3;
+dfh_threshold_area = 0.5;
 f_mode = 2;
 debug = 1;
 
@@ -826,10 +832,10 @@ disp('- Electrical_Analysis_Results_*.xlsx (Excel tables)');
 %%
 %% Statistical BoxPlots
 clear; clc;
-CAM1 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM1.mat");
-CAM2 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM2.mat");
-CAM3 = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\O_DF_CL_OI_CAM3.mat");
-EL = load("E:\Qualification\Analysis\E32F02R01\analysis_Frequency\E_DF_CL_OI.mat");
+CAM1 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM1.mat");
+CAM2 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM2.mat");
+CAM3 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM3.mat");
+EL = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\E_DF_CL_OI.mat");
 
 
 % --- DEFINE SOURCES AND PARAMETERS ---
@@ -844,14 +850,26 @@ DF_source_labels = {};
 for i = 1:length(optical_sources)
     source = optical_sources{i};
     data_matrix = eval([source, '.DF_O']);
-    DF_data_cells = [DF_data_cells, {data_matrix(:)}]; % Reshape and store
+    data_vector = data_matrix(:);
+    
+    % Remove zeros and NaN values
+    valid_mask = ~(data_vector == 0 | isnan(data_vector));
+    data_vector = data_vector(valid_mask);
+    
+    DF_data_cells = [DF_data_cells, {data_vector}];
     DF_source_labels = [DF_source_labels, {[source, ' (Opt)']}];
 end
 % Load Electrical DF Data
 for i = 1:length(electrical_sources)
     source = electrical_sources{i};
     data_matrix = EL.DF_values.(source).MFFTi;
-    DF_data_cells = [DF_data_cells, {data_matrix(:)}];
+    data_vector = data_matrix(:);
+    
+    % Remove zeros and NaN values
+    valid_mask = ~(data_vector == 0 | isnan(data_vector));
+    data_vector = data_vector(valid_mask);
+    
+    DF_data_cells = [DF_data_cells, {data_vector}];
     DF_source_labels = [DF_source_labels, {[source, ' (Elec)']}];
 end
 
@@ -863,14 +881,26 @@ OI_source_labels = {};
 for i = 1:length(optical_sources)
     source = optical_sources{i};
     data_matrix = eval([source, '.OI']);
-    OI_data_cells = [OI_data_cells, {data_matrix(:)}];
+    data_vector = data_matrix(:);
+    
+    % Remove zeros and NaN values
+    valid_mask = ~(data_vector == 0 | isnan(data_vector));
+    data_vector = data_vector(valid_mask);
+    
+    OI_data_cells = [OI_data_cells, {data_vector}];
     OI_source_labels = [OI_source_labels, {[source, ' (Opt)']}];
 end
 % Load Electrical OI Data
 for i = 1:length(electrical_sources)
     source = electrical_sources{i};
     data_matrix = EL.OI_values.(source);
-    OI_data_cells = [OI_data_cells, {data_matrix(:)}];
+    data_vector = data_matrix(:);
+    
+    % Remove zeros and NaN values
+    valid_mask = ~(data_vector == 0 | isnan(data_vector));
+    data_vector = data_vector(valid_mask);
+    
+    OI_data_cells = [OI_data_cells, {data_vector}];
     OI_source_labels = [OI_source_labels, {[source, ' (Elec)']}];
 end
 
@@ -885,41 +915,67 @@ OI_grouping = cellfun(@(x,y) repmat({y}, length(x), 1), OI_data_cells, OI_source
 OI_data_combined = vertcat(OI_data_cells{:});
 OI_grouping_combined = vertcat(OI_grouping{:});
 
-% --- PLOT 1: Dominant Frequency (DF) ---
-figure('Name', 'Box Plot: Dominant Frequency', 'Position', [100 100 1000 600]);
-boxplot(DF_data_combined, DF_grouping_combined);
+% Display information about removed data
+fprintf('DF Data Summary:\n');
+for i = 1:length(DF_source_labels)
+    original_data = eval([optical_sources{min(i,3)}, '.DF_O']); % Adjust index for electrical sources
+    if i > 3  % Electrical sources
+        source_idx = i-3;
+        original_data = EL.DF_values.(electrical_sources{source_idx}).MFFTi;
+    end
+    original_count = numel(original_data);
+    valid_count = length(DF_data_cells{i});
+    removed = original_count - valid_count;
+    fprintf('%s: %d valid values (removed %d zeros/NaNs)\n', DF_source_labels{i}, valid_count, removed);
+end
 
-title('Dominant Frequency (Hz) Distribution by Source', 'FontSize', 16);
+fprintf('\nOI Data Summary:\n');
+for i = 1:length(OI_source_labels)
+    original_data = eval([optical_sources{min(i,3)}, '.OI']); % Adjust index for electrical sources
+    if i > 3  % Electrical sources
+        source_idx = i-3;
+        original_data = EL.OI_values.(electrical_sources{source_idx});
+    end
+    original_count = numel(original_data);
+    valid_count = length(OI_data_cells{i});
+    removed = original_count - valid_count;
+    fprintf('%s: %d valid values (removed %d zeros/NaNs)\n', OI_source_labels{i}, valid_count, removed);
+end
+
+% --- PLOT 1: Dominant Frequency (DF) ---
+figure('Name', 'Box Plot: Dominant Frequency (Excluding Zeros/NaNs)', 'Position', [100 100 1000 600]);
+boxplot(DF_data_combined, DF_grouping_combined, 'Notch', 'on');
+
+title('Dominant Frequency (Hz) Distribution by Source (Excluding Zeros/NaNs)', 'FontSize', 16);
 xlabel('Measurement Source', 'FontSize', 12);
 ylabel('Dominant Frequency (Hz)', 'FontSize', 12);
 grid on;
 
+% Add text annotation with sample sizes
+ylimits = ylim;
+for i = 1:length(DF_data_cells)
+    sample_size = length(DF_data_cells{i});
+    text(i, ylimits(1) - 0.05*diff(ylimits), sprintf('n=%d', sample_size), ...
+        'HorizontalAlignment', 'center', 'FontSize', 9, 'Color', 'blue');
+end
+
 
 % --- PLOT 2: Organization Index (OI) ---
-figure('Name', 'Box Plot: Organization Index', 'Position', [100 100 1000 600]);
-boxplot(OI_data_combined, OI_grouping_combined);
+figure('Name', 'Box Plot: Organization Index (Excluding Zeros/NaNs)', 'Position', [100 100 1000 600]);
+boxplot(OI_data_combined, OI_grouping_combined, 'Notch', 'on');
 
-title('Organization Index Distribution by Source', 'FontSize', 16);
+title('Organization Index Distribution by Source (Excluding Zeros/NaNs)', 'FontSize', 16);
 xlabel('Measurement Source', 'FontSize', 12);
 ylabel('Organization Index', 'FontSize', 12);
 grid on;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% Add text annotation with sample sizes
+ylimits = ylim;
+for i = 1:length(OI_data_cells)
+    sample_size = length(OI_data_cells{i});
+    text(i, ylimits(1) - 0.05*diff(ylimits), sprintf('n=%d', sample_size), ...
+        'HorizontalAlignment', 'center', 'FontSize', 9, 'Color', 'blue');
+end
 
 
 
