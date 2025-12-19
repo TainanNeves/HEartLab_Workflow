@@ -305,82 +305,129 @@ linkaxes([subplot(8, 1, 1), subplot(8, 1, 2), subplot(8, 1, 3), ...
     subplot(8, 1, 7), subplot(8, 1, 8)], 'x');
 
 
-%% All plots (Optic + MEAs) - 3 Figures ()
-%Frequency Sampling
+%% All plots (Optic + MEAs) - 3 Figures
+% Configuring Electrical
+case_name_e = 'MEA2';
 Fsampling = 4000;
-time = [2.27, 2.66]; % s
+time = [2, 3]; % s
 Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
+el.MEA1 = [1, 2, 3, 4, ...
+            5, 6, 7, 8, ...
+            9, 10, 11, 12, ...
+            13, 14, 15, 16];
+el.MEA2 = [17, 18, 19, 20, ...
+            21, 22, 23, 24, ...
+            25, 26, 27, 28, ...
+            29, 30, 31, 32];
+el.MEA3 = [81, 82, 83, 84, ...
+            85, 86, 87, 88, ...
+            89, 90, 91, 92, ...
+            93, 94, 95, 96];
 
-
-% MEA 1
-Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
+% Configuring Optical
+case_name_o = 'CAM3';
+Data_O = D_SYNC.(case_name_o)(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2));
-Background = single(D_SYNC.IMG.CAM3); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
-[x, y] = pick_up_a_trace(Background, Data_O,1);  
-p13 = [x(13), y(13)]; p14 = [x(14), y(14)]; p15 = [x(15), y(15)]; p16 = [x(16), y(16)];
-p9 = [x(9), y(9)]; p10 = [x(10), y(10)]; p11 = [x(11), y(11)]; p12 = [x(12), y(12)];
-p5 = [x(5), y(5)]; p6 = [x(6), y(6)]; p7 = [x(7), y(7)]; p8 = [x(8), y(8)];
-p1 = [x(1), y(1)]; p2 = [x(2), y(2)]; p3 = [x(3), y(3)]; p4 = [x(4), y(4)];
-plotar_pontos_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
+Background = single(D_SYNC.IMG.(case_name_o)); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
+[x, y] = pick_up_a_trace(Background, Data_O,1);
 
-% MEA 2
-Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2));
-Background = single(D_SYNC.IMG.CAM2); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
-[x, y] = pick_up_a_trace(Background, Data_O,1); 
-p17 = [x(1), y(1)]; p21 = [x(5), y(5)]; p25 = [x(9), y(9)]; p29 = [x(13), y(13)];
-p18 = [x(2), y(2)]; p22 = [x(6), y(6)]; p26 = [x(10), y(10)]; p30 = [x(14), y(14)];
-p19 = [x(3), y(3)]; p23 = [x(7), y(7)]; p27 = [x(11), y(11)]; p31 = [x(15), y(15)];
-p20 = [x(4), y(4)]; p24 = [x(8), y(8)]; p28 = [x(12), y(12)]; p32 = [x(16), y(16)];
-plotar_pontos_2(Data_O, Data_E, Fsampling, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32);
+% Figure 1: Camera and electrodes identification
+ni = 0; % Sum this to the number (In case you dont want to start in 1
+I = single(D_SYNC.IMG.(case_name_o));
+f1 = figure('color','white','Position', [40 40 500 500]);
+imagesc(I); colormap('gray');
+hold on;
+for i = 1:length(x)
+    text(y(i), x(i), num2str(ni+i), 'Color', 'red', 'FontSize', 9, 'FontWeight', 'bold'); hold on;
+end
+set(gca,'fontsize', 14);
+title(case_name_o);
+ylabel('Pixels');xlabel('Pixels');
 
-% MEA 3
-Data_O = D_SYNC.CAM1(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2));
-Background = single(D_SYNC.IMG.CAM1); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
-[x, y] = pick_up_a_trace(Background, Data_O,1); 
-p77 = [x(13), y(13)]; p78 = [x(14), y(14)]; p79 = [x(15), y(15)]; p80 = [x(16), y(16)];
-p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(12)];
-p69 = [x(5), y(5)]; p70 = [x(6), y(6)]; p71 = [x(7), y(7)]; p72 = [x(8), y(8)];
-p65 = [x(1), y(1)]; p66 = [x(2), y(2)]; p67 = [x(3), y(3)]; p68 = [x(4), y(4)];
-plotar_pontos_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
+% Figure 2: Optic plots
+lo = size(Data_O,3);
+To = linspace(0,lo/Fsampling,lo);
+f2=figure('color','white','Position', [40 40 800 600]);
+for i = 1:size(x,1)
+    subplot(4,4,i); plot(To,squeeze(Data_O(x(i), y(i), :)));
+    ylabel(['pixel: ', num2str(x(i)),'x', num2str(y(i))]);
+    xlabel('Time [s]');
+    set(gca,'fontsize', 12); xlim([0 lo/Fsampling]);
+end
+sgtitle(['Optic signals: ', case_name_o]);
+
+% Figure 3: Electric Plots
+ni = 0; % Sum this to the number (In case you dont want to start in 1
+lo=size(Data_E,2);
+To=linspace(0,lo/Fsampling,lo);
+f3=figure('color','white','Position', [40 40 800 600]);
+for i = 1:size(el.(case_name_e), 2)
+    subplot(4,4,i); plot(To, Data_E(el.(case_name_e)(i),:));
+    ylabel(['El: ', num2str(el.(case_name_e)(i))]);
+    xlabel('Time [s]');
+    set(gca,'fontsize', 12); xlim([0 lo/Fsampling]);
+end
+sgtitle(['Electric signals: ', case_name_e]);
 
 
 %% All plots (Optic + MEAs) - 2 Figures
-% Frequency Sampling
+% Configuring Electrical
+case_name_e = 'MEA2';
 Fsampling = 4000;
-time = [2, 2.6]; % s
+time = [2, 3]; % s
 Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
+el.MEA1 = [1, 2, 3, 4, ...
+            5, 6, 7, 8, ...
+            9, 10, 11, 12, ...
+            13, 14, 15, 16];
+el.MEA2 = [17, 18, 19, 20, ...
+            21, 22, 23, 24, ...
+            25, 26, 27, 28, ...
+            29, 30, 31, 32];
+el.MEA3 = [81, 82, 83, 84, ...
+            85, 86, 87, 88, ...
+            89, 90, 91, 92, ...
+            93, 94, 95, 96];
 
-% MEA 1
-Data_O = D_SYNC.CAM2(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-[x, y] = pick_up_a_trace(Background, Data_O,1);  
-p4 = [x(13), y(13)]; p3 = [x(3), y(3)]; p5 = [x(2), y(2)]; p1 = [x(1), y(1)];
-p8 = [x(9), y(9)]; p7 = [x(10), y(10)]; p6 = [x(11), y(11)]; p5 = [x(12), y(12)];
-p12 = [x(5), y(5)]; p11 = [x(6), y(6)]; p10 = [x(7), y(7)]; p9 = [x(8), y(8)];
-p16 = []; p15 = [x(2), y(2)]; p14 = []; p13 = [x(4), y(4)];
-plotar_pontos_mix_1(Data_O, Data_E, Fsampling, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
+% Configuring Optical
+case_name_o = 'CAM2';
+Data_O = D_SYNC.(case_name_o)(:, :, time(1)*Fsampling:time(2)*Fsampling);
+Background = squeeze(Data_O(:,:,2));
+Background = single(D_SYNC.IMG.(case_name_o)); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
+[x, y] = pick_up_a_trace(Background, Data_O,1);
 
-% MEA 2
-Data_O = D_SYNC.CAM3(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-[x, y] = pick_up_a_trace(Background, Data_O,1); 
-p17 = [x(1), y(1)]; p21 = [x(5), y(5)]; p25 = [x(9), y(9)]; p29 = [x(13), y(13)];
-p18 = [x(2), y(2)]; p22 = [x(6), y(6)]; p26 = [x(10), y(10)]; p30 = [x(14), y(14)];
-p19 = [x(3), y(3)]; p23 = [x(7), y(7)]; p27 = [x(11), y(11)]; p31 = [x(15), y(15)];
-p20 = [x(4), y(4)]; p24 = [x(8), y(8)]; p28 = [x(12), y(12)]; p32 = [x(16), y(16)];
-plotar_pontos_mix_2(Data_O, Data_E, Fsampling, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32);
+% Figure 1: Camera and electrodes identification
+ni = 16; % Sum this to the number in case you dont want to start in 1
+I = single(D_SYNC.IMG.(case_name_o));
+f1 = figure('color','white','Position', [40 40 500 500]);
+imagesc(I); colormap('gray');
+hold on;
+for i = 1:length(x)
+    text(y(i), x(i), num2str(ni+i), 'Color', 'red', 'FontSize', 9, 'FontWeight', 'bold'); hold on;
+end
+set(gca,'fontsize', 14);
+title(case_name_o);
+ylabel('Pixels');xlabel('Pixels');
 
-% MEA 3
-Data_O = D_SYNC.CAM1(:, :, time(1)*Fsampling:time(2)*Fsampling);
-Background = squeeze(Data_O(:,:,2000));
-[x, y] = pick_up_a_trace(Background, Data_O,1); 
-p77 = [x(13), y(13)]; p78 = [x(14), y(14)]; p79 = [x(15), y(15)]; p80 = [x(16), y(16)];
-p73 = [x(9), y(9)]; p74 = [x(10), y(10)]; p75 = [x(11), y(11)]; p76 = [x(12), y(12)];
-p69 = [x(5), y(5)]; p70 = [x(6), y(6)]; p71 = [x(7), y(7)]; p72 = [x(8), y(8)];
-p65 = [x(1), y(1)]; p66 = [x(2), y(2)]; p67 = [x(3), y(3)]; p68 = [x(4), y(4)];
-plotar_pontos_mix_3(Data_O, Data_E, Fsampling, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80);
+% Figure 2: Optical and Electrical signals Aligned
+lo = size(Data_O, 3);
+To = linspace(0, lo/Fsampling, lo);
+f2 = figure('color','white','Position', [100 100 1000 800]);
+for i = 1:16
+    subplot(4, 4, i);
+    % Left Axis: Optical
+    yyaxis left
+    plot(To, squeeze(Data_O(x(i), y(i), :)), 'b'); % Blue for optical
+    ylabel(['pixel: ', num2str(x(i)),'x', num2str(y(i))]);
+    % Right Axis: Electrical
+    yyaxis right
+    plot(To, Data_E(el.(case_name_e)(i),:), 'r'); % Red for electrical
+    ylabel(['El: ', num2str(el.(case_name_e)(i))]);
+    xlabel('Time [s]');
+    set(gca, 'fontsize', 10);
+    xlim([0 lo/Fsampling]);
+end
+sgtitle(['Combined Signals: ', case_name_o, ' (Opt) & ', case_name_e, ' (Elec)']);
 
 
 %% All plots (TANK)
