@@ -1,12 +1,78 @@
 %% SIGNAL PLOTING CODE
-
 clear; clc;
+
 
 %% Loading data
 
 % Loading variables
 load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Synchronized data
 load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Interpolate data
+
+
+%% Check electrical signals
+%% Configuring
+data = D_EL.Data;
+Fsampling = D_EL.Header.sample_rate;
+
+
+%% Check electrodes quality
+lim1 = 3*4000;
+lim2 = 5*4000;
+
+
+% Plot MEA1 (electrodes 1:16)
+figure('Name', 'MEA1 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 1:16
+    subplot(4, 4, i);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA1 (Electrodes 1-16)');
+
+% Plot MEA2 (electrodes 17:32)
+figure('Name', 'MEA2 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 17:32
+    subplot(4, 4, i-16);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA2 (Electrodes 17-32)');
+
+% Plot MEA3 (electrodes 81:96)
+figure('Name', 'MEA3 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
+for i = 81:96
+    subplot(4, 4, i-80);
+    plot(data(i, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', i));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('MEA3 (Electrodes 81-96)');
+
+% Plot TANK electrodes
+figure('Name', 'TANK Electrodes Quality Check', 'Position', [100, 100, 1400, 800]);
+tank_electrodes = [129:174, 177:190];
+num_tank_elec = length(tank_electrodes);
+num_rows = 6;
+num_cols = ceil(num_tank_elec / num_rows);
+
+for i = 1:num_tank_elec
+    subplot(num_rows, num_cols, i);
+    elec_num = tank_electrodes(i);
+    plot(data(elec_num, :));
+    xlim([lim1, lim2]);
+    title(sprintf('Electrode %d', elec_num));
+    ylabel('\muV');
+    grid on;
+end
+sgtitle('TANK Electrodes');
 
 %% Optical signals plot
 % Define a Camera to use

@@ -193,10 +193,16 @@ sgtitle(['Synchronized Signals at t = ' num2str(timepoint_seconds) ' s '], ...
 
 
 %% Overview Optical video
+%% Overview Optical video
 data_o1 = D_SYNC.CAM1;
 data_o2 = D_SYNC.CAM2;
 data_o3 = D_SYNC.CAM3;
 data_e = D_SYNC.EL;
+
+% Rotatinf the data
+data_o1 = imrotate(data_o1, 90);
+data_o2 = imrotate(data_o2, 90);
+data_o3 = imrotate(data_o3, 90);
 
 % Select 6 electrodes
 electrodes = [7 22 90 142 178 172]; 
@@ -238,9 +244,9 @@ if lower(user_input) ~= 'y'
 end
 
 % --- Select Optical Points and Initialize Figure ---
-Background_CAM1 = squeeze(imrotate(D_SYNC.IMG.CAM1(:,:,1), -90));
-Background_CAM2 = squeeze(imrotate(D_SYNC.IMG.CAM2(:,:,1), -90));
-Background_CAM3 = squeeze(imrotate(D_SYNC.IMG.CAM3(:,:,1), -90));
+Background_CAM1 = squeeze(D_SYNC.IMG.CAM1(:,:,1));
+Background_CAM2 = squeeze(D_SYNC.IMG.CAM2(:,:,1));
+Background_CAM3 = squeeze(D_SYNC.IMG.CAM3(:,:,1));
 disp('Select 2 points for CAM1');
 [x1, y1] = pick_up_a_trace(Background_CAM1, data_o1, 1);
 disp('Select 2 points for CAM2');
@@ -268,10 +274,10 @@ for timepoint_seconds = ti:step:to
     t_start_plot = max(0, t_start_desired);
     t_end_plot = min(total_time, t_end_desired);
     
-    % Rotate the current image frame for plotting (0 for no rotation)
-    I1 = imrotate(data_o1(:, :, sample), 0); 
-    I2 = imrotate(data_o2(:, :, sample), 0);
-    I3 = imrotate(data_o3(:, :, sample), 0);
+    % No rotation applied to the image frames
+    I1 = data_o1(:, :, sample); 
+    I2 = data_o2(:, :, sample);
+    I3 = data_o3(:, :, sample);
     
     % --- ROW 1: Optical Traces (APPLYING XLIM) ---
     % CAM1 Point 1
@@ -336,17 +342,10 @@ for timepoint_seconds = ti:step:to
     % --- Optical Frames ---
     % CAM1 Frame
     subplot(rows, cols, [13 14 19 20 25 26 31 32]);
-    data_o1 = imrotate(data_o1, 90);
-    imagesc(data_o1(:, :, sample), [vmin_cam1 vmax_cam1]);
+    imagesc(data_o1(:, :, sample), clim_cam1);
     colormap(jet(256));
     hold on;
-    % Rotatinf the markers position
-    x1_temp = x1;
-    y1_temp = y1;
-    y1 = x1_temp;
-    x1 = size(data_o1, 1) - y1_temp + 1;
-    clear x1_temp y1_temp;
-    % Ploting markers
+    % Plot markers at original coordinates (no rotation needed)
     plot(y1, x1, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y1(1)+1, x1(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y1(2)+1, x1(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -356,17 +355,10 @@ for timepoint_seconds = ti:step:to
     
     % CAM2 Frame
     subplot(rows, cols, [15 16 21 22 27 28 33 34]);
-    data_o2 = imrotate(data_o2, 90);
-    imagesc(data_o2(:, :, sample), [vmin_cam2 vmax_cam2]);
+    imagesc(data_o2(:, :, sample), clim_cam2);
     colormap(jet(256));
     hold on;
-    % Rotatinf the markers position
-    x2_temp = x2;
-    y2_temp = y2;
-    y2 = x2_temp;
-    x2 = size(data_o2, 1) - y2_temp + 1;
-    clear x2_temp y2_temp;
-    % Ploting markers
+    % Plot markers at original coordinates (no rotation needed)
     plot(y2, x2, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y2(1)+1, x2(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y2(2)+1, x2(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -376,17 +368,10 @@ for timepoint_seconds = ti:step:to
     
     % CAM3 Frame
     subplot(rows, cols, [17 18 23 24 29 30 35 36]);
-    data_o3 = imrotate(data_o3, 90);
-    imagesc(data_o3(:, :, sample), [vmin_cam3 vmax_cam3]);
+    imagesc(data_o3(:, :, sample), clim_cam3);
     colormap(jet(256));
     hold on;
-    % Rotatinf the markers position
-    x3_temp = x3;
-    y3_temp = y3;
-    y3 = x3_temp;
-    x3 = size(data_o3, 1) - y3_temp + 1;
-    clear x3_temp y3_temp;
-    % Ploting markers
+    % Plot markers at original coordinates (no rotation needed)
     plot(y3, x3, 'ro', 'MarkerSize', 10, 'LineWidth', 2); 
     text(y3(1)+1, x3(1)-1, ' Point 1', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
     text(y3(2)+1, x3(2)-1, ' Point 2', 'Color', 'r', 'FontSize', 10, 'VerticalAlignment', 'bottom'); 
@@ -738,14 +723,14 @@ frame_rate = 30; % Taxa de quadros (FPS)
 plot_window_seconds = 0.5; 
 
 % Limites da Colorbar para os Mapas Elétricos (do seu código)
-vmin_MEA1 = 0; 
-vmax_MEA1 = 5; 
-vmin_MEA2 = 0; 
-vmax_MEA2 = 5;
-vmin_MEA3 = 0; 
-vmax_MEA3 = 5;
-vmin_TANK = 0; 
-vmax_TANK = 5;
+vmin_MEA1 = -500; 
+vmax_MEA1 = 500; 
+vmin_MEA2 = -500; 
+vmax_MEA2 = 500;
+vmin_MEA3 = -500; 
+vmax_MEA3 = 500;
+vmin_TANK = -500; 
+vmax_TANK = 500;
 
 % Saída de Vídeo
 videoFile = 'E_overview_video.mp4';
