@@ -1216,368 +1216,393 @@ el.TANK = [145, 146, 155, 156, 165, 166, 129, 130, 139, 140, 181, 182, ...
 
 %% Selecting Time Window
 % Selecting electrode
-el_plot = [3, 22, 90];
+el_plot = [3, 22, 90, 146, 152];
 % Preview Signal
 figure();
+hold on;
 for i = 1:length(el_plot)
-    plot(Data_E_Structure(el_plot(i), :), 'LineWidth', 1); 
-    hold on;
+    plot(Data_E_Structure(el_plot(i), :), 'LineWidth', 1);
 end
+legend(cellstr(num2str(el_plot', 'Electrode: %d')));
 hold off;
 clear el_plot i;
+
 
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = 10300; 
-sample_limits.MEA1.lim2 = 10850; 
+sample_limits.MEA1.lim1 = 9100; 
+sample_limits.MEA1.lim2 = 9500; 
 % MEA2
-sample_limits.MEA2.lim1 = 9200;
-sample_limits.MEA2.lim2 = 9600;
+sample_limits.MEA2.lim1 = 9100;
+sample_limits.MEA2.lim2 = 9500;
 % MEA3
-sample_limits.MEA3.lim1 = 9400;
-sample_limits.MEA3.lim2 = 10000;
+sample_limits.MEA3.lim1 = 9700;
+sample_limits.MEA3.lim2 = 9900;
 % TANK
-sample_limits.TANK.lim1 = 9500;
-sample_limits.TANK.lim2 = 10000;
+sample_limits.TANK.lim1 = 9700;
+sample_limits.TANK.lim2 = 9900;
 
 
 %% LAT Calculation - Electrical
 debug_LAT = 1; % Use 0, 1 or 2
-LAT_values = struct();
+LAT_values = zeros(size(Data_E_Structure, 1), 1);
 
 for i = 1:length(cases)
     case_name = cases{i};
+    
     % --- DYNAMICALLY DETERMINE LIMITS ---
     electrical_lim1 = sample_limits.(case_name).lim1;
     electrical_lim2 = sample_limits.(case_name).lim2;
     
-    % Optional: Boundary and Order Checks
-    total_samples = size(Data_E_Structure.(case_name), 2);
-    electrical_lim1 = max(1, min(electrical_lim1, total_samples));
-    electrical_lim2 = min(total_samples, max(electrical_lim2, 1));
-    % Ensure lim1 is before lim2
-    if electrical_lim1 > electrical_lim2
-        temp = electrical_lim1;
-        electrical_lim1 = electrical_lim2;
-        electrical_lim2 = temp;
-    end
+    % Get electrode indices for this case
+    electrode_indices = el.(case_name);
+    num_electrodes = length(electrode_indices);
     
-    fprintf('  -> Processing %s with window: Samples [%d, %d] | Time [%.3f, %.3f]s.\n', ...
-        case_name, electrical_lim1, electrical_lim2, ...
-        electrical_lim1/Fsampling, ...
-        electrical_lim2/Fsampling);
+    % Define analysis window
+    WinStartIdx = electrical_lim1;
+    WinEndIdx = electrical_lim2;
     
-    Data_current_E = Data_E_Structure.(case_name);
-    Data_temp_E = Data_current_E(:,:,:);
-    WinStartIdx = electrical_lim1 + 200;
-    WinEndIdx = electrical_lim2 + 100;
-    
-    % Calculate LAT map (pixel by pixel)
-    LAT_map = zeros(size(Data_temp_E, 1), size(Data_temp_E, 2));
-    for x = 1:size(Data_temp_E, 1) % X-coordinate
-        for y = 1:size(Data_temp_E, 2) % Y-coordinate
-            signal = squeeze(Data_temp_E(x,y,:));
-            if max(signal) ~= 0
-                figure(88);
-                plot(signal(WinStartIdx:WinEndIdx));
-
-                signal = signal'; 
-                LAT_map(x,y) = find_LAT_diff_Tainan(signal, ...
-                                    Fsampling, ...
-                                    WinStartIdx, ...
-                                    WinEndIdx, ...
-                                    case_name, x, y, ...
-                                    debug_LAT);
-            end
+    % Calculate LAT for each electrode
+    for e_idx = 1:num_electrodes
+        electrode_num = electrode_indices(e_idx);
+        
+        % Check if electrode exists (handle NaN)
+        if isnan(electrode_num)
+            % LAT_values(electrode_num) = NaN;
+            continue;
         end
+        
+        % Extract signal for this electrode
+        signal = Data_E_Structure(electrode_num, :);
+        
+        % Skip if all zeros
+        if max(signal) == 0
+            LAT_values(electrode_num) = NaN;
+            continue;
+        end
+
+        % LAT Calculation function
+        LAT_values(electrode_num) = find_LAT_diff_Tainan(...
+            signal, ...
+            Fsampling, ...
+            WinStartIdx, ...
+            WinEndIdx, ...
+            case_name, ...
+            e_idx, ...  % X coordinate
+            1, ...      % y coordinate
+            debug_LAT);
     end
     
-    % Normalization and Filtering
-    LAT_map(LAT_map < 0) = 0;
-    % Subtract minimum LAT for re-normalization
-    min_LAT = min(LAT_map(LAT_map ~= 0));
-    if ~isempty(min_LAT) && ~isnan(min_LAT)
-        LAT_map(LAT_map ~= 0) = LAT_map(LAT_map ~= 0) - min_LAT;
-    end
-    % Spatial Filtering (Using S=1 | T=0 because of ...
-    % the size of pixels in electrical mapping)
-    LAT_map_filtered = SpatTemp_Filtering(LAT_map, 1, 0, 'GPU'); 
-    
-    % Store the final, filtered 2D LAT map
-    LAT_values.(case_name).LAT_matrix = LAT_map_filtered;
-    fprintf('  -> %s LAT matrix (Size: %dx%d) stored.\n', case_name, size(LAT_map_filtered, 1), size(LAT_map_filtered, 2));
+    % Handle negative values (set to NaN)
+    LAT_values(LAT_values < 0) = NaN;
 end
 
 
+%% LAT Calculation COM - Electrical (2D Approach)
+debug_COM = 1; % 1 for debugging plots 
+LAT_values_COM = zeros(size(Data_E_Structure, 1), 1);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%% LAT Calculation COM - Electrical
-debug_COM = 0; % 1 for debugging plots 
-LAT_values_COM = struct();
 for i = 1:length(cases)
     case_name = cases{i};
     
-    % Use the specific sample limits defined in the structure
+    % --- DYNAMICALLY DETERMINE LIMITS ---
     electrical_lim1 = sample_limits.(case_name).lim1;
     electrical_lim2 = sample_limits.(case_name).lim2;
     
-    % Optional: Boundary and Order Checks
-    total_samples = size(Data_E_Structure.(case_name), 3);
-    electrical_lim1 = max(1, min(electrical_lim1, total_samples));
-    electrical_lim2 = min(total_samples, max(electrical_lim2, 1));
-    % Ensure lim1 is before lim2
-    if electrical_lim1 > electrical_lim2
-        temp = electrical_lim1;
-        electrical_lim1 = electrical_lim2;
-        electrical_lim2 = temp;
-    end
+    % Get electrode indices for this case
+    electrode_indices = el.(case_name);
+    num_electrodes = length(electrode_indices);
+
+    % Define analysis window
+    WinStartIdx = electrical_lim1;
+    WinEndIdx = electrical_lim2;
     
-    fprintf('  -> Processing %s (COM Method) with window: Samples [%d, %d] | Time [%.3f, %.3f]s.\n', case_name, electrical_lim1, electrical_lim2, electrical_lim1/Fsampling, electrical_lim2/Fsampling);
-    % -------------------------------------------------------------------
-    
-    Data_current_E = Data_E_Structure.(case_name);
-    Data_temp_E = Data_current_E(:,:,electrical_lim1:electrical_lim2);
-    
-    % Get the size of the segment
-    [num_x, num_y, segment_length] = size(Data_temp_E);
-    % Inicialize matrix
-    LAT_map_COM = zeros(num_x, num_y);
-    for x = 1:num_x % X-coordinate
-        for y = 1:num_y % Y-coordinate
-            signal_segment = squeeze(Data_temp_E(x,y,:))'; % Ensure it's a row vector
-            if max(abs(signal_segment)) ~= 0
-                % Calculate LAT map (pixel by pixel)
-                LAT_map_COM(x,y) = find_LAT_com(signal_segment, ...
-                                    Fsampling, x, y, ...
-                                    debug_COM, case_name);
-            end
+    % Calculate COM LAT for each electrode
+    for e_idx = 1:num_electrodes
+        electrode_num = electrode_indices(e_idx);
+        
+        % Check if electrode exists (handle NaN)
+        if isnan(electrode_num)
+            continue;
         end
+        
+        % Extract signal for this electrode
+        signal_segment = Data_E_Structure(electrode_num, electrical_lim1:electrical_lim2);
+        
+        % Skip if all zeros or flat signal
+        if max(abs(signal_segment)) == 0
+            continue;
+        end
+        
+        % LAT Calculation Function
+        LAT_values_COM(electrode_num) = find_LAT_com(...
+            signal_segment, ...
+            Fsampling, ...
+            e_idx, ...  % x Coordinate
+            1, ...      % y Coordinate
+            debug_COM, ...
+            case_name);
     end
-    % Normalization and Filtering
-    LAT_map_COM(LAT_map_COM < 0) = 0;
-    min_LAT_COM = min(LAT_map_COM(LAT_map_COM ~= 0));
-    if ~isempty(min_LAT_COM) && ~isnan(min_LAT_COM)
-        LAT_map_COM(LAT_map_COM ~= 0) = LAT_map_COM(LAT_map_COM ~= 0) - min_LAT_COM;
-    end
-    % Spatial Filtering (Using S=1 | T=0)
-    LAT_map_filtered_COM = SpatTemp_Filtering(LAT_map_COM, 1, 0, 'GPU'); 
     
-    % Store
-    LAT_values_COM.(case_name).LAT_matrix = LAT_map_filtered_COM;
-    fprintf('  -> %s LAT matrix (COM Method) (Size: %dx%d) stored.\n', case_name, size(LAT_map_filtered_COM, 1), size(LAT_map_filtered_COM, 2));
+    % Handle negative values (set to NaN)
+    LAT_values_COM(LAT_values_COM < 0) = NaN;
 end
 
 
-%% LAT MAP PLOTTING - Electrical
-C = parula(256); 
-% C(1,1:3) = [1 1 1]; % White for background (0 LAT)
-for i = 1:length(cases)
-    case_name = cases{i};
-    LAT_matrix_DIFF = LAT_values.(case_name).LAT_matrix;
-    LAT_matrix_COM = LAT_values_COM.(case_name).LAT_matrix;
-    % Create a figure to show both methods
-    figure('color', 'white', 'Position', [40 + i*20 40 + i*20 1200 600]);
-    % Determine the common color limits
-    all_LATS = [LAT_matrix_DIFF(LAT_matrix_DIFF ~= 0); LAT_matrix_COM(LAT_matrix_COM ~= 0)];
-    if ~isempty(all_LATS)
-        max_LAT = max(all_LATS);
+%% Creating LAT Matrix
+% Organizing Matrices
+for c = 1:length(cases)
+    name = cases{c};
+    
+    % Get the mapping template
+    mapping = el.(name);
+    
+    % Determine grid size based on the case
+    if strcmpi(name, 'TANK')
+        grid_size = [6, 12];
     else
-        max_LAT = 1; % Default max
+        grid_size = [4, 4];
     end
+    
+    % Map the 1D LAT values into the 2D grid shape
+    grid_indices = reshape(mapping, grid_size(2), grid_size(1))'; 
+    
+    % Pre-allocate the result matrices
+    LAT.(name).diff = NaN(size(grid_indices));
+    LAT.(name).COM  = NaN(size(grid_indices));
+    
+    % Fill the matrices
+    for r = 1:size(grid_indices, 1)
+        for col = 1:size(grid_indices, 2)
+            idx = grid_indices(r, col);
+            if ~isnan(idx)
+                LAT.(name).diff(r, col) = LAT_values(idx);
+                LAT.(name).COM(r, col)  = LAT_values_COM(idx);
+            end
+        end
+    end
+end
 
-    % --- Subplot 1: Derivative Method ---
-    subplot(1, 2, 1);
-    if strcmp(case_name, 'TANK')
-        J = LAT_matrix_DIFF;
-        imagesc(J);
-        pbaspect([2 1 1]);
-    else
-        J = imrotate(LAT_matrix_DIFF, 90);
-        imagesc(J);
-        axis equal;
+
+% Interpolation and Relative Time Calculation
+% Configuration
+upscale_factor = 10;
+method_type = 'cubic'; % linear, cubic, v4
+
+% Initialize storage for smoothed results
+LAT_interp = struct();
+for c = 1:length(cases)
+    case_name = cases{c};
+    types = {'diff', 'COM'};
+    for t = 1:length(types)
+        type_name = types{t};
+        raw_data = LAT.(case_name).(type_name);
+        
+        % Get coordinates of valid (non-NaN) data points
+        [rows, cols] = size(raw_data);
+        [X, Y] = meshgrid(1:cols, 1:rows);
+        
+        % Find where we actually have data
+        mask = ~isnan(raw_data);
+        x_pts = X(mask);
+        y_pts = Y(mask);
+        v_pts = raw_data(mask);
+        
+        % Check if we have enough points to interpolate
+        if isempty(v_pts)
+            continue;
+        end
+        
+        % Create the high-resolution query grid
+        step = 1 / upscale_factor; 
+        [Xq, Yq] = meshgrid(1:step:cols, 1:step:rows);
+        
+        % Apply Interpolation
+        Vq = griddata(x_pts, y_pts, v_pts, Xq, Yq, method_type);
+        
+        % --- RELATIVE TIME CALCULATION ---
+        % Find the minimum LAT in the interpolated grid (ignoring NaNs)
+        min_lat = min(Vq(:), [], 'omitnan');
+        
+        % Subtract the minimum so the earliest activation is 0 ms
+        Vq_relative = Vq - min_lat;
+        
+        % Store the relative result
+        LAT_interp.(case_name).(type_name) = Vq_relative;
+        
+        % --- VISUALIZATION ---
+        figure('Name', sprintf('%s - %s (Relative)', case_name, type_name));
+        imagesc(Vq_relative);
+        axis image;
+        colormap(parula); 
+        cb = colorbar;
+        ylabel(cb, 'Activation Time (ms from start)');
+        title({sprintf('Relative LAT Map: %s', case_name), ...
+               sprintf('Method: %s (%s)', method_type, type_name)});
+        xlabel('X-dimension (upscaled)');
+        ylabel('Y-dimension (upscaled)');
+        % Add contour lines to show the wavefront (Isochrones)
+        hold on;
+        [C, h] = contour(Vq_relative, 5, 'k'); % 10 contour levels in black
+        clabel(C, h); % Label the time on the lines
+        hold off;
     end
-    colormap(gca, C);
-    caxis([0 max_LAT]);
-    axis off;
-    title(['Derivative Method - ' case_name], 'FontSize', 16);
-    
-    % --- Subplot 2: COM Method ---
-    subplot(1, 2, 2);
-    if strcmp(case_name, 'TANK')
-        J = LAT_matrix_COM;
-        imagesc(J);
-        pbaspect([2 1 1]);
-    else
-        J = imrotate(LAT_matrix_COM, 90);
-        imagesc(J);
-        axis equal;
-    end
-    colormap(gca, C);
-    caxis([0 max_LAT]);
-    axis off;
-    hBar = colorbar('eastoutside');
-    ylabel(hBar, 'Local Activation Time [ms]', 'FontSize', 14);
-    title(['COM Method - ' case_name], 'FontSize', 16);
-    
-    sgtitle(['Electrical ' case_name ' - LAT Map Comparison'], 'FontSize', 18, 'FontWeight', 'bold');
 end
 
 
 %% LAT METHOD CONSOLIDATION - Electrical
-% Choose the preferred LAT detection method for each case:
-% 1. 'DIFF' (Derivative Method: LAT_values)
-% 2. 'COM' (Center of Mass Method: LAT_values_COM)
-
 % --- Define Method Selection ---
 MethodSelection = struct();
-MethodSelection.MEA1 = 'DIFF';
-MethodSelection.MEA2 = 'DIFF';
-MethodSelection.MEA3 = 'DIFF';
+MethodSelection.MEA1 = 'diff';
+MethodSelection.MEA2 = 'diff';
+MethodSelection.MEA3 = 'diff';
 MethodSelection.TANK = 'COM';
 
-LAT_values_FINAL = struct();
+LAT_interp_final = struct();
+selected_cases = fieldnames(LAT_interp);
 
-for i = 1:length(cases)
-    case_name = cases{i};
-    % Get the selected method for the current case
+for i = 1:length(selected_cases)
+    case_name = selected_cases{i};
+    
+    % Determine the method choice
     if isfield(MethodSelection, case_name)
-        method = MethodSelection.(case_name);
+        chosen_method = MethodSelection.(case_name);
     else
-        method = 'DIFF'; % Default to DIFF
+        chosen_method = 'diff'; % Default fallback
     end
     
-    % Select the matrix based on the method
-    if strcmp(method, 'COM')
-        LAT_matrix_final = LAT_values_COM.(case_name).LAT_matrix;
-        fprintf('  -> %s: Using COM Method (LAT_values_COM)\n', case_name);
-    elseif strcmp(method, 'DIFF')
-        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
-        fprintf('  -> %s: Using Derivative Method (LAT_values)\n', case_name);
+    % Extract the specific interpolated matrix
+    if strcmpi(chosen_method, 'COM')
+        data_to_copy = LAT_interp.(case_name).COM;
     else
-        warning('Unknown method "%s" specified for case %s. Defaulting to DIFF.', method, case_name);
-        LAT_matrix_final = LAT_values.(case_name).LAT_matrix;
+        data_to_copy = LAT_interp.(case_name).diff;
     end
     
-    LAT_values_FINAL.(case_name).LAT_matrix = LAT_matrix_final;
+    % Save into the final consolidated structure
+    LAT_interp_final.(case_name) = data_to_copy;
 end
 
 
-%% In case of need to manual corrections - Electrical
-% Histogram plots
-num_bins = 50;
+
+%% FINAL LAT MAPS - High-Density Arrows & Labeled Isochrones
+C = parula(256); 
+
 for i = 1:length(cases)
     case_name = cases{i};
-    LAT_matrix = LAT_values_FINAL.(case_name).LAT_matrix;
-    valid_LATS = LAT_matrix(LAT_matrix ~= 0);
-    figure();
-    set(gcf, 'color', 'white', 'Position', [600 50 600 400]);
-    h = histogram(valid_LATS, num_bins);
-    title(['LAT Distribution: Electrical ', case_name, ' (FINAL)'], 'FontSize', 14);
-    xlabel('Local Activation Time [ms]', 'FontSize', 12);
-    ylabel('Count (Number of Electrodes/Pixels)', 'FontSize', 12);
-    grid on;
-    mean_lat = mean(valid_LATS);
-    std_lat = std(valid_LATS);
-    fprintf('  -> %s LAT Stats: Mean = %.2f ms, STD = %.2f ms\n', ...
-            case_name, mean_lat, std_lat);
+    if ~isfield(LAT_interp_final, case_name), continue; end
+    
+    J = LAT_interp_final.(case_name);
+    
+    % --- CONFIGURATION FOR MORE ARROWS ---
+    arrow_density = 8;  % LOWER NUMBER = MORE ARROWS (Try 5 for even more)
+    arrow_scale = 1.2;  % Adjust length of the black arrows
+    
+    fig = figure('color', 'white', 'Position', [100, 100, 850, 650]);
+    
+    % Handle Rotation for MEAs
+    if ~strcmpi(case_name, 'TANK')
+        J = imrotate(J, 90);
+    end
+    
+    % 1. Plot the Heatmap
+    imagesc(J); 
+    hold on;
+    axis image;
+    colormap(C);
+    caxis([0 max(J(:), [], 'omitnan')]);
+    
+    % 2. Calculate Wave Direction
+    % We smooth slightly (sigma=2) so arrows show the general trend, not noise
+    J_smooth = imgaussfilt(J, 2); 
+    [px, py] = gradient(J_smooth);
+    
+    % 3. Create Grid for Arrows
+    [rows, cols] = size(J);
+    [X, Y] = meshgrid(1:cols, 1:rows);
+    
+    % Downsample grid based on the new density
+    idx_r = 1:arrow_density:rows;
+    idx_c = 1:arrow_density:cols;
+    
+    % 4. Plot High-Density Local Tendency Arrows (Black)
+    % We use 'k' for black. 
+    q = quiver(X(idx_r, idx_c), Y(idx_r, idx_c), ...
+               px(idx_r, idx_c), py(idx_r, idx_c), ...
+               arrow_scale, 'k', 'LineWidth', 1.0, 'MaxHeadSize', 1.5);
+    
+    % 5. Add Labeled Contour Lines (Isochrones)
+    [levels, hCont] = contour(J, 10, 'k', 'LineWidth', 1.2, 'ShowText', 'on');
+    clabel(levels, hCont, 'FontSize', 9, 'Color', 'black', 'FontWeight', 'bold');
+    
+    % Formatting
+    title(sprintf('High-Density Propagation Map: %s', case_name), 'FontSize', 14);
+    hBar = colorbar;
+    ylabel(hBar, 'Relative LAT (ms)');
+    
+    set(gca, 'YDir', 'reverse'); 
+    axis off;
+    hold off;
 end
 
 
-% Substitute specific value
-case_to_correct = 'MEA1';
-LAT_temp = LAT_values_FINAL.(case_to_correct).LAT_matrix;
-find_value = 9; % Value to replace
-tolerancia = 1;
-indices = find(abs(LAT_temp - find_value) < tolerancia);
-LAT_temp(indices) = 3; % Value to include
-LAT_values_FINAL.(case_to_correct).LAT_matrix = LAT_temp;
 
 
-% Substitute Higher or lower than
-case_to_correct = 'MEA1';
-find_value = 9; % Value to replace
-new_value = 0;
-LAT_values_FINAL.(case_to_correct).LAT_matrix( ...
-            LAT_values_FINAL.(case_to_correct).LAT_matrix < ...
-            find_value) = new_value;
 
 
-% Correct The Zero Normalization - Subtract minimum
-LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix < 0) = 0;
-min_LAT = min(LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0));
-if ~isempty(min_LAT) && ~isnan(min_LAT)
-    LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) = ...
-        LAT_values_FINAL.(case_to_correct).LAT_matrix(LAT_values_FINAL.(case_to_correct).LAT_matrix ~= 0) - min_LAT;
-end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %% FINAL LAT MAPS - Electrical
