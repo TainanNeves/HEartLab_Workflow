@@ -31,7 +31,7 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
     % --- Stage A: Filtering and Differentiation on ContextData (Large Window) ---
     % 1. Zero-Phase Butterworth Filter (Standard for EGM signals)
     f_low = 1;      % High-pass cutoff
-    f_high = 250;   % Low-pass cutoff
+    f_high = 80;   % Low-pass cutoff
     order = 3;      
     Wn = [f_low f_high] / (Fsampling/2); 
     [b, a] = butter(order, Wn, 'bandpass');
@@ -219,7 +219,7 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
         % Subplot 1: Full Signal Trace (Context Length)
         subplot(3,1,1);
         plot(xs_filtered);
-        xlim([WinStartIdx-(Fsampling/2) WinEndIdx+(Fsampling/2)]);
+        xlim([WinStartIdx-1*(Fsampling/2) WinEndIdx+1*(Fsampling/2)]);
         hold on;
         % Plot the detected point
         plot(position_final, xs_filtered(position_final), 'o', 'markersize', 10, 'color', 'red');
@@ -300,6 +300,7 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
         % Subplot 1: Full Signal Trace (Context Length)
         subplot(3,1,1);
         plot(xs_filtered);
+        xlim([WinStartIdx-1*(Fsampling/2) WinEndIdx+1*(Fsampling/2)]);
         hold on;
         h_auto = plot(position_final, xs_filtered(position_final), 'o', 'markersize', 10, 'color', 'red');
         xline(WinStartIdx, 'k--');
@@ -368,32 +369,42 @@ function LAT_E = find_LAT_diff_Tainan(Data, Fsampling, WinStartIdx, WinEndIdx, c
         
         if k == 0 % Mouse click occurred
             % Get click from any of the subplots
-            subplot(3,1,1);
+            % Note: ginput(1) picks the point from whichever axes you click in
             [x_click, ~] = ginput(1);
             
-            % Enforce that the click must be within the Analysis Window bounds
+            % NEW LOGIC: Allow selection anywhere within the ContextData limits
             new_position = round(x_click);
-            position_final = max(WinStartIdx, min(WinEndIdx, new_position));
+            
+            % Ensure the point is at least within the valid indices of the Data array
+            position_final = max(1, min(ContextLength, new_position));
             
             % Update plots
             % Subplot 1
             delete(h_auto);
             subplot(3,1,1);
+            hold on;
             plot(position_final, xs_filtered(position_final), 's', 'markersize', 10, 'color', 'green'); 
             
             % Subplot 2
-            delete(h_auto_win);
             subplot(3,1,2);
-            plot(position_final, xs_filtered(position_final), 's', 'markersize', 10, 'color', 'green');
+            hold on;
+            delete(h_auto_win);
+            % Only plot if the new position is actually visible in the zoomed window
+            if position_final >= WinStartIdx && position_final <= WinEndIdx
+                plot(position_final, xs_filtered(position_final), 's', 'markersize', 10, 'color', 'green');
+            end
             
             % Subplot 3
+            subplot(3,1,3);
+            hold on;
             delete(h_auto_deriv);
             delete(h_line);
-            subplot(3,1,3);
+            % Only plot if the new position is within the derivative calculation window
             plot(position_final, dvdt_context(position_final), 'gs', 'markersize', 10);
             xline(position_final, 'g', 'LineWidth', 2);
             
-            disp(['Manually selected position: ', num2str(position_final)]);
+            disp(['Manually selected position: ', num2str(position_final), ...
+                  ' (Window was: ', num2str(WinStartIdx), '-', num2str(WinEndIdx), ')']);
         else % k == 1 (Key press, including SPACE)
             disp('Key pressed. Using automatic point.');
         end

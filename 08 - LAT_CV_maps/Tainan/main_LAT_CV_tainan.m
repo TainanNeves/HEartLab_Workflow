@@ -312,6 +312,11 @@ disp('All results have been saved to "O_LAT_CV_CAM_.mat".');
 
 
 %% 
+
+
+
+
+
 %% 
 %%
 %% ELECTRIC ANALYSIS - INTERPOLATED SIGNALS
@@ -1104,6 +1109,11 @@ end
 
 
 %%
+
+
+
+
+
 %%
 %%
 %% ELECTRIC ANALYSIS - REAL SIGNALS ONLY
@@ -1112,7 +1122,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
 
 
 %% Configuring
@@ -1148,30 +1158,30 @@ el.TANK = [145, 146, 155, 156, 165, 166, 129, 130, 139, 140, 181, 182, ...
 % Selecting electrode
 el_plot = [3, 22, 90, 146, 152];
 % Preview Signal
-figure();
-hold on;
 for i = 1:length(el_plot)
+    figure();
+    hold on;
     plot(Data_E_Structure(el_plot(i), :), 'LineWidth', 1);
+    legend(cellstr(num2str(el_plot(i)', 'Electrode: %d')));
+    hold off;
 end
-legend(cellstr(num2str(el_plot', 'Electrode: %d')));
-hold off;
 clear el_plot i;
 
 
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = 9000; 
-sample_limits.MEA1.lim2 = 9400; 
+sample_limits.MEA1.lim1 = round(2.29957*4000); 
+sample_limits.MEA1.lim2 = round(2.35982*4000); 
 % MEA2
-sample_limits.MEA2.lim1 = 9100;
-sample_limits.MEA2.lim2 = 9500;
+sample_limits.MEA2.lim1 = round(2.33507*4000);
+sample_limits.MEA2.lim2 = round(2.39032*4000);
 % MEA3
-sample_limits.MEA3.lim1 = 9600;
-sample_limits.MEA3.lim2 = 9800;
+sample_limits.MEA3.lim1 = round(2.40208*4000);
+sample_limits.MEA3.lim2 = round(2.46883*4000);
 % TANK
-sample_limits.TANK.lim1 = 9600;
-sample_limits.TANK.lim2 = 9800;
+sample_limits.TANK.lim1 = round(2.38907*4000);
+sample_limits.TANK.lim2 = round(2.46883*4000);
 
 
 %% Check Selected Windows
