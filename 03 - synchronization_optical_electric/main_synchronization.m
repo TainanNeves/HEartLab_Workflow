@@ -9,8 +9,8 @@ clc;
 
 %% Loading variables
 
-load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\optic_data_E14_F3_R4_filtered.mat'); % Optical data Filtered
-load('C:\Users\HEartLab\Documents\GitHub\HEartLab\00 - examples\electric_data_E14_F3_R4_filtered.mat'); % Electric data filtered
+load("E:\Qualification\Analysis\E32F02R11\data\optic_data_E32_F02_R11_filtered.mat"); % Optical data Filtered
+load("E:\Qualification\Analysis\E32F02R11\data\electric_data_E32_F02_R11_filtered.mat"); % Electric data filtered
 
 %% Sample frequency from 500 to 4000 Hz
 
@@ -81,7 +81,7 @@ clear ans Fsampling i idf ido S valor x channel;
 
 
 %% Exporting work variables
-FileName = 'E32_F02_R25';
+FileName = 'E32_F02_R11';
 save(['data_filtered_sync_', FileName, '.mat'], 'D_SYNC', '-v7.3');
 
 

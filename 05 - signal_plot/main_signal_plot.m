@@ -5,19 +5,19 @@ clear; clc;
 %% Loading data
 
 % Loading variables
-load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Synchronized data
-load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Interpolate data
+load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16.mat"); % Synchronized data
+load("E:\Qualification\Analysis\E32F02R16\data\InterpolatedSignalsE32_F02_R16_filtered.mat"); % Interpolate data
 
 
 %% Check electrical signals
 %% Configuring
-data = D_EL.Data;
-Fsampling = D_EL.Header.sample_rate;
+data = D_SYNC.EL;
+Fsampling = InterpSignal.Header.sample_rate;
 
 
 %% Check electrodes quality
-lim1 = 3*4000;
-lim2 = 5*4000;
+lim1 = 2*4000;
+lim2 = 3*4000;
 
 
 % Plot MEA1 (electrodes 1:16)
@@ -74,6 +74,23 @@ for i = 1:num_tank_elec
 end
 sgtitle('TANK Electrodes');
 
+
+%% Substituing bad electrodes
+% Define replacement map in format [target_electrode, source_electrode]
+Replace_Map = [14, 13;
+                16, 15;
+                22, 21;
+                84, 83;
+                86, 85;
+                89, 90;
+                134, 135;
+                146, 145;
+                154, 155];
+
+% Apply the electrode substitutions to DATA.Data
+D_SYNC.EL(Replace_Map(:,1), :) = D_SYNC.EL(Replace_Map(:,2), :);
+
+
 %% Optical signals plot
 % Define a Camera to use
 Data = D_SYNC.CAM3;
@@ -85,7 +102,7 @@ p = [x(length(x)), y(length(y))];
 Fsampling = 4000;
 
 % Title
-str_title = ['Optical Signal - Right Atria'];
+str_title = ['Optical Signal - Ventricle'];
 
 % Full optical time plot
 % Create a time vector
@@ -102,7 +119,7 @@ title(str_title);
 % Specific optical time plot
 % Define the time range for the plot
 t_in = 2;
-t_out = 4;
+t_out = 6;
 start_sample = t_in*Fsampling; % Adjust the start sample according to your data
 end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
 % Create a time vector

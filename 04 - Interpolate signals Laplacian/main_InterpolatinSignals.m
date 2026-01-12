@@ -190,7 +190,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E32_F02_R01_new';
+FileName = 'E32_F02_R11';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;
@@ -215,6 +215,7 @@ save(['InterpolatedSignals', FileName, '_filtered'], 'InterpSignal', '-v7.3');
 clear; clc;
 
 %% Loading
+load(); % Sync filtered signal
 load(); % Optical Filtered
 load(); % Electrical Filtered
 load(); % Electrical Filtered Interpolated
@@ -234,7 +235,7 @@ data_e4 = InterpSignal.Sync.TANK;
 electrodes = [7 22 90 142 178 172]; 
 
 % --- Definição de Parâmetros para Checagem ---
-check_time_seconds = 2.4; 
+check_time_seconds = 2.3; 
 check_window_seconds = 1;
 
 % Parâmetros Fixos

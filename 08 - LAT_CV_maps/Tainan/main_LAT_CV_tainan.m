@@ -18,8 +18,8 @@ pick_up_a_trace(Background, Data_O,1);
 
 
 %% Time Selection & Preview - Optical
-optical_lim1 = 9642;
-optical_lim2 = 10177;
+optical_lim1 = 9240;
+optical_lim2 = 9439;
 Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
 Background = squeeze(Data_O(:,:,optical_lim1));
 pick_up_a_trace(Background, Data_temp_O, 1);
@@ -147,7 +147,7 @@ Results.LAT_stats = struct(...
 
 
 %% Specific ROI Plot with Min Subtraction - Optical
-levelStep = 10;
+levelStep = 20;
 % ROI selection
     % Same as the statistics
         roi_specific = roi_lat_O;
@@ -172,7 +172,8 @@ LAT_renormalized(LAT_renormalized < 0) = 0; % Ensure no negative values after su
 % Plot
 figure('color', 'white', 'Position', [1250 40 600 600]);
 Title_spec = ['Optical - Specific ROI (Min Subtracted: ' num2str(min_LAT_specific, '%.2f') 'ms)'];
-C = parula(256); C(1,1:3) = [1 1 1]; 
+C = parula(256); 
+% C(1,1:3) = [1 1 1]; % If you want white background
 J_spec = imrotate(LAT_renormalized, 90);
 contourf(flipud(J_spec), levelStep); 
 colormap(C);
@@ -1122,7 +1123,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R01\data\data_filtered_sync_E32_F02_R01.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
 
 
 %% Configuring
@@ -1171,17 +1172,17 @@ clear el_plot i;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = round(2.29957*4000); 
-sample_limits.MEA1.lim2 = round(2.35982*4000); 
+sample_limits.MEA1.lim1 = 9227; 
+sample_limits.MEA1.lim2 = 9259; 
 % MEA2
-sample_limits.MEA2.lim1 = round(2.33507*4000);
-sample_limits.MEA2.lim2 = round(2.39032*4000);
+sample_limits.MEA2.lim1 = 9223;
+sample_limits.MEA2.lim2 = 9255;
 % MEA3
-sample_limits.MEA3.lim1 = round(2.40208*4000);
-sample_limits.MEA3.lim2 = round(2.46883*4000);
+sample_limits.MEA3.lim1 = 9740;
+sample_limits.MEA3.lim2 = 9787;
 % TANK
-sample_limits.TANK.lim1 = round(2.38907*4000);
-sample_limits.TANK.lim2 = round(2.46883*4000);
+sample_limits.TANK.lim1 = 9700;
+sample_limits.TANK.lim2 = 9780;
 
 
 %% Check Selected Windows
@@ -1452,10 +1453,10 @@ end
 %% LAT METHOD CONSOLIDATION - Electrical
 % --- Define Method Selection ---
 MethodSelection = struct();
-MethodSelection.MEA1 = 'diff';
+MethodSelection.MEA1 = 'COM';
 MethodSelection.MEA2 = 'diff';
-MethodSelection.MEA3 = 'diff';
-MethodSelection.TANK = 'COM';
+MethodSelection.MEA3 = 'COM';
+MethodSelection.TANK = 'diff';
 
 LAT_interp_final = struct();
 selected_cases = fieldnames(LAT_interp);

@@ -5,7 +5,7 @@ clear; clc;
 
 %% Reads the Open Ephys files
 % fulfilename is the path to the structure.oebin file contained in one of the experiments
-fullfilename = "E:\experiment_data\E30\Electrical\02\noFilter\2025-07-15_12-45-13\Record Node 108\experiment1\recording23\structure.oebin"; % Put the .oebin path
+fullfilename = "E:\experiment_data\E32\electric\02\no_filter\2025-11-25_12-32-43\Record Node 108\experiment1\recording11\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -208,7 +208,7 @@ Fsampling = DATA.Header.sample_rate;  % Changed from D_EL.Header to DATA.Header
 
 %% Check electrodes quality
 lim1 = 3*4000;
-lim2 = 5*4000;
+lim2 = 3.5*4000;
 
 % Plot MEA1 (electrodes 1:16)
 figure('Name', 'MEA1 Electrodes Quality Check', 'Position', [100, 100, 1200, 800]);
@@ -267,22 +267,19 @@ sgtitle('TANK Electrodes');
 
 %% Substituting values
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [4, 8;
-                82, 81;
-                86, 85;
-                91, 92;
-                94, 93;
-                130, 139;
-                131, 133;
-                135, 144;
-                136, 138;
-                145, 146;
-                154, 153;
-                157, 156;
-                163, 164;
-                165, 166;
-                180, 189;
-                182, 183];
+Replace_Map = [154, 155;
+                135, 134;
+                159, 160;
+                83, 84;
+                95, 94;
+                96, 92;
+                18, 19;
+                24, 23;
+                31, 30;
+                3, 2;
+                4, 7;
+                11, 10;
+                13, 14];
 
 % Apply the electrode substitutions to DATA.Data
 DATA.Data(Replace_Map(:,1), :) = DATA.Data(Replace_Map(:,2), :);
@@ -291,7 +288,7 @@ DATA.Data(Replace_Map(:,1), :) = DATA.Data(Replace_Map(:,2), :);
 %% Processing Data and Exporting
 %% Filter and Save file to .mat
 % Filename to save
-FileName = 'E32_F02_R25';
+FileName = 'E32_F02_R11';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
