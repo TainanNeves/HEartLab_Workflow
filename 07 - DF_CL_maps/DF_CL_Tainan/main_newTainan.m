@@ -3,12 +3,12 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16_new.mat"); % Load Synchronized data
 
 
 %% DF Calculation - Optical
-Data = D_SYNC.CAM3;
-ROI = D_SYNC.ROI.ROI_3;
+Data = D_SYNC.CAM1;
+ROI = D_SYNC.ROI.ROI_1;
 Fsampling = 4000;
 
 % Set upper and lower frequency bounds for the Dominant Frequency calculation
@@ -16,8 +16,8 @@ freq_up = 20;
 freq_down = 0.5;
 
 % Extract a subset of the optical data for analysis (adjust the sample range accordingly)
-in_sample = 2*4000;
-end_sample = 6*4000;
+in_sample = 1;
+end_sample = 4*4000;
 Data_temp = Data(:,:,in_sample:end_sample);
 
 % Perform Dominant Frequency analysis on the subset
@@ -112,7 +112,7 @@ end
 
 %% DF Map - Optical
 lim = [freq_down freq_up]; % Default [freq_down freq_up]
-Title = 'Cam3 RA';
+Title = 'Cam2 LA';
 C = jet(256);
 C(1,1:3) = [1 1 1]; % White for background
 C(256,1:3) = [0.5, 0.5, 0.5]; % Gray for the max value
@@ -288,7 +288,7 @@ axis off;
 
 % Subplot 4: DF Histogram
 subplot(2,3,4);
-histogram(nonzero_values_df, 20, 'FaceColor', 'blue', 'FaceAlpha', 0.7);
+histogram(nonzero_values_df, 50, 'FaceColor', 'blue', 'FaceAlpha', 0.7);
 xlabel('Dominant Frequency (Hz)');
 ylabel('Count');
 title('DF Distribution');
@@ -296,7 +296,7 @@ grid on;
 
 % Subplot 5: CL Histogram
 subplot(2,3,5);
-histogram(CL_O_roi, 20, 'FaceColor', 'red', 'FaceAlpha', 0.7);
+histogram(CL_O_roi, 50, 'FaceColor', 'red', 'FaceAlpha', 0.7);
 xlabel('Cycle Length (ms)');
 ylabel('Count');
 title('CL Distribution');
@@ -304,7 +304,7 @@ grid on;
 
 % Subplot 6: OI Histogram
 subplot(2,3,6);
-histogram(nonzero_values_oi, 20, 'FaceColor', 'green', 'FaceAlpha', 0.7);
+histogram(nonzero_values_oi, 50, 'FaceColor', 'green', 'FaceAlpha', 0.7);
 xlabel('Organization Index');
 ylabel('Count');
 title('OI Distribution');
@@ -333,7 +333,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_filtered.mat"); % Load Interpolated data
+load("E:\Qualification\Analysis\E32F02R16\data\InterpolatedSignalsE32_F02_R16_filtered.mat"); % Load Interpolated data
 
 
 %% DF Calculation - Electrical
@@ -341,8 +341,8 @@ load("E:\Qualification\Analysis\E32F02R08\data\InterpolatedSignalsE32_F02_R08_fi
 Fsampling = 4000;
 freq_up = 20;
 freq_down = 0.5;
-in_sample = 2*4000;
-end_sample = 6*4000;
+in_sample = 1;
+end_sample = 4*4000;
 
 % Loading Data
 cases = {'MEA1', 'MEA2', 'MEA3', 'TANK'};
@@ -365,7 +365,7 @@ DF_values.fstep = fstep;
 
 %% Spectrum of multiple electrodes - Electrical
 % Select which case to analyze
-current_case = 'MEA2'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
+current_case = 'TANK'; % Change to 'MEA1', 'MEA2', 'MEA3', or 'TANK'
 Data = InterpSignal.Sync.(current_case);
 Background = squeeze(Data(:,:,2000));
 
@@ -463,21 +463,21 @@ end
 
 %% In case of need to manual corrections
 % Apply corrections to specific case BEFORE CL calculation
-case_to_correct = 'MEA2'; % Change as needed
+case_to_correct = 'TANK'; % Change as needed
 DF_E = DF_values.(case_to_correct).MFFTi;
 
 % Substitute specific value in DF
-find_value = 0; % Value to replace
-tolerancia = 1;
+find_value = 14.85; % Value to replace
+tolerancia = 0.3;
 indices = find(abs(DF_E - find_value) < tolerancia);
-DF_E(indices) = 3.29; % Value to include
+DF_E(indices) = 3.75; % Value to include
 % Update the DF values (CL will be calculated from this corrected DF)
 DF_values.(case_to_correct).MFFTi = DF_E;
 
 % Substitute lower or higer values in DF
-find_value = 0; % Values to replace
+find_value = 2; % Values to replace
 indices = find(DF_E < find_value);
-DF_E(indices) = 3.399; % Value to include
+DF_E(indices) = 2.45; % Value to include
 % Update the DF values (CL will be calculated from this corrected DF)
 DF_values.(case_to_correct).MFFTi = DF_E;
 
@@ -486,7 +486,7 @@ DF_values.(case_to_correct).MFFTi = DF_E;
 % Create DF maps for all cases
 lim = [freq_down freq_up];
 C = jet(256);
-C(1,1:3) = [1 1 1]; % White for background
+% C(1,1:3) = [1 1 1]; % White for background
 
 for i = 1:length(cases)
     case_name = cases{i};
@@ -640,7 +640,7 @@ end
 %% Electrical Organization Index - OI
 % Calculate OI for each case
 OI_values = struct();
-dfh_threshold_area = 0.5;
+dfh_threshold_area = 0.2;
 f_mode = 2;
 debug = 1;
 
@@ -832,10 +832,10 @@ disp('- Electrical_Analysis_Results_*.xlsx (Excel tables)');
 %%
 %% Statistical BoxPlots
 clear; clc;
-CAM1 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM1.mat");
-CAM2 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM2.mat");
-CAM3 = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\O_DF_CL_OI_CAM3.mat");
-EL = load("E:\Qualification\Analysis\E32F02R08\analysis_frequency\E_DF_CL_OI.mat");
+CAM1 = load("E:\Qualification\Analysis\E32F02R11\analysis_DF\O_DF_CL_OI_CAM1.mat");
+CAM2 = load("E:\Qualification\Analysis\E32F02R11\analysis_DF\O_DF_CL_OI_CAM2.mat");
+CAM3 = load("E:\Qualification\Analysis\E32F02R11\analysis_DF\O_DF_CL_OI_CAM3.mat");
+EL = load("E:\Qualification\Analysis\E32F02R11\analysis_DF\E_DF_CL_OI.mat");
 
 
 % --- DEFINE SOURCES AND PARAMETERS ---

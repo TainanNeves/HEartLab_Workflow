@@ -4,13 +4,13 @@ clear; clc;
 
 %% OPTIC ANALYSIS
 %% Loading Preview Data
-load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16_new.mat"); % Load Synchronized data
 
 
 %% Loading Parameters Select Time Windows
 Fsampling = 4000;
-Data_O = D_SYNC.CAM3;
-ROI_O = D_SYNC.ROI.ROI_3;
+Data_O = D_SYNC.CAM2;
+ROI_O = D_SYNC.ROI.ROI_2;
 optical_space_scale = 0.33; % mm per pixel
 % Preview Signal
 Background = squeeze(Data_O(:,:,2000));
@@ -18,8 +18,8 @@ pick_up_a_trace(Background, Data_O,1);
 
 
 %% Time Selection & Preview - Optical
-optical_lim1 = 9240;
-optical_lim2 = 9439;
+optical_lim1 = 19621;
+optical_lim2 = 20240;
 Data_temp_O = Data_O(:,:,optical_lim1:optical_lim2);
 Background = squeeze(Data_O(:,:,optical_lim1));
 pick_up_a_trace(Background, Data_temp_O, 1);
@@ -28,7 +28,7 @@ pick_up_a_trace(Background, Data_temp_O, 1);
 %% LAT Calculation - Optical
 linear_fit_length = 15;
 PCL = 200;
-debug_LAT = 1;
+debug_LAT = 0;
 
 % Calculate LAT for each pixel
 LAT_O = zeros(size(Data_temp_O, 1), size(Data_temp_O, 2));
@@ -56,7 +56,7 @@ Results.LAT = LAT_O_filtered;
 
 
 %% LAT Map Plot - Optical
-levelStep = 20;
+levelStep = 10;
 Title = 'Optical - LAT';
 f1 = figure('color', 'white', 'Position', [40 40 600 600]);
 C = parula(256);
@@ -89,9 +89,9 @@ ylabel('N of Pixels', 'FontSize', 12);
 grid on;
 
 % Configuring Parameters
-find_value = 0.1; 
+find_value = 20; 
 tolerancia = 0.1;
-new_value = 0.5; % NaN to exclude
+new_value = NaN; % NaN to exclude
 
 % Substitute exactly value
 indices = find(abs(LAT_O_filtered - find_value) < tolerancia);
@@ -101,7 +101,7 @@ if ~isempty(indices)
 end
 
 % Substitute Higher or Lower than
-LAT_O_filtered(LAT_O_filtered < find_value) = new_value;
+LAT_O_filtered(LAT_O_filtered > find_value) = new_value;
 
 % Correct The Zero Normalization - Subtract minimum
 LAT_O_filtered(LAT_O_filtered < 0) = 0;
@@ -115,7 +115,9 @@ end
 %% LAT Statistics - Optical
 % Display the image and let the user define the ROI
 figure();
-imshow(LAT_O_filtered, C);
+C = parula(256);
+% imshow(LAT_O_filtered,C); 
+imshow(LAT_O_filtered, [0 25]); colormap(C);
 % imshow(Data_temp_O(:,:,1));
 title('Select ROI for DF Analysis');
 roi_lat_O = roipoly;
@@ -1123,7 +1125,7 @@ clear; clc;
 
 
 %% Loading Data
-load("E:\Qualification\Analysis\E32F02R08\data\data_filtered_sync_E32_F02_R08.mat"); % Load Synchronized data
+load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16_new.mat"); % Load Synchronized data
 
 
 %% Configuring
@@ -1147,6 +1149,10 @@ el.MEA3 = [81, 82, 83, 84, ...
             85, 86, 87, 88, ...
             89, 90, 91, 92, ...
             93, 94, 95, 96];
+% el.MEA3 = [77, 78, 79, 80, ...
+%                 73, 74, 75, 76, ...
+%                 69, 70, 71, 72, ...
+%                 65, 66, 67, 68];
 el.TANK = [145, 146, 155, 156, 165, 166, 129, 130, 139, 140, 181, 182, ...
             147, NaN, 157, NaN, 167, NaN, 131, NaN, 141, NaN, 183, NaN, ...
             148, 149, 158, 159, 168, 169, 132, 133, 142, 143, 184, 185, ...
@@ -1172,17 +1178,17 @@ clear el_plot i;
 %% Defining Sample Limits
 sample_limits = struct();
 % MEA1
-sample_limits.MEA1.lim1 = 9227; 
-sample_limits.MEA1.lim2 = 9259; 
+sample_limits.MEA1.lim1 = 9573; 
+sample_limits.MEA1.lim2 = 10056; 
 % MEA2
-sample_limits.MEA2.lim1 = 9223;
-sample_limits.MEA2.lim2 = 9255;
+sample_limits.MEA2.lim1 = 11461;
+sample_limits.MEA2.lim2 = 11987;
 % MEA3
-sample_limits.MEA3.lim1 = 9740;
-sample_limits.MEA3.lim2 = 9787;
+sample_limits.MEA3.lim1 = 11235;
+sample_limits.MEA3.lim2 = 11599;
 % TANK
-sample_limits.TANK.lim1 = 9700;
-sample_limits.TANK.lim2 = 9780;
+sample_limits.TANK.lim1 = 12275;
+sample_limits.TANK.lim2 = 12779;
 
 
 %% Check Selected Windows
@@ -1453,10 +1459,10 @@ end
 %% LAT METHOD CONSOLIDATION - Electrical
 % --- Define Method Selection ---
 MethodSelection = struct();
-MethodSelection.MEA1 = 'COM';
+MethodSelection.MEA1 = 'diff';
 MethodSelection.MEA2 = 'diff';
-MethodSelection.MEA3 = 'COM';
-MethodSelection.TANK = 'diff';
+MethodSelection.MEA3 = 'diff';
+MethodSelection.TANK = 'COM';
 
 LAT_interp_final = struct();
 selected_cases = fieldnames(LAT_interp);
@@ -1659,3 +1665,4 @@ save(save_name_mat, 'FinalResults', '-v7.3');
 if ~isempty(stats_summary)
     writetable(stats_summary, save_name_csv);
 end
+ 

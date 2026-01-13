@@ -5,7 +5,7 @@ clear; clc;
 %% Loading data
 
 % Loading variables
-load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16.mat"); % Synchronized data
+load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16_new.mat"); % Synchronized data
 load("E:\Qualification\Analysis\E32F02R16\data\InterpolatedSignalsE32_F02_R16_filtered.mat"); % Interpolate data
 
 
@@ -77,15 +77,7 @@ sgtitle('TANK Electrodes');
 
 %% Substituing bad electrodes
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [14, 13;
-                16, 15;
-                22, 21;
-                84, 83;
-                86, 85;
-                89, 90;
-                134, 135;
-                146, 145;
-                154, 155];
+Replace_Map = [146, 145];
 
 % Apply the electrode substitutions to DATA.Data
 D_SYNC.EL(Replace_Map(:,1), :) = D_SYNC.EL(Replace_Map(:,2), :);
@@ -102,7 +94,7 @@ p = [x(length(x)), y(length(y))];
 Fsampling = 4000;
 
 % Title
-str_title = ['Optical Signal - Ventricle'];
+str_title = ['Optical Signal - Right Atria'];
 
 % Full optical time plot
 % Create a time vector
@@ -119,7 +111,7 @@ title(str_title);
 % Specific optical time plot
 % Define the time range for the plot
 t_in = 2;
-t_out = 6;
+t_out = 4;
 start_sample = t_in*Fsampling; % Adjust the start sample according to your data
 end_sample = t_out*Fsampling;   % Adjust the end sample according to your data
 % Create a time vector
@@ -137,7 +129,7 @@ title(str_title);
 
 %% Electric signal plot
 % Define electrode to use
-el = [4 2 6 11 14 15];
+el = [2, 4, 10, 22, 25, 85, 90, 142, 155, 184];
 Data = D_SYNC.EL(el,:); 
 Fsampling = 4000;
 % Title for the plots
@@ -296,11 +288,11 @@ pRA = [xRA yRA];
 pLA = [xLA yLA];
 
 % Electric electrodes
-el1 = 7; % RA
-el2 = 22; % LA
+el1 = 4; % RA
+el2 = 25; % LA
 el3 = 90; % V
 el4 = 142; % Tank 1
-el5 = 178; % Tank 2
+el5 = 155; % Tank 2
 
 % Parameters
 Fsampling = 4000;
@@ -455,9 +447,9 @@ sgtitle(['Electric signals: ', case_name_e]);
 
 %% All plots (Optic + MEAs) - 2 Figures
 % Configuring Electrical
-case_name_e = 'MEA2';
+case_name_e = 'MEA3';
 Fsampling = 4000;
-time = [2, 3]; % s
+time = [1, 3]; % s
 Data_E = D_SYNC.EL(:, time(1)*Fsampling:time(2)*Fsampling);
 el.MEA1 = [1, 2, 3, 4, ...
             5, 6, 7, 8, ...
@@ -473,7 +465,7 @@ el.MEA3 = [81, 82, 83, 84, ...
             93, 94, 95, 96];
 
 % Configuring Optical
-case_name_o = 'CAM2';
+case_name_o = 'CAM1';
 Data_O = D_SYNC.(case_name_o)(:, :, time(1)*Fsampling:time(2)*Fsampling);
 Background = squeeze(Data_O(:,:,2));
 Background = single(D_SYNC.IMG.(case_name_o)); Data_O = rot90(Data_O, 1); % To use the figure with no filtering
@@ -515,8 +507,8 @@ sgtitle(['Combined Signals: ', case_name_o, ' (Opt) & ', case_name_e, ' (Elec)']
 
 %% All plots (TANK)
 Fsampling = 4000;
-start_time = 2.25; % s
-end_time = 2.85;   % s
+start_time = 2.5; % s
+end_time = 3.5;   % s
 
 % Ensure Data_E is loaded (assuming D_SYNC is available from previous sections)
 Data_E = D_SYNC.EL;

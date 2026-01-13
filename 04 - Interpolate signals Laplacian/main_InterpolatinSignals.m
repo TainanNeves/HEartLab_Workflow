@@ -75,22 +75,8 @@ sgtitle('TANK Electrodes');
 
 %% Substituting values
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [4, 8;
-                82, 81;
-                86, 85;
-                91, 92;
-                94, 93;
-                130, 139;
-                131, 133;
-                135, 144;
-                136, 138;
-                145, 146;
-                154, 153;
-                157, 156;
-                163, 164;
-                165, 166;
-                180, 189;
-                182, 183];
+Replace_Map = [31, 30;
+                21, 21];
 data(Replace_Map(:,1), :) = data(Replace_Map(:,2), :);
 
 
@@ -190,7 +176,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E32_F02_R11';
+FileName = 'E28_F02_R09_new';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;
