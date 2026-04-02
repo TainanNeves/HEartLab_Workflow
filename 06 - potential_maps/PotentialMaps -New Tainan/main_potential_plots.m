@@ -14,7 +14,7 @@ data_o3 = D_SYNC.CAM3;
 data_e = D_SYNC.EL;
 
 % Plot time
-timepoint_seconds = 2.77; 
+timepoint_seconds = 2.07; 
 % Plot window
 plot_window_seconds = 1; 
 
@@ -23,11 +23,11 @@ electrodes = [4 25 90 142 155 182];
 
 % Selecting Colorbar limits
 vmin_cam1 = 0; 
-vmax_cam1 = 1; 
+vmax_cam1 = 8; 
 vmin_cam2 = 0; 
-vmax_cam2 = 1;
+vmax_cam2 = 8;
 vmin_cam3 = 0;
-vmax_cam3 = 1;
+vmax_cam3 = 8;
 
 % Defining Fixed parameters
 Fs = 4000;
@@ -208,9 +208,9 @@ data_o3 = imrotate(data_o3, 90);
 electrodes = [4 25 90 142 155 182]; 
 
 % Time parameters
-ti = 2.5; % Start time [s]
-to = 3.5; % End time [s]
-step = 0.005; % Step size [s]
+ti = 1.9; % Start time [s]
+to = 2.3; % End time [s]
+step = 0.001; % Step size [s]
 frame_rate = 15; % Video frame rate (FPS)
 
 % --- WINDOW PARAMETER ---
@@ -220,9 +220,9 @@ plot_window_seconds = 1; % The total duration shown in the time plots
 videoFile = 'O_overview_video.mp4';
 
 % Colorbar limits for image frames
-clim_cam1 = [0 1]; 
-clim_cam2 = [0 1];
-clim_cam3 = [0 1]; 
+clim_cam1 = [0 8]; 
+clim_cam2 = [0 8];
+clim_cam3 = [0 8]; 
 
 % Fixed parameters
 Fs = 4000;
