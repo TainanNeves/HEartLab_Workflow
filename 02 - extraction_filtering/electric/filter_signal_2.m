@@ -8,7 +8,7 @@ function Data_filtered = filter_signal(Lf, Hf, DATA, Fs)
     support_length = 10000; % Padding length to avoid edge effects
     powerline_freq = 60;   % Powerline frequency (Hz)
     harmonics = 12;        % Number of harmonics to filter
-
+ 
     % Apply notch filters
     Data = apply_notch_filters(DATA, powerline_freq, Fs, harmonics);
 
