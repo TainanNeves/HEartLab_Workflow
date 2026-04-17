@@ -15,7 +15,7 @@ Fsampling = D_EL.Header.sample_rate;
 
 %% Check electrodes quality
 lim1 = 3*4000;
-lim2 = 5*4000;
+lim2 = 4*4000;
 
 
 % Plot MEA1 (electrodes 1:16)
@@ -75,8 +75,11 @@ sgtitle('TANK Electrodes');
 
 %% Substituting values
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [31, 30;
-                21, 21];
+Replace_Map = [18, 17;
+                24, 23;
+                26, 25;
+                30, 29;
+                94, 93];
 data(Replace_Map(:,1), :) = data(Replace_Map(:,2), :);
 
 
@@ -176,7 +179,7 @@ clear Fsampling S ans i idf ido S x y channel numX numY signal_segment D_3D
 
 %% Export Struct
 % Filename to save
-FileName = 'E28_F02_R09_new';
+FileName = '13_32';
 
 % Fill Struct to export
 InterpSignal.TTL = D_EL.TTL;
@@ -193,7 +196,7 @@ InterpSignal.Sync.MEA3 = D_SYNC.case3;
 InterpSignal.Sync.TANK = D_SYNC.case4;
 
 %Exporting
-save(['InterpolatedSignals', FileName, '_filtered'], 'InterpSignal', '-v7.3');
+save(['InterpolatedSignals_', FileName, '_filtered'], 'InterpSignal', '-v7.3');
 
 
 %% 

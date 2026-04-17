@@ -4,7 +4,7 @@ clear; clc;
 
 %% Reads the Open Ephys files
 % fulfilename is the path to the structure.oebin file contained in one of the experiments
-fullfilename = "D:\Defence\new_analysis\pacing_locations\data\raw\Record Node 108 - electrical\experiment1\recording8\structure.oebin"; % Put the .oebin path
+fullfilename = "D:\Defence\new_analysis\pacing_locations\data\raw\Record Node 108 - electrical\experiment1\recording3\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -266,7 +266,10 @@ sgtitle('TANK Electrodes');
 
 %% Substituting values
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [96, 97;
+Replace_Map = [6, 7;
+                23, 22;
+                31, 32;
+                96, 97;
                 154, 153];
 
 % Apply the electrode substitutions to DATA.Data
@@ -276,7 +279,7 @@ DATA.Data(Replace_Map(:,1), :) = DATA.Data(Replace_Map(:,2), :);
 %% Processing Data and Exporting
 %% Filter and Save file to .mat
 % Filename to save
-FileName = '13_32_';
+FileName = '13_';
 
 % Raw file export
 D_EL = struct(); % Initialize structure

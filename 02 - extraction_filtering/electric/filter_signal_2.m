@@ -16,8 +16,8 @@ function Data_filtered = filter_signal(Lf, Hf, DATA, Fs)
     Data = [repmat(Data(1), 1, support_length), Data, repmat(Data(end), 1, support_length)];
 
     % Apply FIR filters
-    Data = apply_fir_filter(Data, Lf, Fs, 'high', 2); % High-pass % 1000
-    Data = apply_fir_filter(Data, Hf, Fs, 'low', 2);   % Low-pass % 500
+    Data = apply_fir_filter(Data, Lf, Fs, 'high', 1000); % High-pass % Better results in high ordern than using the pattern 2
+    Data = apply_fir_filter(Data, Hf, Fs, 'low', 500);   % Low-pass % Better results in high ordern than using the pattern 2
 
     % Remove padding and return
     Data_filtered = Data(support_length + 1 : end - support_length);
