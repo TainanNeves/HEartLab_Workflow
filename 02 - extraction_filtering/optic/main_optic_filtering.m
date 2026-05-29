@@ -9,7 +9,7 @@ clear all; close all; clc;
 % Run the code with F9 part by part
 
 % Load data and region of interest (ROI)
-load("E:\experiment_data\E32\Optical Mapping to MATLAB\Rec_13-12-05_Bin=8_Cam3.mat"); % Optical Data Binned
+load("D:\Defence\new_analysis\pacing_locations\data\raw\optical\Rec_13-32-45_Bin=8_Cam3.mat"); % Optical Data Binned
 ROI_3 = roipoly(DATA(:,:,50)); % If you want to create a ROI / Double click in the center to finish
 
 % If you already have the ROIs
@@ -87,7 +87,7 @@ clear C col_pixel DATA DATA1 DATA2 DATA3 f Fcut Fpass Fs Fsampling;
 clear i I J less n p p2 R row_pixel ROI ans Background;
 
 %% Exporting the Optical data
-identification = 'E32_F02_R11';
+identification = 'E35_F02_R13_32_45';
 fileName = ['optic_data_', identification, '_filtered.mat'];
 % Creating variables
 D_OP.D_CAM1_filtered = D_CAM1_filtered;

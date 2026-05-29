@@ -1,11 +1,10 @@
 %% Extraction and filtering of electrical data
-
 clear; clc;
 
 
 %% Reads the Open Ephys files
 % fulfilename is the path to the structure.oebin file contained in one of the experiments
-fullfilename = "E:\experiment_data\E32\electric\02\no_filter\2025-11-25_12-32-43\Record Node 108\experiment1\recording11\structure.oebin"; % Put the .oebin path
+fullfilename = "D:\Defence\new_analysis\pacing_locations\data\raw\Record Node 108 - electrical\experiment1\recording8\structure.oebin"; % Put the .oebin path
 
 % Channels to save
 channels = [1:192];
@@ -267,19 +266,8 @@ sgtitle('TANK Electrodes');
 
 %% Substituting values
 % Define replacement map in format [target_electrode, source_electrode]
-Replace_Map = [154, 155;
-                135, 134;
-                159, 160;
-                83, 84;
-                95, 94;
-                96, 92;
-                18, 19;
-                24, 23;
-                31, 30;
-                3, 2;
-                4, 7;
-                11, 10;
-                13, 14];
+Replace_Map = [96, 97;
+                154, 153];
 
 % Apply the electrode substitutions to DATA.Data
 DATA.Data(Replace_Map(:,1), :) = DATA.Data(Replace_Map(:,2), :);
@@ -288,7 +276,7 @@ DATA.Data(Replace_Map(:,1), :) = DATA.Data(Replace_Map(:,2), :);
 %% Processing Data and Exporting
 %% Filter and Save file to .mat
 % Filename to save
-FileName = 'E32_F02_R11';
+FileName = '13_32_';
 
 % Raw file export
 D_EL = struct(); % Initialize structure
@@ -302,15 +290,15 @@ save(['electric_data_', FileName, '_raw'], 'D_EL');
 clear D_EL;
 
 % Defining electrode arrays
-el_butter = [1:32, 81:96, 129:174, 177:190]; % for Butterworth
+el_butter = [1:32, 81:97, 129:174, 177:190]; % for Butterworth
 el_wavelet = []; % for Wavelet
-el_toZero = [33:80, 97:128, 175, 176, 191, 192]; % to set to zero
+el_toZero = [33:80, 98:128, 175, 176, 191, 192]; % to set to zero
 tank_electrodes = [129:174,177:190]; % Tank electrodes for average subtraction
 avg_subtraction_enabled = 0; % Set to 1 to enable
 
 % Filter range (Butterworth)
 f_low_butter = 0.5;
-f_high_butter = 200;
+f_high_butter = 150;
 % Filter Configuration (Wavelet)
 waveletType = {'db4'}; % Wavelet type
 numLevels = 10; % Number of decomposition levels

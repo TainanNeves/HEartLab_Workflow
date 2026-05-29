@@ -3,7 +3,7 @@ clear; clc;
 
 
 %% Loading Variables
-load("E:\Qualification\Analysis\E32F02R16\data\data_filtered_sync_E32_F02_R16_new.mat"); % Synchronized data
+load("D:\Defence\new_analysis\pacing_locations\data\Sync\data_filtered_sync_13_08_35.mat"); % Synchronized data
 
 
 %% Overview Optical plot
@@ -14,7 +14,7 @@ data_o3 = D_SYNC.CAM3;
 data_e = D_SYNC.EL;
 
 % Plot time
-timepoint_seconds = 2.07; 
+timepoint_seconds = 2; 
 % Plot window
 plot_window_seconds = 1; 
 
@@ -208,9 +208,9 @@ data_o3 = imrotate(data_o3, 90);
 electrodes = [4 25 90 142 155 182]; 
 
 % Time parameters
-ti = 1.9; % Start time [s]
-to = 2.3; % End time [s]
-step = 0.001; % Step size [s]
+ti = 1.71; % Start time [s]
+to = 2.05; % End time [s]
+step = 0.005; % Step size [s]
 frame_rate = 15; % Video frame rate (FPS)
 
 % --- WINDOW PARAMETER ---
@@ -395,8 +395,8 @@ fprintf('MP4 video saved as: %s\n', videoFile);
 
 %% Potential Map - Individual Figures
 % Select sample and camera to plot
-sample = round(3*4000):100:round(3.5*4000);
-Data_O = D_SYNC.CAM2;
+sample = round(1.71*4000):100:round(2.12*4000);
+Data_O = D_SYNC.CAM1;
 
 % Initialize color map and adjust first color to white
 C = jet(256);
@@ -413,7 +413,7 @@ for i = 1:length(sample)
     
     % Create a figure for each sample
     f1 = figure('color', 'white', 'Position', [50 50 500 500]);
-    imagesc(J, [0 1]);
+    imagesc(J, [0 9]);
     colormap(C);
     
     % Add a colorbar and adjust labels
@@ -432,8 +432,8 @@ end
 
 %% Potential Map - Multiplot
 % Potential map - Subplot version
-sample = round(3*4000):100:round(3.5*4000);
-Data_O = D_SYNC.CAM2;
+sample = round(1.71*4000):45:round(2.05*4000);
+Data_O = D_SYNC.CAM1;
 
 % Initialize color map
 C = jet(256);
@@ -454,7 +454,7 @@ for i = 1:num_samples
     J = imrotate(I, 90);
     
     subplot(rows, cols, i);
-    imagesc(J, [0 1]);
+    imagesc(J, [0 8]);
     colormap(C);
     title(['Sample ' num2str(current_sample)], 'FontSize', 8);
     axis off
@@ -715,8 +715,8 @@ data_e4 = InterpSignal.Sync.TANK;
 electrodes = [4 25 90 142 155 182]; % 6 Eletrodos
 
 % Parâmetros de Tempo do Vídeo
-ti = 2.5; % Tempo inicial [s]
-to = 3.5; % Tempo final [s]
+ti = 1.71; % Tempo inicial [s]
+to = 2.05; % Tempo final [s]
 step = 0.005; % [s]
 frame_rate = 15; % Taxa de quadros (FPS)
 % Parâmetro de Janela
@@ -729,8 +729,8 @@ vmin_MEA2 = -2000;
 vmax_MEA2 = 2000;
 vmin_MEA3 = -2000;
 vmax_MEA3 = 2000;
-vmin_TANK = -200;
-vmax_TANK = 200;
+vmin_TANK = -500;
+vmax_TANK = 500;
 
 % Saída de Vídeo
 videoFile = 'E_overview_video.mp4';
@@ -898,9 +898,9 @@ fprintf('Vídeo MP4 salvo como: %s\n', videoFile);
 
 %% Potential Map - Indivudual Figures
 % Select parameters to plot
-sample = round(3*4000):100:round(3.5*4000);
+sample = round(1.71*4000):35:round(2.12*4000);
 Data_E = InterpSignal.Sync.TANK;
-lim = [-200 200];
+lim = [-400 400];
 Title = 'Potential Plot - TANK';
 
 % Loop through each sample point
@@ -916,10 +916,10 @@ end
 
 %% Potential Map - Multiplot
 % Select parameters to plot
-sample = round(3*4000):30:round(3.5*4000);
-Data_E = InterpSignal.Sync.MEA3;
-lim = [-2000 2000];
-Title = 'Potential Plot - MEA3';
+sample = round(1.71*4000):25:round(2.05*4000);
+Data_E = InterpSignal.Sync.TANK;
+lim = [-500 500];
+Title = 'Potential Plot - TANK';
 
 % Plot
 plot_potential_map(Data_E, sample, ...
@@ -927,20 +927,20 @@ plot_potential_map(Data_E, sample, ...
 
 
 %% Potential Map - Video
-Data_E = InterpSignal.Data.MEA3;
+Data_E = InterpSignal.Data.TANK;
 % Define plot parameters
-lim = [-2000 2000]; % Set to [] for auto-scaling or specific limits like [-100 100]
+lim = [-500 500]; % Set to [] for auto-scaling or specific limits like [-100 100]
 Title = 'Potential Map'; % Custom title for the video frames
 video_title = 'E_potential_map_video_';
 % Define the start and end samples for the video
-start_sample = round(3*4000);
-end_sample = round(3.5*4000);
+start_sample = round(1.71*4000);
+end_sample = round(2.05*4000);
 Fsampling = 4000;
 
 % Define the frames per second (fps) for the video
 fps = 15;  % 30 fps is a standard value for video codec
 % Define the step for plot
-step = 10; 
+step = 5; 
 
 % Calculate the time duration of the video
 duration = length(start_sample:step:end_sample) / fps;
