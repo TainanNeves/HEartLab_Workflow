@@ -1,22 +1,47 @@
+% ECGi Reconstruction Script
+%
+% Author: Angélica Drielly Santos de Quadros
+% Affiliation: Federal University of ABC (UFABC), Brazil
+% Year: 2025
+%
+% This script performs electrocardiographic imaging (ECGi) reconstruction
+% by estimating epicardial potentials from tank signals using
+% inverse problem methods.
+%
+% Input files:
+%   - Preprocessed tank signals (.mat)
+%   - Tank electrode indices (.mat)
+%   - Tank geometry (.mat)
+%   - Heart geometry (.mat)
+%   - Transfer matrix (.mat)
+%
+% Reconstruction methods available (uncomment to use):
+%   - Tikhonov regularization (zero, first, or second order)
+%   - TSVD (Truncated Singular Value Decomposition)
+%   - DSVD (Damped Singular Value Decomposition)
+%   - Bayes (requires epicardial reference data)
+%
+% Output:
+%   - Estimated epicardial potentials saved as a .mat struct with fields:
+%     Data, Time, Regularization, Order, Heart_geometry, Filtering, Sync
+%
+% Notes:
+%   - Only one reconstruction method should be active at a time.
+%   - Tank signals are expected at fs = 200 Hz (downsampled during preprocessing).
+%   - The regularization parameter lambda is optimized internally.
+
 %% Loading Files
 
 % Define file paths
-signal_file = 'C:\Users\HeartLAB\Documents\Documents\Current codes\data_filtered_sync_E14_F3_R4.mat';
-electrodes_idx_file = "C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\eletrodos_LR.mat";
-heart_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\heart_geometry_exp14.mat';
-tank_geo_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\LR_smoothed_tank.mat';
-mtransfer_file = 'C:\Users\HeartLAB\Documents\Documents\CinC 2024\ECGi\Dados\MTransfer_exp14_LR_20000.mat';
+tank_signals_file = "../../01 - data/electric_data_Exx_Fxx_Rxx_filtered.mat";
+heart_geo_file = "../../01 - data/heart_geometry.mat";
+tank_geo_file = "../../01 - data/tank_geometry.mat";
+mtransfer_file = "../../01 - data/projections/MTransfer.mat";
 
 %% Reading Files
 
-% Extracting tank signals
-signal_data = load(signal_file);
-signal_data = signal_data.(subsref(fieldnames(signal_data), substruct('{}', {1})));
-signal = signal_data.EL([129:174, 177:190], :); % Keeping only 60 electrodes
-
-% Electrodes
-electrodes_data = load(electrodes_idx_file);
-electrodes = electrodes_data.(subsref(fieldnames(electrodes_data), substruct('{}', {1})));
+% Tank signals
+tank_signals = load(tank_signals_file);
 
 % Tank geometry
 tank_data = load(tank_geo_file);
@@ -31,7 +56,7 @@ mtransfer_data = load(mtransfer_file);
 MTransfer = mtransfer_data.(subsref(fieldnames(mtransfer_data), substruct('{}', {1})));
 
 % Clear unnecessary variables
-clear heart_geo_file tank_geo_file mtransfer_file signal_file electrodes_idx_file heart_data tank_data mtransfer_data electrodes_data;
+clear heart_geo_file tank_geo_file mtransfer_file tank_signals_file electrodes_idx_file heart_data tank_data mtransfer_data electrodes_data;
 
 %% Convert to mV (if needed)
 % The signals are exported in microvolts
@@ -40,66 +65,56 @@ clear heart_geo_file tank_geo_file mtransfer_file signal_file electrodes_idx_fil
 % signal = 0.00019 * signal;
 % signal = signal / 1000;
 
-%% Define Estimation Parameters
-
-lambda = 10.^(-0.5:-0.5:-12.5); % Regularization parameter. It will be optmized inside of the regularization code.
-order = 0; % Order of regularization (0, 1, or 2)
-reg_param_method = 'i'; % global (g) or by instant (i) calculation
-compute_params = 1; % 1 if reg_params need to be calculated
-model = 'SAF'; % Model type
-fs = 4000; % Sampling frequency
-SNR = 100; % Signal-to-noise ratio; it will only be used in the l-curve; set it to any number different of 40.
-
-%% Interpolate ECG Signal
-
-y = signal;
-idx = electrodes';
-
-[lap, edge] = mesh_laplacian(tank_geo.vertices, tank_geo.faces);
-[int, keepindex, repindex] = mesh_laplacian_interp_current(lap, idx);
-
-% Interpolate and keep measured data
-interp_signal = int * y;
-for i = 1:60
-    interp_signal(idx(1, i), :) = y(i, :);
-end
-
 %% Define Transfer Matrix
 
 A = MTransfer;
 
-%% Estimation Calculation
+%% Define Estimation Parameters
 
+lambda = logspace(-0.5, -12, 10); % it will be optimized inside of the regularization code
+order = 0; % Order of regularization (0, 1, or 2)
+reg_param_method = 'g'; % global (g) or by instant (i) calculation
+compute_params = 1; % 1 if reg_params need to be calculated
+model = 'SAF'; % Model type
+fs = 200; % Sampling frequency of the tank signals
+SNR = 100; % Signal-to-noise ratio; it will only be used in the l-curve; set it to any number different of 40.
+
+%% Precompute matrices for the regularization method
+
+[AA, L, LL] = precompute_matrices(A, order, heart_geo);
+
+%% Estimation time
 % Set estimation time window (in seconds)
 est_start = 2;
-est_end = 5;
+est_end = 3;
 
 % Convert time to samples
 est_start_sample = est_start * fs + 1;
 est_end_sample = est_end * fs;
 
-% Precompute matrices for the regularization method
-[AA, L, LL] = precompute_matrices(A, order, heart_geo);
+%% Tikhonov
 
-% Regularization method (comment/uncomment as needed)
+[x_hat, lambda_opt,x,z] = tikhonov(A, L, AA, LL, tank_signals(:, est_start_sample:est_end_sample), lambda, SNR, order, reg_param_method, compute_params);
 
-% Tikhonov method
-[x_hat, lambda_opt] = tikhonov(A, L, AA, LL, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, order, reg_param_method, compute_params);
 
-% TSVD method
-% [x_hat, k] = tsvd(A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, order, compute_params);
+%% TSVD
 
-% Greensite
-% [x_hat, lambda_opt] = greensite (A, L, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+% [x_hat, k] = tsvd(A, L, tank_signals(:, est_start_sample:est_end_sample), lambda, SNR, order, compute_params);
 
-% Total variation
-% [x_hat, lambda_opt] = totalvariation (A, L, AA, LL, interp_signal(:, est_start_sample:est_end_sample), lambda);
 
-% GRMES
-% x_hat = gmresidual (A, interp_signal(:, est_start_sample:est_end_sample));
+%% DSVD
 
-% DSVD
-% [x_hat, lambda_opt] = dsvd (A, interp_signal(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+% [x_hat, lambda_opt] = dsvd (A, tank_signals(:, est_start_sample:est_end_sample), lambda, SNR, compute_params);
+
+%% Bayes
+% 
+% ss_random = epicardial_data(:,1:150); %random samples outside of the analysis
+% Nsamples = size(ss_random,2);
+% 
+% %covariance matrix
+% Cn = estimate_Cn(tank_signals, 2*fs+1:6*fs); % select time windows outside of the analysis
+% 
+% x_hat = bayes (A, tank_signals(:, est_start_sample:est_end_sample), epicardial_data, Cn, Nsamples, ss_random);
 
 %% Plot All Signals
 
@@ -120,8 +135,8 @@ v3 = 2900;
 v4 = 7000;
 
 % Define time window for plot (in seconds)
-t_start = 1;
-t_end = 2;
+t_start = 0;
+t_end = 1;
 
 % Convert time to samples
 t_start_sample = t_start * fs + 1;
@@ -129,7 +144,6 @@ t_end_sample = t_end * fs;
 
 % Convert to time array
 time = linspace(t_start, t_end, length(t_start_sample:t_end_sample));
-tline1 = 684 / 4000 + 1;
 
 figure();
 subplot(4, 1, 1);
@@ -153,144 +167,28 @@ title(['Vertex ', num2str(v4)], 'FontSize', 15);
 ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
 xlabel('Time (s)', 'FontSize', 15);
 
-%% Plot Vertices and Tank signals in Time
+%% Upsampling
 
-% Define tank electrodes to plot
-tank_el1 = 130;
-tank_el2 = 145;
-v3 = 2900; 
-v4 = 7000;
+estimated_down = x_hat;
 
-% Define time window for plot (in seconds)
-t_start = 1;
-t_end = 2;
+% Downsampling factor
+factor = 20;
 
-% Convert time to samples
-t_start_sample = t_start * fs + 1;
-t_end_sample = t_end * fs;
+% Estimated signals upsampling
+estimated_up = resample(estimated_down', factor, 1)'; % Upsample estimated signals
 
-% Convert to time array
-time = linspace(t_start, t_end, length(t_start_sample:t_end_sample));
-tline1 = 684 / 4000 + 1;
+% Update the sampling frequency
+fs_up = fs * factor;
 
+%% Normalizing signals
 
-figure();
-subplot(4, 1, 1);
-%for tank signals, it is necessary to take into account the estimation
-%start sample
-plot(time, signal_data.EL(tank_el1, (est_start_sample + t_start_sample) : (est_start_sample + t_end_sample)), 'LineWidth', 1, 'Color', 'black');
-title(['Tank electrode ', num2str(tank_el1)], 'FontSize', 15);
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
-
-subplot(4, 1, 2);
-plot(time, signal_data.EL(tank_el2,  (est_start_sample + t_start_sample) : (est_start_sample + t_end_sample)), 'LineWidth', 1, 'Color', 'black');
-title(['Tank electrode ', num2str(tank_el2)], 'FontSize', 15);
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
-
-subplot(4, 1, 3);
-plot(time, data_est(v3, t_start_sample:t_end_sample), 'LineWidth', 1, 'Color', 'black');
-title(['Vertex ', num2str(v3)], 'FontSize', 15);
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
-
-subplot(4, 1, 4);
-plot(time, data_est(v4, t_start_sample:t_end_sample), 'LineWidth', 1, 'Color', 'black');
-title(['Vertex ', num2str(v4)], 'FontSize', 15);
-ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 14);
-xlabel('Time (s)', 'FontSize', 15);
-
-%% Plotting 1 Map
-
-% Define time for plotting (seconds)
-inst1 = 3;
-
-% Conversion to samples
-inst1_sample = inst1 * fs + 1;
-
-% Organizing geometry
-faces = heart_geo.faces;
-x = heart_geo.vertices(:,1);
-y = heart_geo.vertices(:,2);
-z = heart_geo.vertices(:,3);
-
-% Organizing signal
-sinal1 = x_hat(:, inst1);
-
-% Plot
-figure();
-trisurf(faces, x, y, z, sinal1, 'facecolor', 'interp', 'LineStyle', 'none');
-grid off; axis off;
-title(['Instant ', num2str(inst1), 's  Sample', num2str(inst1_sample)]);
-colormap('jet');
-
-% Add colorbar with label
-c = colorbar;
-c.Label.String = 'Amplitude (\muV)';
-
-%% Plotting 3 Maps
-
-% Define instants for plotting (in seconds)
-inst1 = 0.2;
-inst2 = 0.3;
-inst3 = 0.4;
-
-% Convert to samples
-inst1_sample = inst1 * fs + 1;
-inst2_sample = inst2 * fs + 1;
-inst3_sample = inst3 * fs + 1;
-
-% Organize geometry
-faces = heart_geo.faces;
-x = heart_geo.vertices(:, 1);
-y = heart_geo.vertices(:, 2);
-z = heart_geo.vertices(:, 3);
-
-% Organize signal
-signal_map1 = x_hat(:, inst1_sample);
-signal_map2 = x_hat(:, inst2_sample);
-signal_map3 = x_hat(:, inst3_sample);
-
-% Create the tiled layout
-tlo = tiledlayout(1, 3);
-
-% Create the subplots and store axes handles
-ax1 = nexttile(tlo);
-trisurf(faces, x, y, z, signal_map1, 'facecolor', 'interp', 'LineStyle', 'none');
-grid off; axis off;
-title(['Instant ', num2str(inst1), 's   Sample ', num2str(inst1_sample)]);
-
-ax2 = nexttile(tlo);
-trisurf(faces, x, y, z, signal_map2, 'facecolor', 'interp', 'LineStyle', 'none');
-grid off; axis off;
-title(['Instant ', num2str(inst2), 's   Sample ', num2str(inst2_sample)]);
-
-ax3 = nexttile(tlo);
-trisurf(faces, x, y, z, signal_map3, 'facecolor', 'interp', 'LineStyle', 'none');
-grid off; axis off;
-title(['Instant ', num2str(inst3), 's   Sample ', num2str(inst3_sample)]);
-
-% Comment from here if it's not necessary the same colorbar for all plots
-% Set the colormap for the entire figure
-colormap(jet);
-% 
-% % Adjust color limits to be the same for all plots
-min_value = min([sinal1(:); sinal2(:); sinal3(:)]);
-max_value = max([sinal1(:); sinal2(:); sinal3(:)]);
-set([ax1, ax2, ax3], 'CLim', [min_value max_value]);
-
-% % Add a single colorbar for the entire figure
-cb = colorbar;
-cb.Layout.Tile = 'east';
-cb.Label.String = 'Amplitude (\muV)';
+row_max = max(abs(estimated_up), [], 2);
+estimated_signal = bsxfun(@rdivide, estimated_up, row_max);
 
 %% Saving
 
-% Check the regularization method
-if exist('lambda_opt', 'var')
-    reg_method = 'Tikhonov';
-else
-    % If not Tikhonov, it was probably TSVD
-    reg_method = 'TSVD';
-end
+% Define the regularization method used
+reg_method = 'Tikhonov'; % set the regularization method used
 
 % Filename to save
 FileName = 'EXX_FXX_RXX';
@@ -301,36 +199,25 @@ current_dir = pwd;
 % Determine the parent directory
 [parent_dir, ~, ~] = fileparts(current_dir);
 
-<<<<<<< HEAD
-% Define the path to save the file in the parent directory
-output_file = fullfile(parent_dir, ['estimated_', FileName, '.mat']);
-=======
 % Create a timestamp
 timestamp = datestr(now, 'yyyymmdd_HHMMSS');
 
 % Define the path to save the file in the parent directory
 output_file = fullfile(parent_dir, ['estimated_', FileName, '_', timestamp, '.mat']);
->>>>>>> Development
 
 % Prepare the data structure
 estimated = struct(); % Initialize structure
 estimated.Data = x_hat; 
-estimated.Time = [init_time, final_time];
+estimated.Time = [est_start, est_end];
 estimated.Regularization = reg_method;
 estimated.Order = order;
 estimated.Heart_geometry = heart_geo;
-<<<<<<< HEAD
-estimated.Filtering = ' ';
-=======
-estimated.Filtering = 'Butterworth(0.5-250Hz)';
-estimated.Sync = 'Yes';
->>>>>>> Development
+estimated.Filtering = ''; %set applied filtering
+estimated.Sync = 'Yes'; %set if it is synchronized with optical and electrical
+estimated.Data_upsampled = estimated_up;
+estimated.Data_norm = estimated_signal;
 
 % Save the file to the specified path
 save(output_file, 'estimated');
 
-<<<<<<< HEAD
 fprintf('File saved to: %s\n', output_file);
-=======
-fprintf('File saved to: %s\n', output_file);
->>>>>>> Development

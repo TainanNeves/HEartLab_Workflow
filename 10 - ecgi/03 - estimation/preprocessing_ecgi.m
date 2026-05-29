@@ -7,47 +7,54 @@
 % This script preprocesses MEAs and tank signals to enhance signal quality and prepare data for ECGi.
 % The preprocessing steps include:  
 %  
-% 1. **Mean Subtraction**  
+% 1. *Mean Subtraction*  
 %    - Removes the DC component by centering each signal around zero.   
 %    - Plots to compare signals before and after subtraction are generated.  
 %
-% 2. **Interpolation of Tank Signals**  
+% 2. *Interpolation of Tank Signals*  
 %    - Tank signals are interpolated to match the torso-tank geometry.   
 %    - Plots to compare signals before and after interpolation are generated. 
 %
-% 3. **Detrending**  
+% 3. *Detrending*  
 %    - Baseline drift is removed using a spline-based detrending method,  
 %      utilizing the function developed by Professor Oscar Barquero.  
 %    - Plots to compare the signals before and after detrending are generated.  
 %
-% 4. **Low-Pass Filtering**  
-%    - A Butterworth filter is applied to remove high-frequency noise.
-%    - The cutoff frequency is selected based on the spectrum analysis.  
-%    - Plots to compare the signals before and after filtering are generated.  
-%
-% 5. **Spectral Analysis**  
+% 4. *Spectral Analysis*  
 %    - Frequency spectrum components of the signals are plotted.  
 %    - This analysis aids in selecting the optimal cutoff frequency for the  
 %      low-pass filter by inspecting the frequency spectrum.  
 %
-% 6. **Downsampling**  
+% 5. *Low-Pass Filtering*  
+%    - A Butterworth filter is applied to remove high-frequency noise.
+%    - The cutoff frequency is selected based on the spectrum analysis.  
+%    - Plots to compare the signals before and after filtering are generated.  
+%
+% 6. *Downsampling*  
 %    - The signals are downsampled to optimize computational efficiency.  
 %    - Plots to compare the signals before and after downsampling are generated.  
 %
-% 7. **Upsampling**  
+% 7. *Upsampling*  
 %    - Signals can be upsampled when alignment with the original acquisition frequency is required.  
 %    - Plots to compare signals before and after upsampling are generated.  
 %
-% 8. **Normalization**  
+% 8. *Normalization*  
 %    - Signals are normalized based on the maximum value of the row.  
 %    - Plots to compare the signals before and after normalization are generated.  
 %
-% 9. **Scaling**  
+% 9. *Scaling*  
 %    - Scaling is applied if adjustment of signal amplitude units is required.  
 %    - Plots to compare the signals before and after scaling are generated.  
 %
-% 10. **Data Storage**  
-%     - The preprocessed signals are saved in `.mat` files for further  
+% 10. *Principal Component Analysis (PCA via SVD)*  
+%     - PCA is applied as a project-and-reproject filter to the downsampled,
+%       normalized tank signals.  
+%     - SVD is used to compute principal components; explained variance is plotted.    
+%     - Data is reconstructed using the selected components and compared to the  
+%       original signal.  
+%
+% 11. *Data Storage*  
+%     - The preprocessed signals are saved in .mat files for further  
 %       ECGi reconstruction and analysis.  
 %     - Figures generated during preprocessing can also be stored.  
 %  
@@ -56,8 +63,8 @@
 
 %% Loading data
 
-% MEAs and Tank signals
-file_name = "C:\Users\HeartLAB\Documents\Documents\Codes\Current codes\02 - extraction_filtering\electric\open_ephys_extraction_matlab_filtering\electric_data_E29_F01_R01_raw.mat";
+% MEAs and Tank raw signals
+file_name =  "../../01 - data/electric_data_Exx_Fxx_Rxx_raw.mat";
 signals = load(file_name);
 
 
@@ -67,11 +74,11 @@ tank_signal_raw = signals.D_EL.Data([129:174, 177:190], :);
 
 
 % Tank electrodes indices
-el_tank_idx = load("C:\Users\HeartLAB\Documents\Documents\Codes\Current codes\ECGi\tank_el_idx.mat");
+el_tank_idx = load("../../tank_el_idx.mat");
 el_tank_idx = el_tank_idx.(subsref(fieldnames(el_tank_idx),substruct('{}',{1})));
 
 % Tank geometry
-tank_geo_file = "C:\Users\HeartLAB\Documents\Documents\Conferences\CinC 2024\Version1\ECGi\Dados\LR_smoothed_tank.mat";
+tank_geo_file = ("../../LR_smoothed_tank.mat");
 tank_geo = load(tank_geo_file);
 tank_geo = tank_geo.(subsref(fieldnames(tank_geo),substruct('{}',{1})));
 
@@ -84,7 +91,7 @@ tank_signal_sub = tank_signal_raw - mean_tank;
 %% Interpolating tank signals
 
 y = tank_signal_sub;
-idx = el_tank_idx(:,2)';
+idx = el_tank_idx';
 
 [lap, edge] = mesh_laplacian(tank_geo.vertices, tank_geo.faces);
 [int, keepindex, repindex] = mesh_laplacian_interp_current(lap, idx);
@@ -97,12 +104,15 @@ end
 
 tank_electrodes = [129:174, 177:190];
 el_map = [tank_electrodes(:) idx(:)];  
+% el_map(:,1): original electrode number [129-192]
+% el_map(:,2): corresponding node index in the interpolated geometry (218 nodes total;
+% measured electrodes keep their original position)
 
 %% Detrend Signals
 
 meas = meas_signal_raw;
 tank = tank_signal_interp;
-tank = tank_signal_sub;
+
 fs = 4000;
 
 % Define parameters
@@ -123,7 +133,7 @@ for m = 1:size(meas,1)
     meas_signal_d(m,:) = detrendSpline(meas(m,:), t_meas, 0.2);
 end
 
-% % Detrend tank signals
+% Detrend tank signals
 tank_signal_d = zeros(size(tank));
 for m = 1:size(tank,1)
     tank_signal_d(m,:) = detrendSpline(tank(m,:), t_tank, 0.2);
@@ -136,7 +146,7 @@ for mea_idx = 1:3
     % Set the indices for each MEA group
     if mea_idx == 1
         mea_title = 'RIGHT ATRIUM';
-        mea_range = 1:16;
+          = 1:16;
     elseif mea_idx == 2
         mea_title = 'VENTRICLE';
         mea_range = 17:32;
@@ -203,7 +213,7 @@ tank = tank_signal_d;
 
 % Define cutoff frequency
 fs = 4000;
-f_cut = 30 / (fs / 2);
+f_cut = 30 / (fs / 2); % set cutoff frequency
 [b, a] = butter(4, f_cut, 'low');
 
 % Apply butterworth filtering
@@ -218,13 +228,13 @@ in_sample = in_time * fs + 1;
 end_sample = end_time * fs;
 time = linspace(in_time, end_time, length(in_sample:end_sample));
 
-f_up = 50;
-f_down = 0.5;
+f_up = 50; % choose frequency
+f_down = 0.5; % choose frequency
 
 
 %% Plot MEAs spectrum and electrical signals
 
-for mea_idx = 2:2
+for mea_idx = 1:3
     % Set the indices for each MEA group
     if mea_idx == 1
         mea_range = 1:16; 
@@ -269,7 +279,7 @@ for mea_idx = 2:2
             title(['Electrical Signal - Electrode ' num2str(plot_range(electrode_idx)) ' - Cutoff: ' num2str(f_cut * fs / 2) ' Hz'], 'FontSize',15);
             xlabel('Time (s)');
             ylabel('Amplitude ($\mu$V)', 'Interpreter', 'latex', 'FontSize', 12);
-%             ylim([-300, 300]);
+%           ylim([-300, 300]);
             legend('Original', 'New filtering');
         end
         
@@ -343,7 +353,7 @@ time = linspace(start_time, end_time, length(start_sample:end_sample));
 
 % Define electrode mappings
 el1 = 7;   % MEA1 RA
-el2 = 10;   % MEA1 RA
+el2 = 10;  % MEA1 RA
 el3 = 71;  % MEA3 LA
 el4 = 74;  % MEA3 LA
 el5 = 17;  % MEA2 V
@@ -435,7 +445,7 @@ linkaxes(findall(gcf, 'Type', 'axes'), 'x');
 
 %% Save Filtered Signals
 lp_cutoff = f_cut * fs / 2;
-save('filtered_signals_E20F1R1.mat', 'meas_signal_f', 'tank_signal_f', 'lp_cutoff');
+save('filtered_signals.mat', 'meas_signal_f', 'tank_signal_f', 'lp_cutoff');
 
 %% Downsampling
 
@@ -468,12 +478,8 @@ meas_signal_up = resample(meas', factor, 1)'; % Upsample MEA signals
 % Tank signals upsampling
 tank_signal_up = resample(tank', factor, 1)'; % Upsample Tank signals
 
-% Estimated signals upsampling
-estimated_up = resample(estimated_down', factor, 1)'; % Upsample estimated signals
-
-
 % Update the sampling frequency
-fs_up = fs * factor;
+fs_up = fs_down * factor;
 
 %% Plot MEAs electrical signals before and after downsampling
 
@@ -534,6 +540,7 @@ end
 
 in_time = 1;
 end_time = 3;
+
 % Define time vectors for original and downsampled signals
 t_original = (in_time*fs+1:end_time*fs) / fs; % Time vector for the original signal
 t_down = (in_time*fs_down+1:end_time*fs_down) / fs_down; % Time vector for the downsampled signal
@@ -548,7 +555,7 @@ for i = 1:4:60
         
         % Plot Original and Downsampled Electrical Signals for the current electrode
         subplot(2, 2, j + 1);
-        plot(t_original, tank_signal_d(el_map(electrode_idx,1), in_time*fs+1:end_time*fs), 'r', 'LineWidth', 1);
+        plot(t_original, tank_signal_f(el_map(electrode_idx,1), in_time*fs+1:end_time*fs), 'r', 'LineWidth', 1);
         hold on;
         plot(t_down, tank_signal_down(el_map(electrode_idx,1), in_time*fs_down+1:end_time*fs_down), 'b', 'LineWidth', 1);
         title(['Electrode ' num2str(el_map(electrode_idx,2))]);
@@ -564,12 +571,12 @@ for i = 1:4:60
 end
 
 %% Save Downsampled Signals
-save('downsampled_E18_F2_R2.mat', 'meas_signal_down', 'tank_signal_down','fs_down');
+save('downsampled_EXX_FX_RX.mat', 'meas_signal_down', 'tank_signal_down','fs_down');
 
 %% Normalizing signals
 
-meas_signal_not_norm = meas_signal_up;
-tank_signal_not_norm = tank_signal_up;
+meas_signal_not_norm = meas_signal_down;
+tank_signal_not_norm = tank_signal_down;
 
 % Normalizing meas signal
 row_max = max(abs(meas_signal_not_norm), [], 2);
@@ -647,7 +654,7 @@ time = linspace(in_time, end_time, length(in_sample:end_sample));
 
 tank_electrodes = [129:174, 177:190];
 
-for i = 1:4:4
+for i = 1:4:60
     figure(); % Create a new figure for each group of 4 tank electrodes
     sgtitle('Tank Signals - Standard normalization', 'FontWeight', 'bold');
     
@@ -779,3 +786,90 @@ for i = 1:4:60
     end
 end
 
+%% PCA
+% Applies PCA using SVD to the downsampled, normalized tank signals
+
+% Use tank downsampled signals
+tank_data = tank_signal_down;
+
+% Normalize rows
+row_max = max(abs(tank_data), [], 2);
+y_normalized = bsxfun(@rdivide, tank_data, row_max);
+
+% Center the data
+data_centered = y_normalized - mean(y_normalized, 2); % center each signal over time
+
+% SVD
+[U, S, V] = svd(data_centered, 'econ');
+
+% Singular values and explained variance
+singular_values = diag(S);
+explained_variance = (singular_values.^2) / sum(singular_values.^2) * 100;
+
+% Plot cumulative explained variance
+figure;
+plot(cumsum(explained_variance), 'o-');
+title('Cumulative Explained Variance');
+xlabel('Number of Components');
+ylabel('Explained Variance (%)');
+grid on;
+
+% Scores (projection onto principal components)
+scores = data_centered * V; % equivalent to U * S
+
+% Visualize principal components alongside a reference MEA signal
+fs_pca = fs_down; % sampling frequency of downsampled signals
+tt = (0:size(y_normalized, 2)-1) / fs_pca;
+
+% Reference signals
+ref_signal_ra = meas_signal_down(7, :);  % MEA1 RA electrode 7 (adjust as needed)
+ref_signal_v  = meas_signal_down(17, :); % MEA2 V  electrode 17
+
+n_comp_plot = 10; % number of PCA components to display
+n_rows = n_comp_plot + 2;
+
+figure;
+subplot(n_rows, 1, 1);
+plot(tt, ref_signal_ra, 'b');
+title('MEA1 RA - Reference electrode');
+axis off;
+
+subplot(n_rows, 1, 2);
+plot(tt, ref_signal_v, 'b');
+title('MEA2 V - Reference electrode');
+axis off;
+
+for i = 1:n_comp_plot
+    subplot(n_rows, 1, i + 2);
+    plot(tt, V(:, i), 'b');
+    title(['Component ' num2str(i)], 'FontSize', 10);
+    axis off;
+end
+
+% Select number of components to retain
+k = 5; % number of components selected after inspecting the cumulative explained variance
+% Reconstruct data using k components
+V_k = V(:, 1:k);
+scores_k = data_centered * V_k; % projection onto k components
+reconstructed_data = scores_k * V_k'; % reconstruction in original space
+
+% Verify reconstruction quality on one tank electrode
+% Use el_map to find the correct row index for a given electrode number
+target_electrode = 134; % adjust to electrode of interest
+tank_row = find(el_map(:, 2) == target_electrode, 1);
+
+if ~isempty(tank_row)
+    figure;
+    plot(y_normalized(tank_row, :) / max(abs(y_normalized(tank_row, :))));
+    hold on;
+    plot(reconstructed_data(tank_row, :) / max(abs(reconstructed_data(tank_row, :))));
+    legend('Original (normalized)', ['Reconstructed (k=' num2str(k) ')']);
+    title(['PCA Reconstruction - Tank Electrode ' num2str(target_electrode)]);
+    xlabel('Sample');
+    ylabel('Normalized Amplitude');
+else
+    warning('Electrode %d not found in el_map.', target_electrode);
+end
+
+%% Save tank signals after PCA
+save('reconstructed_tank.mat', 'reconstructed_data');
